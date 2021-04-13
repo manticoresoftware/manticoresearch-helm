@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ RELEASE_NAME }}-m{{ STREAM_ID }}-facade-manticore
+  namespace: {{ NAMESPACE }}
+  labels:
+    name: m{{ STREAM_ID }}-facade-manticore
+    helm.sh/chart: {{ CHART_NAME }}
+    app.kubernetes.io/instance: {{ RELEASE_NAME }}
+    app.kubernetes.io/managed-by: {{ RELEASE_SERVICE }}
+    app.kubernetes.io/app: {{ FULLNAME }}-m{{ STREAM_ID }}-facade-manticore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name:  m{{ STREAM_ID }}-facade-manticore
+  serviceName: m{{ STREAM_ID }}-facade-manticore-svc
+  template:
+    metadata:
+      labels:
+        name: m{{ STREAM_ID }}-facade-manticore
+    spec:
+      serviceAccountName: ui-admin-sa-{{ NAMESPACE }}
+      containers:
+      - name: m{{ STREAM_ID }}-facade-manticore
+        image: {{ Values.manticoreFacade.image.repository }}:{{ Values.manticoreFacade.image.tag }}
+        imagePullPolicy: Always
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "./shutdown.sh"]
+        env:
+          - name: LABEL
+            value: "m{{ STREAM_ID }}"
+        readinessProbe:
+          tcpSocket:
+            port: {{ Values.manticore.service.port }}
+          initialDelaySeconds: 5
+          periodSeconds: 3
+        livenessProbe:
+          tcpSocket:
+            port: {{ Values.manticore.service.port }}
+          initialDelaySeconds: 5
+          periodSeconds: 3
+      imagePullSecrets:
+      - name: registry-manticore-streams

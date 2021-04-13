@@ -1,0 +1,1316 @@
+{
+  "kind": "PodList",
+  "apiVersion": "v1",
+  "metadata": {
+    "selfLink": "/api/v1/namespaces/mkc/pods",
+    "resourceVersion": "161865493"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "mkc-clickhouse-0",
+        "generateName": "mkc-clickhouse-",
+        "namespace": "mkc",
+        "selfLink": "/api/v1/namespaces/mkc/pods/mkc-clickhouse-0",
+        "uid": "cc79a9c0-23f8-4ccc-972a-9d41db6f4751",
+        "resourceVersion": "158997977",
+        "creationTimestamp": "2021-03-04T14:37:14Z",
+        "labels": {
+          "controller-revision-hash": "mkc-clickhouse-54cdc555fc",
+          "name": "mkc-clickhouse",
+          "statefulset.kubernetes.io/pod-name": "mkc-clickhouse-0"
+        },
+        "annotations": {
+          "cni.projectcalico.org/podIP": "10.42.9.73/32",
+          "cni.projectcalico.org/podIPs": "10.42.9.73/32"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "apps/v1",
+            "kind": "StatefulSet",
+            "name": "mkc-clickhouse",
+            "uid": "d3555c98-d9bf-4662-b7d5-2e9c94662aa4",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "volumes": [
+          {
+            "name": "storage",
+            "persistentVolumeClaim": {
+              "claimName": "storage-mkc-clickhouse-0"
+            }
+          },
+          {
+            "name": "ui-admin-sa-mkc-token-chkvg",
+            "secret": {
+              "secretName": "ui-admin-sa-mkc-token-chkvg",
+              "defaultMode": 420
+            }
+          }
+        ],
+        "containers": [
+          {
+            "name": "mkc-clickhouse",
+            "image": "registry.gitlab.com/manticore_misc/manticore-streams/clickhouse:0.0.1",
+            "resources": {
+
+            },
+            "volumeMounts": [
+              {
+                "name": "storage",
+                "mountPath": "/var/lib/clickhouse"
+              },
+              {
+                "name": "ui-admin-sa-mkc-token-chkvg",
+                "readOnly": true,
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount"
+              }
+            ],
+            "livenessProbe": {
+              "httpGet": {
+                "path": "/",
+                "port": 8123,
+                "scheme": "HTTP"
+              },
+              "initialDelaySeconds": 5,
+              "timeoutSeconds": 1,
+              "periodSeconds": 3,
+              "successThreshold": 1,
+              "failureThreshold": 3
+            },
+            "readinessProbe": {
+              "httpGet": {
+                "path": "/",
+                "port": 8123,
+                "scheme": "HTTP"
+              },
+              "initialDelaySeconds": 5,
+              "timeoutSeconds": 1,
+              "periodSeconds": 3,
+              "successThreshold": 1,
+              "failureThreshold": 3
+            },
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "imagePullPolicy": "Always"
+          }
+        ],
+        "restartPolicy": "Always",
+        "terminationGracePeriodSeconds": 30,
+        "dnsPolicy": "ClusterFirst",
+        "serviceAccountName": "ui-admin-sa-mkc",
+        "serviceAccount": "ui-admin-sa-mkc",
+        "nodeName": "workercpx28",
+        "securityContext": {
+          "runAsUser": 999,
+          "runAsGroup": 999,
+          "fsGroup": 999
+        },
+        "imagePullSecrets": [
+          {
+            "name": "registry-manticore-streams"
+          }
+        ],
+        "hostname": "mkc-clickhouse-0",
+        "subdomain": "mkc-clickhouse-service",
+        "schedulerName": "default-scheduler",
+        "tolerations": [
+          {
+            "key": "node.kubernetes.io/not-ready",
+            "operator": "Exists",
+            "effect": "NoExecute",
+            "tolerationSeconds": 300
+          },
+          {
+            "key": "node.kubernetes.io/unreachable",
+            "operator": "Exists",
+            "effect": "NoExecute",
+            "tolerationSeconds": 300
+          }
+        ],
+        "priority": 0,
+        "enableServiceLinks": true
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Initialized",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-03-04T14:37:14Z"
+          },
+          {
+            "type": "Ready",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-04-05T08:47:20Z"
+          },
+          {
+            "type": "ContainersReady",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-04-05T08:47:20Z"
+          },
+          {
+            "type": "PodScheduled",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-03-04T14:37:14Z"
+          }
+        ],
+        "hostIP": "168.119.173.36",
+        "podIP": "10.42.9.73",
+        "podIPs": [
+          {
+            "ip": "10.42.9.73"
+          }
+        ],
+        "startTime": "2021-03-04T14:37:14Z",
+        "containerStatuses": [
+          {
+            "name": "mkc-clickhouse",
+            "state": {
+              "running": {
+                "startedAt": "2021-03-22T03:11:58Z"
+              }
+            },
+            "lastState": {
+              "terminated": {
+                "exitCode": 0,
+                "reason": "Completed",
+                "startedAt": "2021-03-22T03:05:56Z",
+                "finishedAt": "2021-03-22T03:11:56Z",
+                "containerID": "docker://d63d79fb93b4b04e7d802652d9c3a3ade17e8eaa525897bbc0b981755917db93"
+              }
+            },
+            "ready": true,
+            "restartCount": 3,
+            "image": "registry.gitlab.com/manticore_misc/manticore-streams/clickhouse:0.0.1",
+            "imageID": "docker-pullable://registry.gitlab.com/manticore_misc/manticore-streams/clickhouse@sha256:90d9345ebee44e6961e82becbb417f538004efe107a62a5fa20885d0e6967cd6",
+            "containerID": "docker://38bcae0fa355e207f62ee7ce73899946dd0c4552eb7838b458467595af1f0344",
+            "started": true
+          }
+        ],
+        "qosClass": "BestEffort"
+      }
+    },
+    {
+      "metadata": {
+        "name": "mkc-m1-facade-manticore-0",
+        "generateName": "mkc-m1-facade-manticore-",
+        "namespace": "mkc",
+        "selfLink": "/api/v1/namespaces/mkc/pods/mkc-m1-facade-manticore-0",
+        "uid": "b1bdf8e5-a932-49a6-a79b-111178fcf8de",
+        "resourceVersion": "159557335",
+        "creationTimestamp": "2021-03-03T12:36:20Z",
+        "labels": {
+          "controller-revision-hash": "mkc-m1-facade-manticore-74b759c444",
+          "name": "m1-facade-manticore",
+          "statefulset.kubernetes.io/pod-name": "mkc-m1-facade-manticore-0"
+        },
+        "annotations": {
+          "cni.projectcalico.org/podIP": "10.42.11.83/32",
+          "cni.projectcalico.org/podIPs": "10.42.11.83/32"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "apps/v1",
+            "kind": "StatefulSet",
+            "name": "mkc-m1-facade-manticore",
+            "uid": "f261f49b-7283-4f16-bcb9-6d76add1bfb4",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "volumes": [
+          {
+            "name": "ui-admin-sa-mkc-token-chkvg",
+            "secret": {
+              "secretName": "ui-admin-sa-mkc-token-chkvg",
+              "defaultMode": 420
+            }
+          }
+        ],
+        "containers": [
+          {
+            "name": "m1-facade-manticore",
+            "image": "registry.gitlab.com/manticore_misc/manticore-streams/manticoresearch-facade:0.0.1",
+            "env": [
+              {
+                "name": "LABEL",
+                "value": "m1"
+              }
+            ],
+            "resources": {
+
+            },
+            "volumeMounts": [
+              {
+                "name": "ui-admin-sa-mkc-token-chkvg",
+                "readOnly": true,
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount"
+              }
+            ],
+            "livenessProbe": {
+              "tcpSocket": {
+                "port": 9306
+              },
+              "initialDelaySeconds": 5,
+              "timeoutSeconds": 1,
+              "periodSeconds": 3,
+              "successThreshold": 1,
+              "failureThreshold": 3
+            },
+            "readinessProbe": {
+              "tcpSocket": {
+                "port": 9306
+              },
+              "initialDelaySeconds": 5,
+              "timeoutSeconds": 1,
+              "periodSeconds": 3,
+              "successThreshold": 1,
+              "failureThreshold": 3
+            },
+            "lifecycle": {
+              "preStop": {
+                "exec": {
+                  "command": [
+                    "/bin/sh",
+                    "-c",
+                    "./shutdown.sh"
+                  ]
+                }
+              }
+            },
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "imagePullPolicy": "Always"
+          }
+        ],
+        "restartPolicy": "Always",
+        "terminationGracePeriodSeconds": 30,
+        "dnsPolicy": "ClusterFirst",
+        "serviceAccountName": "ui-admin-sa-mkc",
+        "serviceAccount": "ui-admin-sa-mkc",
+        "nodeName": "workercpx29",
+        "securityContext": {
+
+        },
+        "imagePullSecrets": [
+          {
+            "name": "registry-manticore-streams"
+          }
+        ],
+        "hostname": "mkc-m1-facade-manticore-0",
+        "subdomain": "m1-facade-manticore-svc",
+        "schedulerName": "default-scheduler",
+        "tolerations": [
+          {
+            "key": "node.kubernetes.io/not-ready",
+            "operator": "Exists",
+            "effect": "NoExecute",
+            "tolerationSeconds": 300
+          },
+          {
+            "key": "node.kubernetes.io/unreachable",
+            "operator": "Exists",
+            "effect": "NoExecute",
+            "tolerationSeconds": 300
+          }
+        ],
+        "priority": 0,
+        "enableServiceLinks": true
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Initialized",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-03-03T12:36:20Z"
+          },
+          {
+            "type": "Ready",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-03-03T12:36:36Z"
+          },
+          {
+            "type": "ContainersReady",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-03-03T12:36:36Z"
+          },
+          {
+            "type": "PodScheduled",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-03-03T12:36:20Z"
+          }
+        ],
+        "hostIP": "157.90.160.220",
+        "podIP": "10.42.11.83",
+        "podIPs": [
+          {
+            "ip": "10.42.11.83"
+          }
+        ],
+        "startTime": "2021-03-03T12:36:20Z",
+        "containerStatuses": [
+          {
+            "name": "m1-facade-manticore",
+            "state": {
+              "running": {
+                "startedAt": "2021-03-03T12:36:30Z"
+              }
+            },
+            "lastState": {
+
+            },
+            "ready": true,
+            "restartCount": 0,
+            "image": "registry.gitlab.com/manticore_misc/manticore-streams/manticoresearch-facade:0.0.1",
+            "imageID": "docker-pullable://registry.gitlab.com/manticore_misc/manticore-streams/manticoresearch-facade@sha256:f5b5317eb9a387c33644a6724ce459f86caa383ecb8bb8a83169f41708d1a7cb",
+            "containerID": "docker://a800b4e337e5152064eb7ccd5f259e7c8f7206e237cc6d70a11b33aa7e41b035",
+            "started": true
+          }
+        ],
+        "qosClass": "BestEffort"
+      }
+    },
+    {
+      "metadata": {
+        "name": "mkc-m1-manticore-0",
+        "generateName": "mkc-m1-manticore-",
+        "namespace": "mkc",
+        "selfLink": "/api/v1/namespaces/mkc/pods/mkc-m1-manticore-0",
+        "uid": "a1ff4608-e8bb-47f4-8005-a2819fd80d02",
+        "resourceVersion": "124870906",
+        "creationTimestamp": "2021-03-04T11:09:56Z",
+        "labels": {
+          "controller-revision-hash": "mkc-m1-manticore-bd55bcb4c",
+          "name": "m1-manticore",
+          "statefulset.kubernetes.io/pod-name": "mkc-m1-manticore-0"
+        },
+        "annotations": {
+          "cni.projectcalico.org/podIP": "10.42.15.75/32",
+          "cni.projectcalico.org/podIPs": "10.42.15.75/32"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "apps/v1",
+            "kind": "StatefulSet",
+            "name": "mkc-m1-manticore",
+            "uid": "cb56ca1a-0fc5-4c74-8137-d6b2b7e50b3f",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "volumes": [
+          {
+            "name": "data",
+            "persistentVolumeClaim": {
+              "claimName": "data-mkc-m1-manticore-0"
+            }
+          },
+          {
+            "name": "ui-admin-sa-mkc-token-chkvg",
+            "secret": {
+              "secretName": "ui-admin-sa-mkc-token-chkvg",
+              "defaultMode": 420
+            }
+          }
+        ],
+        "containers": [
+          {
+            "name": "m1-manticore",
+            "image": "registry.gitlab.com/manticore_misc/manticore-streams/manticoresearch-engine:0.0.1",
+            "env": [
+              {
+                "name": "MANTICORE_FACADE_HOST",
+                "value": "m1-manticore-facade-svc"
+              },
+              {
+                "name": "MANTICORE_RULES",
+                "value": "json=whole_document"
+              },
+              {
+                "name": "MANTICORE_PORT",
+                "value": "9306"
+              },
+              {
+                "name": "MANTICORE_MORPHOLOGY",
+                "value": "morphology = 'icu_chinese' charset_table = 'cjk, non_cjk' stopwords = 'zh'"
+              },
+              {
+                "name": "MANTICORE_POD_NAME",
+                "value": "m1-manticore"
+              },
+              {
+                "name": "MANTICORE_STATEFUL_SET_NAME",
+                "value": "mkc-m1-manticore"
+              },
+              {
+                "name": "MANTICORE_SERVICE_NAME",
+                "value": "m1-manticore-svc"
+              },
+              {
+                "name": "BLACKLIST_MODE",
+                "value": "0"
+              },
+              {
+                "name": "NAMESPACE_NAME",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "metadata.namespace"
+                  }
+                }
+              },
+              {
+                "name": "POD_IP",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "status.podIP"
+                  }
+                }
+              }
+            ],
+            "resources": {
+
+            },
+            "volumeMounts": [
+              {
+                "name": "data",
+                "mountPath": "/var/lib/manticore/"
+              },
+              {
+                "name": "ui-admin-sa-mkc-token-chkvg",
+                "readOnly": true,
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount"
+              }
+            ],
+            "readinessProbe": {
+              "tcpSocket": {
+                "port": 9306
+              },
+              "initialDelaySeconds": 5,
+              "timeoutSeconds": 1,
+              "periodSeconds": 3,
+              "successThreshold": 1,
+              "failureThreshold": 3
+            },
+            "lifecycle": {
+              "preStop": {
+                "exec": {
+                  "command": [
+                    "/bin/sh",
+                    "-c",
+                    "./shutdown.sh"
+                  ]
+                }
+              }
+            },
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "imagePullPolicy": "Always"
+          }
+        ],
+        "restartPolicy": "Always",
+        "terminationGracePeriodSeconds": 30,
+        "dnsPolicy": "ClusterFirst",
+        "serviceAccountName": "ui-admin-sa-mkc",
+        "serviceAccount": "ui-admin-sa-mkc",
+        "nodeName": "workercpx22",
+        "securityContext": {
+          "runAsUser": 999,
+          "runAsGroup": 999,
+          "fsGroup": 999
+        },
+        "imagePullSecrets": [
+          {
+            "name": "registry-manticore-streams"
+          }
+        ],
+        "hostname": "mkc-m1-manticore-0",
+        "subdomain": "m1-manticore-svc",
+        "schedulerName": "default-scheduler",
+        "tolerations": [
+          {
+            "key": "node.kubernetes.io/not-ready",
+            "operator": "Exists",
+            "effect": "NoExecute",
+            "tolerationSeconds": 300
+          },
+          {
+            "key": "node.kubernetes.io/unreachable",
+            "operator": "Exists",
+            "effect": "NoExecute",
+            "tolerationSeconds": 300
+          }
+        ],
+        "priority": 0,
+        "enableServiceLinks": true
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Initialized",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-03-04T11:10:01Z"
+          },
+          {
+            "type": "Ready",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-03-04T11:10:18Z"
+          },
+          {
+            "type": "ContainersReady",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-03-04T11:10:18Z"
+          },
+          {
+            "type": "PodScheduled",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-03-04T11:10:01Z"
+          }
+        ],
+        "hostIP": "159.69.15.130",
+        "podIP": "10.42.15.75",
+        "podIPs": [
+          {
+            "ip": "10.42.15.75"
+          }
+        ],
+        "startTime": "2021-03-04T11:10:01Z",
+        "containerStatuses": [
+          {
+            "name": "m1-manticore",
+            "state": {
+              "running": {
+                "startedAt": "2021-03-04T11:10:13Z"
+              }
+            },
+            "lastState": {
+
+            },
+            "ready": true,
+            "restartCount": 0,
+            "image": "registry.gitlab.com/manticore_misc/manticore-streams/manticoresearch-engine:0.0.1",
+            "imageID": "docker-pullable://registry.gitlab.com/manticore_misc/manticore-streams/manticoresearch-engine@sha256:e4fefb9489fa979090a3b86638e1a5762f9d946f6607a068a32b9a52913e97e3",
+            "containerID": "docker://88ed754406243533d1cfff345c6d30f4a1df7f682685a1637816d1249085da13",
+            "started": true
+          }
+        ],
+        "qosClass": "BestEffort"
+      }
+    },
+    {
+      "metadata": {
+        "name": "mkc-m1-manticore-1",
+        "generateName": "mkc-m1-manticore-",
+        "namespace": "mkc",
+        "selfLink": "/api/v1/namespaces/mkc/pods/mkc-m1-manticore-1",
+        "uid": "eddc14c8-c719-4e26-9108-2ac61bfd2bdc",
+        "resourceVersion": "158997962",
+        "creationTimestamp": "2021-03-04T14:44:39Z",
+        "labels": {
+          "controller-revision-hash": "mkc-m1-manticore-bd55bcb4c",
+          "name": "m1-manticore",
+          "statefulset.kubernetes.io/pod-name": "mkc-m1-manticore-1"
+        },
+        "annotations": {
+          "cni.projectcalico.org/podIP": "10.42.9.75/32",
+          "cni.projectcalico.org/podIPs": "10.42.9.75/32"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "apps/v1",
+            "kind": "StatefulSet",
+            "name": "mkc-m1-manticore",
+            "uid": "cb56ca1a-0fc5-4c74-8137-d6b2b7e50b3f",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "volumes": [
+          {
+            "name": "data",
+            "persistentVolumeClaim": {
+              "claimName": "data-mkc-m1-manticore-1"
+            }
+          },
+          {
+            "name": "ui-admin-sa-mkc-token-chkvg",
+            "secret": {
+              "secretName": "ui-admin-sa-mkc-token-chkvg",
+              "defaultMode": 420
+            }
+          }
+        ],
+        "containers": [
+          {
+            "name": "m1-manticore",
+            "image": "registry.gitlab.com/manticore_misc/manticore-streams/manticoresearch-engine:0.0.1",
+            "env": [
+              {
+                "name": "MANTICORE_FACADE_HOST",
+                "value": "m1-manticore-facade-svc"
+              },
+              {
+                "name": "MANTICORE_RULES",
+                "value": "json=whole_document"
+              },
+              {
+                "name": "MANTICORE_PORT",
+                "value": "9306"
+              },
+              {
+                "name": "MANTICORE_MORPHOLOGY",
+                "value": "morphology = 'icu_chinese' charset_table = 'cjk, non_cjk' stopwords = 'zh'"
+              },
+              {
+                "name": "MANTICORE_POD_NAME",
+                "value": "m1-manticore"
+              },
+              {
+                "name": "MANTICORE_STATEFUL_SET_NAME",
+                "value": "mkc-m1-manticore"
+              },
+              {
+                "name": "MANTICORE_SERVICE_NAME",
+                "value": "m1-manticore-svc"
+              },
+              {
+                "name": "BLACKLIST_MODE",
+                "value": "0"
+              },
+              {
+                "name": "NAMESPACE_NAME",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "metadata.namespace"
+                  }
+                }
+              },
+              {
+                "name": "POD_IP",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "status.podIP"
+                  }
+                }
+              }
+            ],
+            "resources": {
+
+            },
+            "volumeMounts": [
+              {
+                "name": "data",
+                "mountPath": "/var/lib/manticore/"
+              },
+              {
+                "name": "ui-admin-sa-mkc-token-chkvg",
+                "readOnly": true,
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount"
+              }
+            ],
+            "readinessProbe": {
+              "tcpSocket": {
+                "port": 9306
+              },
+              "initialDelaySeconds": 5,
+              "timeoutSeconds": 1,
+              "periodSeconds": 3,
+              "successThreshold": 1,
+              "failureThreshold": 3
+            },
+            "lifecycle": {
+              "preStop": {
+                "exec": {
+                  "command": [
+                    "/bin/sh",
+                    "-c",
+                    "./shutdown.sh"
+                  ]
+                }
+              }
+            },
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "imagePullPolicy": "Always"
+          }
+        ],
+        "restartPolicy": "Always",
+        "terminationGracePeriodSeconds": 30,
+        "dnsPolicy": "ClusterFirst",
+        "serviceAccountName": "ui-admin-sa-mkc",
+        "serviceAccount": "ui-admin-sa-mkc",
+        "nodeName": "workercpx28",
+        "securityContext": {
+          "runAsUser": 999,
+          "runAsGroup": 999,
+          "fsGroup": 999
+        },
+        "imagePullSecrets": [
+          {
+            "name": "registry-manticore-streams"
+          }
+        ],
+        "hostname": "mkc-m1-manticore-1",
+        "subdomain": "m1-manticore-svc",
+        "schedulerName": "default-scheduler",
+        "tolerations": [
+          {
+            "key": "node.kubernetes.io/not-ready",
+            "operator": "Exists",
+            "effect": "NoExecute",
+            "tolerationSeconds": 300
+          },
+          {
+            "key": "node.kubernetes.io/unreachable",
+            "operator": "Exists",
+            "effect": "NoExecute",
+            "tolerationSeconds": 300
+          }
+        ],
+        "priority": 0,
+        "enableServiceLinks": true
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Initialized",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-03-04T14:44:39Z"
+          },
+          {
+            "type": "Ready",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-04-05T08:47:20Z"
+          },
+          {
+            "type": "ContainersReady",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-04-05T08:47:20Z"
+          },
+          {
+            "type": "PodScheduled",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-03-04T14:44:39Z"
+          }
+        ],
+        "hostIP": "168.119.173.36",
+        "podIP": "10.42.9.75",
+        "podIPs": [
+          {
+            "ip": "10.42.9.75"
+          }
+        ],
+        "startTime": "2021-03-04T14:44:39Z",
+        "containerStatuses": [
+          {
+            "name": "m1-manticore",
+            "state": {
+              "running": {
+                "startedAt": "2021-03-04T14:44:58Z"
+              }
+            },
+            "lastState": {
+
+            },
+            "ready": true,
+            "restartCount": 0,
+            "image": "registry.gitlab.com/manticore_misc/manticore-streams/manticoresearch-engine:0.0.1",
+            "imageID": "docker-pullable://registry.gitlab.com/manticore_misc/manticore-streams/manticoresearch-engine@sha256:e4fefb9489fa979090a3b86638e1a5762f9d946f6607a068a32b9a52913e97e3",
+            "containerID": "docker://3a645d9f456e318883aafac27fa0e648a4e126e738afc79ff68349167b478e36",
+            "started": true
+          }
+        ],
+        "qosClass": "BestEffort"
+      }
+    },
+    {
+      "metadata": {
+        "name": "mkc-ui-0",
+        "generateName": "mkc-ui-",
+        "namespace": "mkc",
+        "selfLink": "/api/v1/namespaces/mkc/pods/mkc-ui-0",
+        "uid": "1c5a8623-9ffa-44d5-b6a0-701ef9161b0e",
+        "resourceVersion": "124430729",
+        "creationTimestamp": "2021-03-03T12:25:51Z",
+        "labels": {
+          "controller-revision-hash": "mkc-ui-666c44895b",
+          "name": "mkc-ui",
+          "statefulset.kubernetes.io/pod-name": "mkc-ui-0",
+          "workloadID_expose": "true"
+        },
+        "annotations": {
+          "cni.projectcalico.org/podIP": "10.42.3.84/32",
+          "cni.projectcalico.org/podIPs": "10.42.3.84/32"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "apps/v1",
+            "kind": "StatefulSet",
+            "name": "mkc-ui",
+            "uid": "3eae69a5-9bf1-401d-9078-fbe1f2405f99",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "volumes": [
+          {
+            "name": "yaml-storage",
+            "persistentVolumeClaim": {
+              "claimName": "yaml-storage-mkc-ui-0"
+            }
+          },
+          {
+            "name": "ui-admin-sa-mkc-token-chkvg",
+            "secret": {
+              "secretName": "ui-admin-sa-mkc-token-chkvg",
+              "defaultMode": 420
+            }
+          }
+        ],
+        "containers": [
+          {
+            "name": "mkc-ui",
+            "image": "registry.gitlab.com/manticore_misc/manticore-streams/ui-container:0.0.1",
+            "env": [
+              {
+                "name": "WEBROOT",
+                "value": "/var/www/html/manticore-streams/ui/public"
+              },
+              {
+                "name": "DB_HOST",
+                "value": "mkc-mysql-service"
+              },
+              {
+                "name": "DB_DATABASE",
+                "value": "manticore_kafka_ui"
+              },
+              {
+                "name": "DB_USER",
+                "value": "root"
+              },
+              {
+                "name": "DB_SECRET",
+                "value": "mysqlSecret"
+              },
+              {
+                "name": "CLICKHOUSE_HOST",
+                "value": "mkc-clickhouse-service.mkc.svc.cluster.local"
+              },
+              {
+                "name": "CLICKHOUSE_PORT",
+                "value": "8123"
+              },
+              {
+                "name": "MANTICORE_HOST",
+                "value": "{{ STREAM_ID }}-manticore-svc.mkc.svc.cluster.local"
+              },
+              {
+                "name": "MANTICORE_PORT",
+                "value": "9306"
+              },
+              {
+                "name": "SUPERADMIN_EMAIL",
+                "value": "manticore@example.com"
+              },
+              {
+                "name": "SUPERADMIN_PASSWORD",
+                "value": "changeme947"
+              },
+              {
+                "name": "RELEASE_NAME",
+                "value": "mkc"
+              },
+              {
+                "name": "PACKAGE_NAME",
+                "value": "mkc"
+              },
+              {
+                "name": "FULL_PACKAGE_NAME",
+                "value": "mkc"
+              },
+              {
+                "name": "RELEASE_SERVICE",
+                "value": "Helm"
+              },
+              {
+                "name": "CHART_NAME",
+                "value": "mkc-0.1.0"
+              },
+              {
+                "name": "NAMESPACE",
+                "value": "mkc"
+              }
+            ],
+            "resources": {
+
+            },
+            "volumeMounts": [
+              {
+                "name": "yaml-storage",
+                "mountPath": "/var/www/html/manticore-streams/ui/storage/yamlStorage"
+              },
+              {
+                "name": "ui-admin-sa-mkc-token-chkvg",
+                "readOnly": true,
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount"
+              }
+            ],
+            "livenessProbe": {
+              "httpGet": {
+                "path": "/",
+                "port": 8080,
+                "scheme": "HTTP"
+              },
+              "initialDelaySeconds": 20,
+              "timeoutSeconds": 1,
+              "periodSeconds": 20,
+              "successThreshold": 1,
+              "failureThreshold": 3
+            },
+            "readinessProbe": {
+              "httpGet": {
+                "path": "/",
+                "port": 8080,
+                "scheme": "HTTP"
+              },
+              "initialDelaySeconds": 20,
+              "timeoutSeconds": 1,
+              "periodSeconds": 20,
+              "successThreshold": 1,
+              "failureThreshold": 3
+            },
+            "lifecycle": {
+              "postStart": {
+                "exec": {
+                  "command": [
+                    "/bin/sh",
+                    "-c",
+                    "/var/www/html/manticore-streams/ui/firstRun.sh"
+                  ]
+                }
+              }
+            },
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "imagePullPolicy": "Always"
+          }
+        ],
+        "restartPolicy": "Always",
+        "terminationGracePeriodSeconds": 30,
+        "dnsPolicy": "ClusterFirst",
+        "serviceAccountName": "ui-admin-sa-mkc",
+        "serviceAccount": "ui-admin-sa-mkc",
+        "nodeName": "workercpx27",
+        "securityContext": {
+          "runAsUser": 82,
+          "runAsGroup": 82,
+          "fsGroup": 82
+        },
+        "imagePullSecrets": [
+          {
+            "name": "registry-manticore-streams"
+          }
+        ],
+        "hostname": "mkc-ui-0",
+        "subdomain": "mkc-ui-service",
+        "schedulerName": "default-scheduler",
+        "tolerations": [
+          {
+            "key": "node.kubernetes.io/not-ready",
+            "operator": "Exists",
+            "effect": "NoExecute",
+            "tolerationSeconds": 300
+          },
+          {
+            "key": "node.kubernetes.io/unreachable",
+            "operator": "Exists",
+            "effect": "NoExecute",
+            "tolerationSeconds": 300
+          }
+        ],
+        "priority": 0,
+        "enableServiceLinks": true
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Initialized",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-03-03T12:25:51Z"
+          },
+          {
+            "type": "Ready",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-03-03T12:26:48Z"
+          },
+          {
+            "type": "ContainersReady",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-03-03T12:26:48Z"
+          },
+          {
+            "type": "PodScheduled",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-03-03T12:25:51Z"
+          }
+        ],
+        "hostIP": "168.119.173.169",
+        "podIP": "10.42.3.84",
+        "podIPs": [
+          {
+            "ip": "10.42.3.84"
+          }
+        ],
+        "startTime": "2021-03-03T12:25:51Z",
+        "containerStatuses": [
+          {
+            "name": "mkc-ui",
+            "state": {
+              "running": {
+                "startedAt": "2021-03-03T12:26:22Z"
+              }
+            },
+            "lastState": {
+
+            },
+            "ready": true,
+            "restartCount": 0,
+            "image": "registry.gitlab.com/manticore_misc/manticore-streams/ui-container:0.0.1",
+            "imageID": "docker-pullable://registry.gitlab.com/manticore_misc/manticore-streams/ui-container@sha256:2d71c1115271b707df8ca2368f02bd0e50a95646996f14c97548fa491ccdd0d0",
+            "containerID": "docker://61bc95e1ef7201e340e895212235771d0867820738a9a22f0b4cd3c457d41d88",
+            "started": true
+          }
+        ],
+        "qosClass": "BestEffort"
+      }
+    },
+    {
+      "metadata": {
+        "name": "mkc-ui-mysql-0",
+        "generateName": "mkc-ui-mysql-",
+        "namespace": "mkc",
+        "selfLink": "/api/v1/namespaces/mkc/pods/mkc-ui-mysql-0",
+        "uid": "df94cb71-d9d5-43d0-bdc7-a2d7b38d5bd5",
+        "resourceVersion": "159557476",
+        "creationTimestamp": "2021-03-03T12:25:51Z",
+        "labels": {
+          "controller-revision-hash": "mkc-ui-mysql-6964bc5b94",
+          "name": "mkc-mysql",
+          "statefulset.kubernetes.io/pod-name": "mkc-ui-mysql-0"
+        },
+        "annotations": {
+          "cni.projectcalico.org/podIP": "10.42.11.82/32",
+          "cni.projectcalico.org/podIPs": "10.42.11.82/32"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "apps/v1",
+            "kind": "StatefulSet",
+            "name": "mkc-ui-mysql",
+            "uid": "092a15ae-dcb9-4145-952c-a78a97cb0a13",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "volumes": [
+          {
+            "name": "data",
+            "persistentVolumeClaim": {
+              "claimName": "data-mkc-ui-mysql-0"
+            }
+          },
+          {
+            "name": "ui-admin-sa-mkc-token-chkvg",
+            "secret": {
+              "secretName": "ui-admin-sa-mkc-token-chkvg",
+              "defaultMode": 420
+            }
+          }
+        ],
+        "containers": [
+          {
+            "name": "mkc-mysql",
+            "image": "docker.io/mysql:5.6",
+            "env": [
+              {
+                "name": "MYSQL_USER",
+                "value": "root"
+              },
+              {
+                "name": "MYSQL_ROOT_PASSWORD",
+                "value": "mysqlSecret"
+              },
+              {
+                "name": "MYSQL_DATABASE",
+                "value": "manticore_kafka_ui"
+              }
+            ],
+            "resources": {
+
+            },
+            "volumeMounts": [
+              {
+                "name": "data",
+                "mountPath": "/var/lib/mysql"
+              },
+              {
+                "name": "ui-admin-sa-mkc-token-chkvg",
+                "readOnly": true,
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount"
+              }
+            ],
+            "livenessProbe": {
+              "tcpSocket": {
+                "port": 3306
+              },
+              "initialDelaySeconds": 5,
+              "timeoutSeconds": 1,
+              "periodSeconds": 3,
+              "successThreshold": 1,
+              "failureThreshold": 3
+            },
+            "readinessProbe": {
+              "tcpSocket": {
+                "port": 3306
+              },
+              "initialDelaySeconds": 5,
+              "timeoutSeconds": 1,
+              "periodSeconds": 3,
+              "successThreshold": 1,
+              "failureThreshold": 3
+            },
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "imagePullPolicy": "IfNotPresent"
+          }
+        ],
+        "restartPolicy": "Always",
+        "terminationGracePeriodSeconds": 30,
+        "dnsPolicy": "ClusterFirst",
+        "serviceAccountName": "ui-admin-sa-mkc",
+        "serviceAccount": "ui-admin-sa-mkc",
+        "nodeName": "workercpx29",
+        "securityContext": {
+          "runAsUser": 999
+        },
+        "hostname": "mkc-ui-mysql-0",
+        "subdomain": "mkc-mysql-service",
+        "schedulerName": "default-scheduler",
+        "tolerations": [
+          {
+            "key": "node.kubernetes.io/not-ready",
+            "operator": "Exists",
+            "effect": "NoExecute",
+            "tolerationSeconds": 300
+          },
+          {
+            "key": "node.kubernetes.io/unreachable",
+            "operator": "Exists",
+            "effect": "NoExecute",
+            "tolerationSeconds": 300
+          }
+        ],
+        "priority": 0,
+        "enableServiceLinks": true
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Initialized",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-03-03T12:25:51Z"
+          },
+          {
+            "type": "Ready",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-03-03T12:26:15Z"
+          },
+          {
+            "type": "ContainersReady",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-03-03T12:26:15Z"
+          },
+          {
+            "type": "PodScheduled",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2021-03-03T12:25:51Z"
+          }
+        ],
+        "hostIP": "157.90.160.220",
+        "podIP": "10.42.11.82",
+        "podIPs": [
+          {
+            "ip": "10.42.11.82"
+          }
+        ],
+        "startTime": "2021-03-03T12:25:51Z",
+        "containerStatuses": [
+          {
+            "name": "mkc-mysql",
+            "state": {
+              "running": {
+                "startedAt": "2021-03-03T12:26:08Z"
+              }
+            },
+            "lastState": {
+
+            },
+            "ready": true,
+            "restartCount": 0,
+            "image": "mysql:5.6",
+            "imageID": "docker-pullable://mysql@sha256:6cacab35e5b6485621c20f54a27e3024965e5bebbd465edb5de8c5c556347392",
+            "containerID": "docker://594e53c21432d3b7026b6566b027e5c8e4f75aec38419aa79cc71c4dc9a4a31e",
+            "started": true
+          }
+        ],
+        "qosClass": "BestEffort"
+      }
+    }
+  ]
+}

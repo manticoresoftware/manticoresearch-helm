@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ RELEASE_NAME }}-m{{ STREAM_ID }}-manticore
+  namespace: {{ NAMESPACE }}
+  labels:
+    name: m{{ STREAM_ID }}-manticore
+    helm.sh/chart: {{ CHART_NAME }}
+    app.kubernetes.io/instance: {{ RELEASE_NAME }}
+    app.kubernetes.io/managed-by: {{ RELEASE_SERVICE }}
+    app.kubernetes.io/app: {{ FULLNAME }}-m{{ STREAM_ID }}-manticore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name:  m{{ STREAM_ID }}-manticore
+  serviceName: m{{ STREAM_ID }}-manticore-svc
+  template:
+    metadata:
+      labels:
+        name: m{{ STREAM_ID }}-manticore
+    spec:
+      serviceAccountName: ui-admin-sa-{{ NAMESPACE }}
+      securityContext:
+          fsGroup: {{ Values.manticore.userId }}
+          runAsGroup: {{ Values.manticore.userId }}
+          runAsUser: {{ Values.manticore.userId }}
+      containers:
+      - name: m{{ STREAM_ID }}-manticore
+        image: {{ Values.manticore.image.repository }}:{{ Values.manticore.image.tag }}
+        imagePullPolicy: Always
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "./shutdown.sh"]
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/manticore/
+        env:
+          - name: MANTICORE_FACADE_HOST
+            value: "m{{ STREAM_ID }}-manticore-facade-svc"
+          - name: MANTICORE_RULES
+            value: "{{ Values.manticore.configAdditiveFields }}"
+          - name: MANTICORE_PORT
+            value: "{{ Values.manticore.service.port }}"
+          - name: MANTICORE_MORPHOLOGY
+            value: "{{ Values.manticore.configMorphology }}"
+          - name: MANTICORE_POD_NAME
+            value: "m{{ STREAM_ID }}-manticore"
+          - name: MANTICORE_STATEFUL_SET_NAME
+            value: "{{ RELEASE_NAME }}-m{{ STREAM_ID }}-manticore"
+          - name: MANTICORE_SERVICE_NAME
+            value: "m{{ STREAM_ID }}-manticore-svc"
+          - name: BLACKLIST_MODE
+            value: "{{ Values.manticore.searchd.blacklist-mode }}"
+          - name: NAMESPACE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+        readinessProbe:
+          tcpSocket:
+            port: {{ Values.manticore.service.port }}
+          initialDelaySeconds: 5
+          periodSeconds: 3
+      imagePullSecrets:
+      - name: registry-manticore-streams
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: {{ Values.manticore.volumeClaimTemplates.size }}

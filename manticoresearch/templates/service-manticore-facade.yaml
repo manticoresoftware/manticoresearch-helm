@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: m{{ STREAM_ID }}-manticore-facade-svc
+  namespace: {{ NAMESPACE }}
+  labels:
+    name: {{ NAME }}
+    helm.sh/chart: {{ CHART_NAME }}
+    app.kubernetes.io/instance: {{ RELEASE_NAME }}
+    app.kubernetes.io/managed-by: {{ RELEASE_SERVICE }}
+    app.kubernetes.io/app: {{ FULLNAME }}-m{{ STREAM_ID }}-manticore-facade-svc
+spec:
+  clusterIP: None
+  ports:
+  - port: {{ Values.manticore.service.port }}
+    targetPort: {{ Values.manticore.service.port }}
+    name: manticore-facade
+  selector:
+    name: m{{ STREAM_ID }}-facade-manticore
