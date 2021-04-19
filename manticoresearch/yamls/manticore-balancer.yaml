@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "balancer"
+  labels:
+    name: "balancer"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: "balancer"
+  serviceName: balancer-svc
+  template:
+    metadata:
+      labels:
+        name: "balancer"
+    spec:
+      imagePullSecrets:
+        - name: registry-manticore
+      containers:
+      - name: balancer-manticore
+        image: "registry.gitlab.com/manticoresearch/helm-charts/balancer:0.0.1"
+        imagePullPolicy: Always
+        env:
+          - name: CONFIGMAP_PATH
+            value: "m{{ STREAM_ID }}"
+          - name: BALANCER_PORT
+            value: "9306"
+          - name: NAMESPACE
+            value: "helm"
+        readinessProbe:
+          tcpSocket:
+            port: 9306
+          initialDelaySeconds: 5
+          periodSeconds: 3
+        livenessProbe:
+          tcpSocket:
+            port: 9306
+          initialDelaySeconds: 5
+          periodSeconds: 3

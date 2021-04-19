@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: balancer-svc
+  namespace: helm
+  labels:
+    name: balancer-svc
+spec:
+  clusterIP: None
+  ports:
+  - port: 9306
+    targetPort: 9306
+    name: balancer
+  selector:
+    name: balancer
