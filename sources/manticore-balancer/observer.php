@@ -2,8 +2,26 @@
 
 require 'vendor/autoload.php';
 
+define("CONFIG_HASH_STORAGE", 'indexhash.sha1');
 define("INDEX_HASH_STORAGE", 'indexhash.sha1');
 define("LOG_STORAGE", 'observer.log');
+define("LOCK_FILE", DIRECTORY_SEPARATOR.'tmp'.DIRECTORY_SEPARATOR.'observer.lock');
+define("CONFIGMAP_PATH", getenv('CONFIGMAP_PATH'));
+define("BALANCER_PORT", getenv('BALANCER_PORT'));
+
+if (!file_exists(CONFIGMAP_PATH)) {
+    logger("Searchd config is not mounted");
+    exit(1);
+}
+
+$fp = fopen(LOCK_FILE, 'w+');
+
+if(!flock($fp, LOCK_EX)) {
+    logger("Another process of Observer already runned");
+    fclose($fp);
+    exit(1);
+}
+
 
 $api = new k8s_api();
 
@@ -13,6 +31,8 @@ if (!isset($manticoreStatefulsets['items'])) {
     logger("K8s api don't responsed");
     exit(1);
 }
+
+
 
 $manticorePods = [];
 
@@ -36,6 +56,7 @@ $connection = new mysqli($url, 'root', 'root', 'app154');
 /**
  * @var $tablesList mysqli_result
  */
+
 $tablesList = $connection->query("SHOW TABLES");
 if ($tablesList !== false) {
 
@@ -52,6 +73,7 @@ if ($tablesList !== false) {
 
         if ($previousHash !== $hash) {
             logger("Start recompiling config");
+            saveConfig($tablesList);
         }
     }
 }
@@ -63,3 +85,33 @@ function logger($line)
     echo "$line\n";
     file_put_contents(LOG_STORAGE, $line, FILE_APPEND);
 }
+
+function saveConfig($indexes, $nodes)
+{
+    $searchdConfig = file_get_contents(CONFIGMAP_PATH);
+    $prependConfig = '';
+    foreach ($indexes as $index) {
+        $prependConfig .= 'index '.$index."\n".
+            "{\n".
+            "type = distributed\n".
+            "ha_strategy = roundrobin\n".
+            "agent = ".implode("|", $nodes).
+            "}\n\n";
+    }
+
+    file_put_contents(DIRECTORY_SEPARATOR.'etc'.
+        DIRECTORY_SEPARATOR.'manticoresearch'.
+        DIRECTORY_SEPARATOR.'manticore.conf', $prependConfig.$searchdConfig);
+
+    reloadIndexes();
+}
+
+function reloadIndexes()
+{
+    $connection = new mysqli('localhost:'.BALANCER_PORT);
+    $connection->query("RELOAD INDEXES");
+}
+
+
+flock($fp, LOCK_UN);
+fclose($fp);
