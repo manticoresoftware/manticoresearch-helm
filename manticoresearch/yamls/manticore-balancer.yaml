@@ -23,11 +23,13 @@ spec:
         imagePullPolicy: Always
         env:
           - name: CONFIGMAP_PATH
-            value: "m{{ STREAM_ID }}"
+            value: /etc/manticoresearch/manticore.conf
           - name: BALANCER_PORT
             value: "9306"
           - name: NAMESPACE
-            value: "helm"
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
         readinessProbe:
           tcpSocket:
             port: 9306
@@ -38,3 +40,11 @@ spec:
             port: 9306
           initialDelaySeconds: 5
           periodSeconds: 3
+        volumeMounts:
+          - name: config-volume
+            mountPath: /etc/manticoresearch/manticore.conf
+            subPath: manticore.conf
+      volumes:
+        - name: config-volume
+          configMap:
+            name: searchd-config
