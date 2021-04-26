@@ -1,36 +1,35 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: "balancer"
+  name: "worker"
   labels:
-    name: "balancer"
+    name: "worker"
+    label: "manticore-worker"
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: "balancer"
-  serviceName: balancer-svc
+      name: "worker"
+  serviceName: worker-svc
   template:
     metadata:
       labels:
-        name: "balancer"
+        name: "worker"
     spec:
       serviceAccountName: manticore-sa
       imagePullSecrets:
         - name: registry-manticore
       containers:
-      - name: balancer-manticore
+      - name: worker-manticore
         image: "registry.gitlab.com/manticoresearch/helm-charts/worker:0.0.1"
         imagePullPolicy: Always
         env:
-          - name: CONFIGMAP_PATH
-            value: /etc/manticoresearch/manticore.conf
-          - name: BALANCER_PORT
-            value: "9306"
-          - name: NAMESPACE
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.namespace
+          - name: MANTICORE_PORT
+            value: 9306
+          - name: CLUSTER_NAME
+            value: "test_cluster"
+          - name: BALANCER_URL
+            value: "https://balancer-svc"
         readinessProbe:
           tcpSocket:
             port: 9306
@@ -42,10 +41,13 @@ spec:
           initialDelaySeconds: 5
           periodSeconds: 3
         volumeMounts:
-          - name: config-volume
-            mountPath: /etc/manticoresearch/manticore.conf
-            subPath: manticore.conf
-      volumes:
-        - name: config-volume
-          configMap:
-            name: searchd-config
+          - name: data
+            mountPath: /var/lib/manticore/
+      volumeClaimTemplates:
+        - metadata:
+            name: data
+          spec:
+            accessModes: [ "ReadWriteOnce" ]
+            resources:
+              requests:
+                storage: { { Values.manticore.volumeClaimTemplates.size } }
