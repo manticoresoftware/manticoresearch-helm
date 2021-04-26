@@ -8,6 +8,7 @@ RUN mkdir /var/www && mkdir /var/www/localhost
 
 COPY code /var/www/localhost
 COPY supervisord.conf /etc/supervisord.conf
+COPY starter.sh /var/www/localhost/
 
 RUN cd /var/www/localhost && \
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
@@ -25,5 +26,5 @@ RUN chown -R manticore /var/log/manticore/ /var/lib/manticore /var/run/manticore
 
 #USER manticore:manticore
 
-CMD ["/usr/bin/supervisord", "-n","-c", "/etc/supervisord.conf"]
+CMD ["./starter.sh"]
 

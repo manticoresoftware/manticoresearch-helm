@@ -13,17 +13,19 @@ class k8sapi
     const API_URL_SCHEME = '{{API-URL}}/{{API-VERSION}}/namespaces/{{NAMESPACE}}/{{API-SECTION}}';
     const TYPE_STATEFULSET = 'statefulsets';
     const TYPE_SERVICE = 'services';
+    const TYPE_PODS = 'pods';
 
 
     private $apiUrl = 'https://kubernetes.default.svc';
     private $cert = '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt';
     private $apiSections = [
 
-        self::TYPE_SERVICE       => 'api/v1',
-        self::TYPE_STATEFULSET   => 'apis/apps/v1',
-        'configmaps'             => 'api/v1',
+        self::TYPE_SERVICE => 'api/v1',
+        self::TYPE_STATEFULSET => 'apis/apps/v1',
+        'configmaps' => 'api/v1',
         'persistentvolumeclaims' => 'api/v1',
-        'secrets'                => 'api/v1'
+        'secrets' => 'api/v1',
+        self::TYPE_PODS => 'api/v1'
     ];
 
     private $bearer;
@@ -32,29 +34,29 @@ class k8sapi
     public function __construct()
     {
 
-        $this->bearer    = $this->getBearer();
-        $this->userAgent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 ' .
-                           '(KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36';
+        $this->bearer = $this->getBearer();
+        $this->userAgent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '.
+            '(KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36';
 
-        $this->namespace  = getenv('NAMESPACE');
+        $this->namespace = getenv('NAMESPACE');
         $this->httpClient = new Client();
     }
 
     public function getManticorePods()
     {
-        return json_decode($this->request(self::TYPE_STATEFULSET)->getBody()->getContents(), true);
+        return json_decode($this->request(self::TYPE_PODS)->getBody()->getContents(), true);
     }
 
 
     private function request($section, $type = "GET")
     {
         $params = [
-            'verify'  => $this->cert,
+            'verify' => $this->cert,
             'version' => 2.0,
             'headers' => [
-                'Authorization' => 'Bearer ' . $this->bearer,
-                'Accept'        => 'application/json',
-                'User-Agent'    => $this->userAgent,
+                'Authorization' => 'Bearer '.$this->bearer,
+                'Accept' => 'application/json',
+                'User-Agent' => $this->userAgent,
             ]
         ];
 

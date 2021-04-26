@@ -11,5 +11,8 @@ spec:
   - port: 9306
     targetPort: 9306
     name: balancer
+  - port: 80
+    targetPort: 8080
+    name: observer
   selector:
     name: balancer

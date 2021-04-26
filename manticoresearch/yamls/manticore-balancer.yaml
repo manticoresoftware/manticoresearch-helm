@@ -24,8 +24,10 @@ spec:
         imagePullPolicy: Always
         env:
           - name: CONFIGMAP_PATH
-            value: /etc/manticoresearch/manticore.conf
+            value: /etc/manticoresearch/configmap.conf
           - name: BALANCER_PORT
+            value: "9306"
+          - name: WORKER_PORT
             value: "9306"
           - name: NAMESPACE
             valueFrom:
@@ -43,7 +45,7 @@ spec:
           periodSeconds: 3
         volumeMounts:
           - name: config-volume
-            mountPath: /etc/manticoresearch/manticore.conf
+            mountPath: /etc/manticoresearch/configmap.conf
             subPath: manticore.conf
       volumes:
         - name: config-volume

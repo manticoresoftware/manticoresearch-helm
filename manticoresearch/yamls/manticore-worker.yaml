@@ -4,6 +4,7 @@ metadata:
   name: "worker"
   labels:
     name: "worker"
+    label: "manticore-worker"
 spec:
   replicas: 1
   selector:
