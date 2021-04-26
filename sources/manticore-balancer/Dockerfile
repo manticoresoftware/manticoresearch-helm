@@ -2,7 +2,7 @@ FROM manticoresearch/manticore:latest
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 RUN apt --fix-broken install -y
-RUN apt-get update && apt-get install -y curl unzip git php-cli php-mysqlnd php-curl supervisor && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y nano curl unzip git php-cli php-mysqlnd php-curl supervisor && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /var/www && mkdir /var/www/localhost
 

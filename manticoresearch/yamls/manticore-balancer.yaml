@@ -15,6 +15,7 @@ spec:
       labels:
         name: "balancer"
     spec:
+      serviceAccountName: manticore-sa
       imagePullSecrets:
         - name: registry-manticore
       containers:
