@@ -24,13 +24,17 @@ spec:
       - name: worker-manticore
         image: "registry.gitlab.com/manticoresearch/helm-charts/worker:0.0.1"
         imagePullPolicy: Always
+        lifecycle:
+          preStop:
+            exec:
+              command: [ "/bin/sh", "-c", "./shutdown.sh" ]
         env:
           - name: MANTICORE_PORT
             value: "9306"
           - name: CLUSTER_NAME
             value: "test_cluster"
           - name: BALANCER_URL
-            value: "https://balancer-svc"
+            value: "balancer-svc:8080"
         readinessProbe:
           tcpSocket:
             port: 9306

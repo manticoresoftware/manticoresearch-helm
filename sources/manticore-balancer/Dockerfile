@@ -9,6 +9,7 @@ RUN mkdir /var/www && mkdir /var/www/localhost
 COPY code /var/www/localhost
 COPY supervisord.conf /etc/supervisord.conf
 COPY starter.sh /var/www/localhost/
+COPY job_runner.sh /var/www/localhost/
 
 RUN cd /var/www/localhost && \
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
@@ -22,7 +23,7 @@ php composer.phar update
 
 WORKDIR /var/www/localhost/
 
-RUN chown -R manticore /var/log/manticore/ /var/lib/manticore /var/run/manticore /etc/manticoresearch/ /usr/share/manticore/ /var/log/supervisor && chown -R www-data /var/www/localhost/
+RUN chown -R manticore /var/log/manticore/ /var/lib/manticore /var/run/manticore /etc/manticoresearch/ /usr/share/manticore/ /var/log/supervisor && chown -R www-data /var/www/localhost/ /etc/manticoresearch/manticore.conf
 
 #USER manticore:manticore
 

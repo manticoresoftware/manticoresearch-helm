@@ -4,7 +4,7 @@ RUN apt --fix-broken install -y
 
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-RUN apt-get update && apt-get install -y curl tree php-cli php-mysqlnd python-pip && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y curl tree php-cli php-mysqlnd php-curl python-pip && rm -rf /var/lib/apt/lists/*
 
 
 COPY manticore.conf /etc/manticoresearch/

@@ -29,5 +29,4 @@ tree -ugp /var/lib/manticore/
 
 php /etc/manticoresearch/replica.php &
 
-curl $BALANCER_URL
 exec searchd --nodetach

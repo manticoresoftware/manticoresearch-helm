@@ -21,19 +21,19 @@ Observer получит этот запрос и постучится у кон�
 define("CONFIG_HASH_STORAGE", 'indexhash.sha1');
 define("INDEX_HASH_STORAGE", 'indexhash.sha1');
 define("LOG_STORAGE", 'observer.log');
-define("LOCK_FILE", DIRECTORY_SEPARATOR.'tmp'.DIRECTORY_SEPARATOR.'observer.lock');
+define("LOCK_FILE", DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . 'observer.lock');
 define("CONFIGMAP_PATH", getenv('CONFIGMAP_PATH'));
 define("BALANCER_PORT", getenv('BALANCER_PORT'));
 define("WORKER_PORT", getenv('WORKER_PORT'));
 
-if (!file_exists(CONFIGMAP_PATH)) {
+if ( ! file_exists(CONFIGMAP_PATH)) {
     logger("Searchd config is not mounted");
     exit(1);
 }
 
 $fp = fopen(LOCK_FILE, 'w+');
 
-if (!flock($fp, LOCK_EX | LOCK_NB)) {
+if ( ! flock($fp, LOCK_EX | LOCK_NB)) {
     logger("Another process of Observer already runned");
     fclose($fp);
     exit(1);
@@ -43,7 +43,7 @@ $api = new k8sapi();
 
 $manticoreStatefulsets = $api->getManticorePods();
 
-if (!isset($manticoreStatefulsets['items'])) {
+if ( ! isset($manticoreStatefulsets['items'])) {
     logger("K8s api don't responsed");
     exit(1);
 }
@@ -55,9 +55,20 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
     if (isset($pod['metadata']['labels']['label'])
         && $pod['metadata']['labels']['label'] === 'manticore-worker') {
         if ($pod['status']['phase'] == 'Running' || $pod['status']['phase'] == 'Pending') {
-            $manticorePods[$pod["metadata"]['name']] = $pod['status']['podIP'];
+            if (isset( $pod['status']['podIP'])){
+                $manticorePods[$pod["metadata"]['name']] = $pod['status']['podIP'];
+            }else{
+                logger($pod);
+            }
+
         }
     }
+}
+
+if (empty($manticorePods)) {
+    logger("No workers found");
+    fclose($fp);
+    exit(0);
 }
 
 $podsIps = array_values($manticorePods);
@@ -67,19 +78,27 @@ $url = array_shift($manticorePods);
 /**
  * Get current state of indexes. For that we request first manticore node directly.
  */
-$connection = new mysqli($url.":".WORKER_PORT);
+
+try {
+    $connection = new mysqli($url . ":" . WORKER_PORT);
+} catch (Exception $exception) {
+    logger("Can't connect to worker at :" . $url);
+    fclose($fp);
+    exit(0);
+}
+
 
 /**
  * @var $tablesList mysqli_result
  */
 
 $tablesList = $connection->query("SHOW TABLES");
-if ($tablesList !== false) {
+if ($tablesList !== null) {
 
-    $tablesList = (array) $tablesList->fetch_all(MYSQLI_ASSOC);
+    $tablesList = (array)$tablesList->fetch_all(MYSQLI_ASSOC);
 
 
-    if (!empty($tablesList)) {
+    if ( ! empty($tablesList)) {
         $tablesList = array_map(function ($row) {
             return current($row);
         }, $tablesList);
@@ -93,8 +112,15 @@ if ($tablesList !== false) {
         if ($previousHash !== $hash) {
             logger("Start recompiling config");
             saveConfig($tablesList, $podsIps);
+            file_put_contents(INDEX_HASH_STORAGE, $hash);
+        } else {
+            logger("Hashes are equals");
         }
 
+    } else {
+        logger("No tables found");
+        fclose($fp);
+        exit(0);
     }
 }
 
@@ -105,7 +131,7 @@ function dd($text)
 
 function logger($line)
 {
-    $line = date("Y-m-d H:i:s").': '.$line."\n";
+    $line = date("Y-m-d H:i:s") . ': ' . $line . "\n";
     echo "$line\n";
     file_put_contents(LOG_STORAGE, $line, FILE_APPEND);
 }
@@ -115,26 +141,24 @@ function saveConfig($indexes, $nodes)
     $searchdConfig = file_get_contents(CONFIGMAP_PATH);
     $prependConfig = '';
     foreach ($indexes as $index) {
-        $prependConfig .= "\n\nindex ".$index."\n".
-            "{\n".
-            "\ttype = distributed\n".
-            "\tha_strategy = roundrobin\n".
-            "\tagent = ".implode("|", $nodes)."\n".
-            "}\n\n";
+        $prependConfig .= "\n\nindex " . $index . "\n" .
+                          "{\n" .
+                          "\ttype = distributed\n" .
+                          "\tha_strategy = roundrobin\n" .
+                          "\tagent = " . implode("|", $nodes) . "\n" .
+                          "}\n\n";
     }
 
-    echo $prependConfig;
-
-    file_put_contents(DIRECTORY_SEPARATOR.'etc'.
-        DIRECTORY_SEPARATOR.'manticoresearch'.
-        DIRECTORY_SEPARATOR.'manticore.conf', $prependConfig.$searchdConfig);
+    file_put_contents(DIRECTORY_SEPARATOR . 'etc' .
+                      DIRECTORY_SEPARATOR . 'manticoresearch' .
+                      DIRECTORY_SEPARATOR . 'manticore.conf', $prependConfig . $searchdConfig);
 
     reloadIndexes();
 }
 
 function reloadIndexes()
 {
-    $connection = new mysqli('localhost:'.BALANCER_PORT);
+    $connection = new mysqli('localhost:' . BALANCER_PORT);
     $connection->query("RELOAD INDEXES");
 }
 

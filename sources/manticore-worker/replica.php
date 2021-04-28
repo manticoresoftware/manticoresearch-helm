@@ -43,7 +43,7 @@ if ( ! empty($output['items'])) {
         if (isset($pod['metadata']['labels']['label'])
             && $pod['metadata']['labels']['label'] === 'manticore-worker') {
 
-            if ((int)substr($pod['metadata']['name'], -1) === 0) {
+            if ((int)substr($pod['metadata']['name'], -1) === 0 && isset($pod['status']['podIP'])) {
                 $mainPodIp = $pod['status']['podIP'];
             }
 
@@ -87,6 +87,13 @@ if ($count > 1) {
         echo "Replica hook: QL error: " . $sphinxQL->error . "\n";
     }
 }
+
+
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, getenv('BALANCER_URL'));
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+$output = curl_exec($ch);
+curl_close($ch);
 
 echo "Replica hook: Replication connect ended\n";
 
