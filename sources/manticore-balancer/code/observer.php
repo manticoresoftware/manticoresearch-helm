@@ -20,7 +20,7 @@ Observer получит этот запрос и постучится у кон�
 */
 define("CONFIG_HASH_STORAGE", 'indexhash.sha1');
 define("INDEX_HASH_STORAGE", 'indexhash.sha1');
-define("LOG_STORAGE", 'observer.log');
+define("LOG_STORAGE", 'run.log');
 define("LOCK_FILE", DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . 'observer.lock');
 define("CONFIGMAP_PATH", getenv('CONFIGMAP_PATH'));
 define("BALANCER_PORT", getenv('BALANCER_PORT'));
@@ -54,13 +54,8 @@ $manticorePods = [];
 foreach ($manticoreStatefulsets['items'] as $pod) {
     if (isset($pod['metadata']['labels']['label'])
         && $pod['metadata']['labels']['label'] === 'manticore-worker') {
-        if ($pod['status']['phase'] == 'Running' || $pod['status']['phase'] == 'Pending') {
-            if (isset( $pod['status']['podIP'])){
-                $manticorePods[$pod["metadata"]['name']] = $pod['status']['podIP'];
-            }else{
-                logger($pod);
-            }
-
+        if ($pod['status']['phase'] === 'Running') {
+            $manticorePods[$pod["metadata"]['name']] = $pod['status']['podIP'];
         }
     }
 }
@@ -89,21 +84,23 @@ try {
 
 
 /**
- * @var $tablesList mysqli_result
+ * @var $clusterStatus mysqli_result
  */
 
-$tablesList = $connection->query("SHOW TABLES");
-if ($tablesList !== null) {
+$clusterStatus = $connection->query("show status");
+if ($clusterStatus !== null) {
 
-    $tablesList = (array)$tablesList->fetch_all(MYSQLI_ASSOC);
+    $clusterStatus = (array)$clusterStatus->fetch_all(MYSQLI_ASSOC);
 
+    foreach ($clusterStatus as $row) {
+        if ($row['Counter'] === "cluster_test_cluster_indexes") {
+            $tables = explode(',', $row['Value']);
+        }
+    }
 
-    if ( ! empty($tablesList)) {
-        $tablesList = array_map(function ($row) {
-            return current($row);
-        }, $tablesList);
+    if ( ! empty($tables)) {
 
-        $hash = sha1(implode('.', $tablesList));
+        $hash = sha1(implode('.', $tables) . implode($podsIps));
 
         $previousHash = '';
         if (file_exists(INDEX_HASH_STORAGE)) {
@@ -111,10 +108,8 @@ if ($tablesList !== null) {
         }
         if ($previousHash !== $hash) {
             logger("Start recompiling config");
-            saveConfig($tablesList, $podsIps);
+            saveConfig($tables, $podsIps);
             file_put_contents(INDEX_HASH_STORAGE, $hash);
-        } else {
-            logger("Hashes are equals");
         }
 
     } else {
@@ -124,10 +119,6 @@ if ($tablesList !== null) {
     }
 }
 
-function dd($text)
-{
-    die(print_r($text));
-}
 
 function logger($line)
 {
