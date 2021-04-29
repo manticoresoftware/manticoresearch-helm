@@ -12,6 +12,5 @@ data:
       query_log_format = sphinxql
       pid_file = /var/run/manticore/searchd.pid
       binlog_path = /var/lib/manticore/data
-      max_packet_size = 128M
     }
 
