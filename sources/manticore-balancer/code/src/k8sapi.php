@@ -38,7 +38,7 @@ class k8sapi
         $this->userAgent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '.
             '(KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36';
 
-        $this->namespace = getenv('NAMESPACE');
+        $this->namespace = $this->getNamespace();
         $this->httpClient = new Client();
     }
 
@@ -79,5 +79,20 @@ class k8sapi
         }
 
         return false;
+    }
+
+
+    private function getNamespace()
+    {
+        $bearerFile = '/var/run/secrets/kubernetes.io/serviceaccount/namespace';
+        if (file_exists($bearerFile)) {
+            return file_get_contents($bearerFile);
+        }
+
+        return false;
+    }
+
+    public function get($url){
+        return $this->httpClient->request('GET', $url);
     }
 }

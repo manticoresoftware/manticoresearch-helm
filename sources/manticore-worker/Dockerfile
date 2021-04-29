@@ -1,5 +1,6 @@
-FROM manticoresearch/manticore:dev
+FROM registry.gitlab.com/manticoresearch/helm-charts/balancer:0.0.1 AS builder
 
+FROM manticoresearch/manticore:dev
 
 
 RUN apt --fix-broken install -y
@@ -8,6 +9,9 @@ RUN apt --fix-broken install -y
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 RUN apt-get update && apt-get install -y curl php-cli php-mysqlnd php-curl && rm -rf /var/lib/apt/lists/*
 
+COPY --from=builder /var/www/localhost/ /etc/manticoresearch/
+
+RUN rm /etc/manticoresearch/observer.php
 
 COPY manticore.conf /etc/manticoresearch/
 COPY shutdown.sh /etc/manticoresearch/

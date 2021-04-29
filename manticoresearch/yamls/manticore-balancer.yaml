@@ -29,10 +29,6 @@ spec:
             value: "9306"
           - name: WORKER_PORT
             value: "9306"
-          - name: NAMESPACE
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.namespace
         readinessProbe:
           tcpSocket:
             port: 9306

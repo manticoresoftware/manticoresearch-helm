@@ -1,6 +1,10 @@
 <?php
 
-$port        = getenv("MANTICORE_PORT");
+use chart\k8sapi;
+
+require 'vendor/autoload.php';
+
+$port = getenv("MANTICORE_PORT");
 $clusterName = getenv("CLUSTER_NAME");
 
 if (empty($port)) {
@@ -9,9 +13,9 @@ if (empty($port)) {
 
 
 for ($i = 0; $i <= 50; $i++) {
-    $sphinxQL = new mysqli('localhost:' . $port, '', '', '');
+    $sphinxQL = new mysqli('localhost:'.$port, '', '', '');
 
-    if ( ! $sphinxQL->connect_errno) {
+    if (!$sphinxQL->connect_errno) {
         break;
     }
 
@@ -19,49 +23,39 @@ for ($i = 0; $i <= 50; $i++) {
     sleep(1);
 }
 
-$command = 'curl --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt ' .
-           '-H "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" ' .
-           'https://kubernetes.default.svc/api/v1/namespaces/' .
-           '$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)' .
-           '/pods';
 
+$api = new k8sapi();
 
-exec($command, $output, $returnValue);
+$manticoreStatefulsets = $api->getManticorePods();
 
-
-$output = implode('', $output);
-
-$output = json_decode($output, true);
-
-$min   = [];
-$count = 0;
-
-
-if ( ! empty($output['items'])) {
-    foreach ($output['items'] as $pod) {
-        if (isset($pod['metadata']['labels']['label'])
-            && $pod['metadata']['labels']['label'] === 'manticore-worker'
-            && $pod['status']['phase'] === 'Running') {
-            $min[] = substr(trim($pod['metadata']["name"]), -1);
-            $count++;
-        }
-    }
-} else {
-    die("user role have not access\n");
+if (!isset($manticoreStatefulsets['items'])) {
+    echo "\n\nK8s api don't responsed\n";
+    exit(1);
 }
 
+$min = [];
+$count = 0;
 
-echo "Replica hook: Pods count:" . $count . "\n";
+foreach ($manticoreStatefulsets['items'] as $pod) {
+    if (isset($pod['metadata']['labels']['label'])
+        && $pod['metadata']['labels']['label'] === 'manticore-worker'
+        && $pod['status']['phase'] === 'Running') {
+        $min[] = substr(trim($pod['metadata']["name"]), -1);
+        $count++;
+    }
+}
+
+echo "Replica hook: Pods count:".$count."\n";
 
 
 if ($count > 1) {
     for ($i = 0; $i <= 5; $i++) {
         echo "Replica hook: Join cluster\n";
-        $sql = "JOIN CLUSTER $clusterName at 'worker-" . min($min) . ".worker-svc:9312'";
+        $sql = "JOIN CLUSTER $clusterName at 'worker-".min($min).".worker-svc:9312'";
         $sphinxQL->query($sql);
         echo "Replica hook: Sql query: $sql\n";
         if ($sphinxQL->error) {
-            echo "Replica hook: QL error: " . $sphinxQL->error . "\n";
+            echo "Replica hook: QL error: ".$sphinxQL->error."\n";
         } else {
             echo "Replica hook: Join success \n";
             break;
@@ -75,16 +69,13 @@ if ($count > 1) {
     $sphinxQL->query($sql);
     echo "Replica hook: Sql query: $sql\n";
     if ($sphinxQL->error) {
-        echo "Replica hook: QL error: " . $sphinxQL->error . "\n";
+        echo "Replica hook: QL error: ".$sphinxQL->error."\n";
     }
 }
 
 
-$ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, getenv('BALANCER_URL'));
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-$output = curl_exec($ch);
-curl_close($ch);
+$balancerCall = $api->get(getenv('BALANCER_URL'));
+print_r([$balancerCall->getBody()->getContents(), $balancerCall->getStatusCode()]);
 
 echo "Replica hook: Replication connect ended\n";
 
