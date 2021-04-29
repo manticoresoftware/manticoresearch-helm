@@ -18,7 +18,6 @@ WORKDIR /etc/manticoresearch/
 
 RUN chown -R manticore /var/log/manticore/ /var/lib/manticore /var/run/manticore /etc/manticoresearch/ /usr/share/manticore/
 
-RUN ls -la /etc/manticoresearch/
 #USER manticore:manticore
 
 CMD ["./starter.sh"]
