@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: searchd-config
+  name: balancer-searchd-config
 data:
   manticore.conf: |
     searchd

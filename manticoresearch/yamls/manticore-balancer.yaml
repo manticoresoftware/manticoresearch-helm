@@ -50,4 +50,4 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: searchd-config
+            name: balancer-searchd-config

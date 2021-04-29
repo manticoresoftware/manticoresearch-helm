@@ -4,21 +4,6 @@ use chart\k8sapi;
 
 require 'vendor/autoload.php';
 
-
-/*
- * Тот хук что ты дал не годится
-https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
-А вот этот нам подходит
-
-
-Часть конфига searchd выносим в ConfigMap. Маунтим его в волюм балансера в виде файла (стандартный подход работы конфигмапа)
-В поде балансера мы высовываем наружу порт который будет слушать Observer скрипт
-На поды воркеров мы вешаем хуки которые будут стучаться на Observer (порт на поде Balancer) и сообщать что под поднялся или упал.
-Observer получит этот запрос и постучится у конфигу кубера. Получит поды с мантикорой, сверит таблицы, перепишет конфиг и передернет searchd.
-Внутри Observer будет лок что бы два процесса не перебивали друг друга
-По крону внутри Balancer мы запускаем observer который чекает кол-во воркеров и структуру таблиц. Хеширует эти данные. Сверяет хеши. Если отличаются - переписывает конфиг и отправляет команду балансеру перечитать конфиг
-*/
-define("CONFIG_HASH_STORAGE", 'indexhash.sha1');
 define("INDEX_HASH_STORAGE", 'indexhash.sha1');
 define("LOG_STORAGE", 'run.log');
 define("LOCK_FILE", DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . 'observer.lock');
@@ -92,8 +77,14 @@ if ($clusterStatus !== null) {
 
     $clusterStatus = (array)$clusterStatus->fetch_all(MYSQLI_ASSOC);
 
+    $clusterName = "";
     foreach ($clusterStatus as $row) {
-        if ($row['Counter'] === "cluster_test_cluster_indexes") {
+        if ($row['Counter'] === 'cluster_name') {
+            $clusterName = $row['Value'];
+        }
+
+
+        if ($row['Counter'] === "cluster_" . $clusterName . "_indexes") {
             $tables = explode(',', $row['Value']);
         }
     }

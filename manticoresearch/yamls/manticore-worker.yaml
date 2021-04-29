@@ -29,6 +29,8 @@ spec:
             exec:
               command: [ "/bin/sh", "-c", "./shutdown.sh" ]
         env:
+          - name: CONFIGMAP_PATH
+            value: /etc/manticoresearch/configmap.conf
           - name: MANTICORE_PORT
             value: "9306"
           - name: CLUSTER_NAME
@@ -48,6 +50,13 @@ spec:
         volumeMounts:
           - name: data
             mountPath: /var/lib/manticore/
+          - name: config-volume
+            mountPath: /etc/manticoresearch/configmap.conf
+            subPath: manticore.conf
+      volumes:
+        - name: config-volume
+          configMap:
+            name: worker-searchd-config
   volumeClaimTemplates:
     - metadata:
         name: data

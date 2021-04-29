@@ -36,23 +36,14 @@ $output = json_decode($output, true);
 $min   = [];
 $count = 0;
 
-$mainPodIp = null;
 
 if ( ! empty($output['items'])) {
     foreach ($output['items'] as $pod) {
         if (isset($pod['metadata']['labels']['label'])
-            && $pod['metadata']['labels']['label'] === 'manticore-worker') {
-
-            if ((int)substr($pod['metadata']['name'], -1) === 0 && isset($pod['status']['podIP'])) {
-                $mainPodIp = $pod['status']['podIP'];
-            }
-
-            echo "\n\nPod status: " . $pod['status']['phase'] . "\n";
-
-            if ($pod['status']['phase'] === 'Running') {
-                $min[] = substr(trim($pod['metadata']["name"]), -1);
-                $count++;
-            }
+            && $pod['metadata']['labels']['label'] === 'manticore-worker'
+            && $pod['status']['phase'] === 'Running') {
+            $min[] = substr(trim($pod['metadata']["name"]), -1);
+            $count++;
         }
     }
 } else {
@@ -66,7 +57,7 @@ echo "Replica hook: Pods count:" . $count . "\n";
 if ($count > 1) {
     for ($i = 0; $i <= 5; $i++) {
         echo "Replica hook: Join cluster\n";
-        $sql = "JOIN CLUSTER $clusterName at '" . $mainPodIp . ":9312'";
+        $sql = "JOIN CLUSTER $clusterName at 'worker-" . min($min) . ".worker-svc:9312'";
         $sphinxQL->query($sql);
         echo "Replica hook: Sql query: $sql\n";
         if ($sphinxQL->error) {
