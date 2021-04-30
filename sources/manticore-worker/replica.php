@@ -4,18 +4,17 @@ use chart\k8sapi;
 
 require 'vendor/autoload.php';
 
-$port = getenv("MANTICORE_PORT");
+$port        = getenv("MANTICORE_PORT");
 $clusterName = getenv("CLUSTER_NAME");
 
 if (empty($port)) {
     die("Set manticore port to environments\n");
 }
 
-
 for ($i = 0; $i <= 50; $i++) {
-    $sphinxQL = new mysqli('localhost:'.$port, '', '', '');
+    $connection = new mysqli('localhost:' . $port, '', '', '');
 
-    if (!$sphinxQL->connect_errno) {
+    if ( ! $connection->connect_errno) {
         break;
     }
 
@@ -24,60 +23,79 @@ for ($i = 0; $i <= 50; $i++) {
 }
 
 
-$api = new k8sapi();
+$clusterExists = '';
+$clusterStatus = $connection->query("show status");
+if ($clusterStatus !== null) {
 
-$manticoreStatefulsets = $api->getManticorePods();
-
-if (!isset($manticoreStatefulsets['items'])) {
-    echo "\n\nK8s api don't responsed\n";
-    exit(1);
-}
-
-$min = [];
-$count = 0;
-
-foreach ($manticoreStatefulsets['items'] as $pod) {
-    if (isset($pod['metadata']['labels']['label'])
-        && $pod['metadata']['labels']['label'] === 'manticore-worker'
-        && $pod['status']['phase'] === 'Running') {
-        $min[] = substr(trim($pod['metadata']["name"]), -1);
-        $count++;
+    $clusterStatus = (array)$clusterStatus->fetch_all(MYSQLI_ASSOC);
+    foreach ($clusterStatus as $row) {
+        if ($row['Counter'] === 'cluster_name') {
+            $clusterExists = $row['Value'];
+        }
     }
 }
 
-echo "Replica hook: Pods count:".$count."\n";
 
+if ($clusterExists === '') {
+    $api = new k8sapi();
 
-if ($count > 1) {
-    for ($i = 0; $i <= 5; $i++) {
-        echo "Replica hook: Join cluster\n";
-        $sql = "JOIN CLUSTER $clusterName at 'worker-".min($min).".worker-svc:9312'";
-        $sphinxQL->query($sql);
-        echo "Replica hook: Sql query: $sql\n";
-        if ($sphinxQL->error) {
-            echo "Replica hook: QL error: ".$sphinxQL->error."\n";
-        } else {
-            echo "Replica hook: Join success \n";
-            break;
+    $manticoreStatefulsets = $api->getManticorePods();
+
+    if ( ! isset($manticoreStatefulsets['items'])) {
+        echo "\n\nK8s api don't responsed\n";
+        exit(1);
+    }
+
+    $min   = [];
+    $count = 0;
+
+    foreach ($manticoreStatefulsets['items'] as $pod) {
+        if (isset($pod['metadata']['labels']['label'])
+            && $pod['metadata']['labels']['label'] === 'manticore-worker'
+            && $pod['status']['phase'] === 'Running') {
+            $min[] = substr(trim($pod['metadata']["name"]), -1);
+            $count++;
         }
     }
 
-} else {
+    echo "Replica hook: Pods count:" . $count . "\n";
 
-    echo "Replica hook: Create new cluster\n";
-    $sql = "CREATE CLUSTER $clusterName";
-    $sphinxQL->query($sql);
-    echo "Replica hook: Sql query: $sql\n";
-    if ($sphinxQL->error) {
-        echo "Replica hook: QL error: ".$sphinxQL->error."\n";
+
+    if ($count > 1) {
+        for ($i = 0; $i <= 5; $i++) {
+            echo "Replica hook: Join cluster\n";
+            $sql = "JOIN CLUSTER $clusterName at 'worker-" . min($min) . ".worker-svc:9312'";
+            $connection->query($sql);
+            echo "Replica hook: Sql query: $sql\n";
+            if ($connection->error) {
+                echo "Replica hook: QL error: " . $connection->error . "\n";
+            } else {
+                echo "Replica hook: Join success \n";
+                break;
+            }
+        }
+
+    } else {
+
+        echo "Replica hook: Create new cluster\n";
+        $sql = "CREATE CLUSTER $clusterName";
+        $connection->query($sql);
+        echo "Replica hook: Sql query: $sql\n";
+        if ($connection->error) {
+            echo "Replica hook: QL error: " . $connection->error . "\n";
+        }
     }
+
+
+    $balancerCall = $api->get(getenv('BALANCER_URL'));
+    if ($balancerCall->getStatusCode() !== 200) {
+        echo "Something went wrong during balancer notification\n";
+    }
+
+    echo "Replica hook: Replication connect ended\n";
+} else {
+    echo "Cluster $clusterName already exists\n";
 }
-
-
-$balancerCall = $api->get(getenv('BALANCER_URL'));
-print_r([$balancerCall->getBody()->getContents(), $balancerCall->getStatusCode()]);
-
-echo "Replica hook: Replication connect ended\n";
 
 
 ?>
