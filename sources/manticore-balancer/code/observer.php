@@ -10,6 +10,7 @@ define("LOCK_FILE", DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . 'observe
 define("CONFIGMAP_PATH", getenv('CONFIGMAP_PATH'));
 define("BALANCER_PORT", getenv('BALANCER_PORT'));
 define("WORKER_PORT", getenv('WORKER_PORT'));
+define('WORKER_LABEL', getenv('WORKER_LABEL'));
 
 if ( ! file_exists(CONFIGMAP_PATH)) {
     logger("Searchd config is not mounted");
@@ -38,7 +39,7 @@ $manticorePods = [];
 
 foreach ($manticoreStatefulsets['items'] as $pod) {
     if (isset($pod['metadata']['labels']['label'])
-        && $pod['metadata']['labels']['label'] === 'manticore-worker') {
+        && $pod['metadata']['labels']['label'] === WORKER_LABEL) {
         if ($pod['status']['phase'] === 'Running') {
             $manticorePods[$pod["metadata"]['name']] = $pod['status']['podIP'];
         }

@@ -7,6 +7,7 @@ require 'vendor/autoload.php';
 $port        = getenv("MANTICORE_PORT");
 $clusterName = getenv("CLUSTER_NAME");
 $balancerUrl = getenv('BALANCER_URL');
+$label       = getenv('WORKER_LABEL');
 
 if (empty($port)) {
     die("Set manticore port to environments\n");
@@ -52,7 +53,7 @@ if ($clusterExists === '') {
 
     foreach ($manticoreStatefulsets['items'] as $pod) {
         if (isset($pod['metadata']['labels']['label'])
-            && $pod['metadata']['labels']['label'] === 'manticore-worker'
+            && $pod['metadata']['labels']['label'] === $label
             && $pod['status']['phase'] === 'Running') {
             $min[] = substr(trim($pod['metadata']["name"]), -1);
             $count++;

@@ -1,78 +1,95 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ RELEASE_NAME }}-m{{ STREAM_ID }}-manticore
-  namespace: {{ NAMESPACE }}
+  name: {{ include "manticoresearch.fullname" . }}-balancer
   labels:
-    name: m{{ STREAM_ID }}-manticore
-    helm.sh/chart: {{ CHART_NAME }}
-    app.kubernetes.io/instance: {{ RELEASE_NAME }}
-    app.kubernetes.io/managed-by: {{ RELEASE_SERVICE }}
-    app.kubernetes.io/app: {{ FULLNAME }}-m{{ STREAM_ID }}-manticore
+    name: {{ include "manticoresearch.fullname" . }}-balancer
+    {{- include "manticoresearch.labels" . | nindent 4 }}
+    label: "{{ include "manticoresearch.fullname" . }}-worker"
 spec:
-  replicas: 1
+  replicas: {{ .Values.worker.replicaCount }}
   selector:
     matchLabels:
-      name:  m{{ STREAM_ID }}-manticore
-  serviceName: m{{ STREAM_ID }}-manticore-svc
+      name: {{ include "manticoresearch.fullname" . }}-worker
+  serviceName: {{ include "manticoresearch.fullname" . }}-worker-svc
   template:
     metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       labels:
-        name: m{{ STREAM_ID }}-manticore
+        name: "{{ include "manticoresearch.fullname" . }}-balancer"
+        label: "manticore-worker"
+        {{- include "manticoresearch.selectorLabels" . | nindent 8 }}
     spec:
-      serviceAccountName: ui-admin-sa-{{ NAMESPACE }}
+      serviceAccountName: {{ include "manticoresearch.serviceAccountName" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       securityContext:
-          fsGroup: {{ Values.manticore.userId }}
-          runAsGroup: {{ Values.manticore.userId }}
-          runAsUser: {{ Values.manticore.userId }}
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-      - name: m{{ STREAM_ID }}-manticore
-        image: {{ Values.manticore.image.repository }}:{{ Values.manticore.image.tag }}
-        imagePullPolicy: Always
+      - name: {{ .Chart.Name }}-worker
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
+        image: "{{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.worker.image.pullPolicy }}
         lifecycle:
           preStop:
             exec:
-              command: ["/bin/sh", "-c", "./shutdown.sh"]
-        volumeMounts:
-        - name: data
-          mountPath: /var/lib/manticore/
+              command: [ "/bin/sh", "-c", "./shutdown.sh" ]
         env:
-          - name: MANTICORE_FACADE_HOST
-            value: "m{{ STREAM_ID }}-manticore-facade-svc"
-          - name: MANTICORE_RULES
-            value: "{{ Values.manticore.configAdditiveFields }}"
+          - name: WORKER_LABEL
+            value: "{{ include "manticoresearch.fullname" . }}-worker"
+          - name: CONFIGMAP_PATH
+            value: {{ .Values.worker.config.path }}
           - name: MANTICORE_PORT
-            value: "{{ Values.manticore.service.port }}"
-          - name: MANTICORE_MORPHOLOGY
-            value: "{{ Values.manticore.configMorphology }}"
-          - name: MANTICORE_POD_NAME
-            value: "m{{ STREAM_ID }}-manticore"
-          - name: MANTICORE_STATEFUL_SET_NAME
-            value: "{{ RELEASE_NAME }}-m{{ STREAM_ID }}-manticore"
-          - name: MANTICORE_SERVICE_NAME
-            value: "m{{ STREAM_ID }}-manticore-svc"
-          - name: BLACKLIST_MODE
-            value: "{{ Values.manticore.searchd.blacklist-mode }}"
-          - name: NAMESPACE_NAME
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.namespace
-          - name: POD_IP
-            valueFrom:
-              fieldRef:
-                fieldPath: status.podIP
+            value: "{{ .Values.worker.service.port }}"
+          - name: CLUSTER_NAME
+            value: {{ .Values.worker.clusterName }}
+          - name: BALANCER_URL
+            value: "{{ include "manticoresearch.fullname" . }}-balancer-svc:{{ .Values.balancer.service.balancer.targetPort }}"
         readinessProbe:
           tcpSocket:
-            port: {{ Values.manticore.service.port }}
+            port: {{ .Values.worker.service.port }}
           initialDelaySeconds: 5
           periodSeconds: 3
-      imagePullSecrets:
-      - name: registry-manticore-streams
+        livenessProbe:
+          tcpSocket:
+            port: {{ .Values.worker.service.port }}
+          initialDelaySeconds: 5
+          periodSeconds: 3
+        volumeMounts:
+          - name: data
+            mountPath: /var/lib/manticore/
+          - name: config-volume
+            mountPath: {{ .Values.worker.config.path }}
+            subPath: manticore.conf
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ include "manticoresearch.fullname" . }}-worker-config
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
   volumeClaimTemplates:
-  - metadata:
-      name: data
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: {{ Values.manticore.volumeClaimTemplates.size }}
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 1Gi

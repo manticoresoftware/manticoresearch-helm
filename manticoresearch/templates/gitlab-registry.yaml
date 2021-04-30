@@ -1,0 +1,9 @@
+﻿apiVersion: v1
+data:
+  .dockerconfigjson: eyJhdXRocyI6eyJyZWdpc3RyeS5naXRsYWIuY29tIjp7InVzZXJuYW1lIjoiZ2l0bGFiK2RlcGxveS10b2tlbi00Mjg4MTIiLCJwYXNzd29yZCI6IjV5Y3l6NTN5eFoxS21hYUpkenk0IiwiZW1haWwiOiJrbGltQG1hbnRpY29yZXNlYXJjaC5jb20iLCJhdXRoIjoiWjJsMGJHRmlLMlJsY0d4dmVTMTBiMnRsYmkwME1qZzRNVEk2TlhsamVYbzFNM2w0V2pGTGJXRmhTbVI2ZVRRPSJ9fX0=
+kind: Secret
+metadata:
+  name: registry-manticore
+type: kubernetes.io/dockerconfigjson
+
+

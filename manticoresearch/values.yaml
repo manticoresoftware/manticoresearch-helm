@@ -4,24 +4,66 @@
 
 replicaCount: 1
 
-image:
-  repository: nginx
-  pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+balancer:
+  image:
+    repository: registry.gitlab.com/manticoresearch/helm-charts/balancer
+    tag: 0.0.1
+    pullPolicy: Always
+  service:
+    balancer:
+      port: 9306
+      targetPort: 9306
+    observer:
+      port: 8080
+      targetPort: 8080
+  config:
+    path: /etc/manticoresearch/configmap.conf
+    content: |
+      searchd
+      {
+        listen = 9306:mysql41
+        log = /var/log/manticore/searchd.log
+        query_log = /var/log/manticore/query.log
+        query_log_format = sphinxql
+        pid_file = /var/run/manticore/searchd.pid
+        binlog_path = /var/lib/manticore/data
+      }
 
-imagePullSecrets: []
+
+worker:
+  replicaCount: 1
+  clusterName: ololo
+  image:
+    repository: registry.gitlab.com/manticoresearch/helm-charts/worker
+    tag: 0.0.1
+    pullPolicy: Always
+  service:
+    port: 9306
+    targetPort: 9306
+  config:
+    path: /etc/manticoresearch/configmap.conf
+    content: |
+      searchd
+      {
+        listen = 9306:mysql41
+        log = /var/log/manticore/searchd.log
+        query_log = /var/log/manticore/query.log
+        query_log_format = sphinxql
+        pid_file = /var/run/manticore/searchd.pid
+        binlog_path = /var/lib/manticore/data
+      }
+
+
+imagePullSecrets: [name: registry-manticore]
 nameOverride: ""
 fullnameOverride: ""
 
 serviceAccount:
-  # Specifies whether a service account should be created
-  create: true
   # Annotations to add to the service account
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: ""
+  name: "manticore-sa"
 
 podAnnotations: {}
 
@@ -64,13 +106,6 @@ resources: {}
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
-
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
 
 nodeSelector: {}
 

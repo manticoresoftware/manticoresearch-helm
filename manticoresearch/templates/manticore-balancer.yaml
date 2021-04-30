@@ -1,45 +1,77 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "manticoresearch.fullname" . }}
+  name: {{ include "manticoresearch.fullname" . }}-balancer
   labels:
+    name: {{ include "manticoresearch.fullname" . }}-balancer
     {{- include "manticoresearch.labels" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "manticoresearch.selectorLabels" . | nindent 6 }}
-  serviceName: m{{ STREAM_ID }}-balancer-manticore-svc
+      name: {{ include "manticoresearch.fullname" . }}-balancer
+  serviceName: {{ include "manticoresearch.fullname" . }}-balancer-svc
   template:
     metadata:
-      {{ - with .Values.podAnnotations }}
+      {{- with .Values.podAnnotations }}
       annotations:
-        {{ - toYaml . | nindent 8 }}
-      {{ - end }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       labels:
-        {{ - include "manticoresearch.selectorLabels" . | nindent 8 }}
+        name: {{ include "manticoresearch.fullname" . }}-balancer
+        {{- include "manticoresearch.selectorLabels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ include "manticoresearch.serviceAccountName" . }}
-      {{ - with .Values.imagePullSecrets } }
+      {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{ - toYaml . | nindent 8 }}
-      {{ - end }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       securityContext:
-        {{ - toYaml .Values.podSecurityContext | nindent 8 }}
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-      - name: m{{ STREAM_ID }}-facade-manticore
-        image: {{ Values.manticoreFacade.image.repository }}:{{ Values.manticoreFacade.image.tag }}
-        imagePullPolicy: Always
+      - name: {{ .Chart.Name }}-balancer
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
+        image: "{{ .Values.balancer.image.repository }}:{{ .Values.balancer.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.balancer.image.pullPolicy }}
         env:
-          - name: LABEL
-            value: "m{{ STREAM_ID }}"
+          - name: WORKER_LABEL
+            value: "{{ include "manticoresearch.fullname" . }}-worker"
+          - name: CONFIGMAP_PATH
+            value: {{ .Values.balancer.config.path }}
+          - name: BALANCER_PORT
+            value: "{{ .Values.balancer.service.balancer.port }}"
+          - name: WORKER_PORT
+            value: "{{ .Values.worker.service.port }}"
         readinessProbe:
           tcpSocket:
-            port: {{ Values.manticore.service.port }}
+            port: {{ .Values.balancer.service.balancer.port }}
           initialDelaySeconds: 5
           periodSeconds: 3
         livenessProbe:
           tcpSocket:
-            port: {{ Values.manticore.service.port }}
+            port: {{ .Values.balancer.service.balancer.port }}
           initialDelaySeconds: 5
           periodSeconds: 3
+        volumeMounts:
+          - name: config-volume
+            mountPath: {{ .Values.balancer.config.path }}
+            subPath: manticore.conf
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ include "manticoresearch.fullname" . }}-balancer-config
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
