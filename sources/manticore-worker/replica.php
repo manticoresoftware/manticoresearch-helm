@@ -6,6 +6,7 @@ require 'vendor/autoload.php';
 
 $port        = getenv("MANTICORE_PORT");
 $clusterName = getenv("CLUSTER_NAME");
+$balancerUrl = getenv('BALANCER_URL');
 
 if (empty($port)) {
     die("Set manticore port to environments\n");
@@ -87,7 +88,7 @@ if ($clusterExists === '') {
     }
 
 
-    $balancerCall = $api->get(getenv('BALANCER_URL'));
+    $balancerCall = $api->get($balancerUrl);
     if ($balancerCall->getStatusCode() !== 200) {
         echo "Something went wrong during balancer notification\n";
     }

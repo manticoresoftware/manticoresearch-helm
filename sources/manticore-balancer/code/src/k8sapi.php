@@ -3,7 +3,8 @@
 namespace chart;
 
 use GuzzleHttp\Client;
-
+use GuzzleHttp\Psr7;
+use GuzzleHttp\Exception\RequestException;
 
 class k8sapi
 {
@@ -20,12 +21,12 @@ class k8sapi
     private $cert = '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt';
     private $apiSections = [
 
-        self::TYPE_SERVICE => 'api/v1',
-        self::TYPE_STATEFULSET => 'apis/apps/v1',
-        'configmaps' => 'api/v1',
+        self::TYPE_SERVICE       => 'api/v1',
+        self::TYPE_STATEFULSET   => 'apis/apps/v1',
+        'configmaps'             => 'api/v1',
         'persistentvolumeclaims' => 'api/v1',
-        'secrets' => 'api/v1',
-        self::TYPE_PODS => 'api/v1'
+        'secrets'                => 'api/v1',
+        self::TYPE_PODS          => 'api/v1'
     ];
 
     private $bearer;
@@ -34,11 +35,11 @@ class k8sapi
     public function __construct()
     {
 
-        $this->bearer = $this->getBearer();
-        $this->userAgent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '.
-            '(KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36';
+        $this->bearer    = $this->getBearer();
+        $this->userAgent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 ' .
+                           '(KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36';
 
-        $this->namespace = $this->getNamespace();
+        $this->namespace  = $this->getNamespace();
         $this->httpClient = new Client();
     }
 
@@ -51,16 +52,16 @@ class k8sapi
     private function request($section, $type = "GET")
     {
         $params = [
-            'verify' => $this->cert,
+            'verify'  => $this->cert,
             'version' => 2.0,
             'headers' => [
-                'Authorization' => 'Bearer '.$this->bearer,
-                'Accept' => 'application/json',
-                'User-Agent' => $this->userAgent,
+                'Authorization' => 'Bearer ' . $this->bearer,
+                'Accept'        => 'application/json',
+                'User-Agent'    => $this->userAgent,
             ]
         ];
 
-        return $this->httpClient->request($type, $this->getUrl($section), $params);
+        return $this->call($type, $this->getUrl($section), $params);
     }
 
 
@@ -92,7 +93,23 @@ class k8sapi
         return false;
     }
 
-    public function get($url){
-        return $this->httpClient->request('GET', $url);
+    public function get($url)
+    {
+        return $this->call('GET', $url);
+    }
+
+    private function call($method, $url, $params = [])
+    {
+
+        try {
+            return $this->httpClient->request($method, $url, $params);
+        } catch (RequestException $e) {
+            echo Psr7\Message::toString($e->getRequest()) . "\n";
+            if ($e->hasResponse()) {
+                echo Psr7\Message::toString($e->getResponse());
+            }
+
+            exit(1);
+        }
     }
 }
