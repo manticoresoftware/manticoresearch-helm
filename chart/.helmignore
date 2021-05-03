@@ -3,7 +3,14 @@
 # negation (prefixed with !). Only one pattern per line.
 .DS_Store
 yamls
-templates/auto
+#templates/balancer-config-map.yaml
+#templates/gitlab-registry.yaml
+#templates/manticore-balancer.yaml
+#templates/manticore-worker.yaml
+#templates/rolebinding.yaml
+#templates/service-balancer.yaml
+#templates/service-worker.yaml
+#templates/worker-config-map.yaml
 # Common VCS dirs
 .git/
 .gitignore

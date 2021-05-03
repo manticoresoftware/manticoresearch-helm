@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "manticoresearch.fullname" . }}-balancer
+  name: {{ include "manticoresearch.fullname" . }}-worker
   labels:
-    name: {{ include "manticoresearch.fullname" . }}-balancer
+    name: {{ include "manticoresearch.fullname" . }}-worker
     {{- include "manticoresearch.labels" . | nindent 4 }}
     label: "{{ include "manticoresearch.fullname" . }}-worker"
 spec:
@@ -19,7 +19,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        name: "{{ include "manticoresearch.fullname" . }}-balancer"
+        name: "{{ include "manticoresearch.fullname" . }}-worker"
         label: "manticore-worker"
         {{- include "manticoresearch.selectorLabels" . | nindent 8 }}
     spec:
@@ -34,7 +34,7 @@ spec:
       - name: {{ .Chart.Name }}-worker
         securityContext:
           {{- toYaml .Values.securityContext | nindent 12 }}
-        image: "{{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag | default .Chart.AppVersion }}"
+        image: {{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag | default .Chart.AppVersion }}
         imagePullPolicy: {{ .Values.worker.image.pullPolicy }}
         lifecycle:
           preStop:
@@ -42,7 +42,7 @@ spec:
               command: [ "/bin/sh", "-c", "./shutdown.sh" ]
         env:
           - name: WORKER_LABEL
-            value: "{{ include "manticoresearch.fullname" . }}-worker"
+            value: "manticore-worker"
           - name: CONFIGMAP_PATH
             value: {{ .Values.worker.config.path }}
           - name: MANTICORE_PORT
@@ -50,7 +50,9 @@ spec:
           - name: CLUSTER_NAME
             value: {{ .Values.worker.clusterName }}
           - name: BALANCER_URL
-            value: "{{ include "manticoresearch.fullname" . }}-balancer-svc:{{ .Values.balancer.service.balancer.targetPort }}"
+            value: {{ include "manticoresearch.fullname" . }}-balancer-svc:{{ .Values.balancer.service.balancer.targetPort }}
+          - name: WORKER_SERVICE
+            value: {{ include "manticoresearch.fullname" . }}-worker-svc
         readinessProbe:
           tcpSocket:
             port: {{ .Values.worker.service.port }}
@@ -92,4 +94,4 @@ spec:
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
-            storage: 1Gi
+            storage: {{ .Values.worker.volume.size }}

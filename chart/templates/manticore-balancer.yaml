@@ -35,12 +35,16 @@ spec:
         image: "{{ .Values.balancer.image.repository }}:{{ .Values.balancer.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.balancer.image.pullPolicy }}
         env:
+          - name: RUN_INTERVAL
+            value: "{{ .Values.balancer.runInterval }}"
           - name: WORKER_LABEL
-            value: "{{ include "manticoresearch.fullname" . }}-worker"
+            value: "manticore-worker"
           - name: CONFIGMAP_PATH
             value: {{ .Values.balancer.config.path }}
           - name: BALANCER_PORT
             value: "{{ .Values.balancer.service.balancer.port }}"
+          - name: WORKER_PORT
+            value: "{{ .Values.worker.service.port }}"
           - name: WORKER_PORT
             value: "{{ .Values.worker.service.port }}"
         readinessProbe:

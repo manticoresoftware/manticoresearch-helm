@@ -2,12 +2,11 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
-
 balancer:
+  runInterval: 5
   image:
     repository: registry.gitlab.com/manticoresearch/helm-charts/balancer
-    tag: 0.0.1
+#    tag: 0.0.1
     pullPolicy: Always
   service:
     balancer:
@@ -32,25 +31,32 @@ balancer:
 
 worker:
   replicaCount: 1
-  clusterName: ololo
+  clusterName: mycluster
   image:
     repository: registry.gitlab.com/manticoresearch/helm-charts/worker
-    tag: 0.0.1
+#    tag: 0.0.1
     pullPolicy: Always
   service:
     port: 9306
     targetPort: 9306
+  volume:
+    size: 1Gi
   config:
     path: /etc/manticoresearch/configmap.conf
     content: |
       searchd
       {
         listen = 9306:mysql41
-        log = /var/log/manticore/searchd.log
+        listen = 9301:mysql_vip
+        listen = $ip:9312
+        listen = $ip:9315-9325:replication
+        binlog_path = /var/lib/manticore/data
+        log = /var/lib/manticore/log/searchd.log
         query_log = /var/log/manticore/query.log
         query_log_format = sphinxql
         pid_file = /var/run/manticore/searchd.pid
-        binlog_path = /var/lib/manticore/data
+        data_dir = /var/lib/manticore
+        shutdown_timeout = 25s
       }
 
 

@@ -4,10 +4,11 @@ use chart\k8sapi;
 
 require 'vendor/autoload.php';
 
-$port        = getenv("MANTICORE_PORT");
-$clusterName = getenv("CLUSTER_NAME");
-$balancerUrl = getenv('BALANCER_URL');
-$label       = getenv('WORKER_LABEL');
+$port          = getenv("MANTICORE_PORT");
+$clusterName   = getenv("CLUSTER_NAME");
+$balancerUrl   = getenv('BALANCER_URL');
+$label         = getenv('WORKER_LABEL');
+$workerService = getenv('WORKER_SERVICE');
 
 if (empty($port)) {
     die("Set manticore port to environments\n");
@@ -53,10 +54,16 @@ if ($clusterExists === '') {
 
     foreach ($manticoreStatefulsets['items'] as $pod) {
         if (isset($pod['metadata']['labels']['label'])
-            && $pod['metadata']['labels']['label'] === $label
-            && $pod['status']['phase'] === 'Running') {
-            $min[] = substr(trim($pod['metadata']["name"]), -1);
-            $count++;
+            && $pod['metadata']['labels']['label'] === $label) {
+            if ($pod['status']['phase'] === 'Running' || $pod['status']['phase'] === 'Pending') {
+                $fullName = trim($pod['metadata']["name"]);
+
+                $key       = (int)substr($fullName, -1);
+                $min[$key] = $fullName;
+                $count++;
+            } else {
+                echo json_encode($pod) . "\n\n";
+            }
         }
     }
 
@@ -64,9 +71,13 @@ if ($clusterExists === '') {
 
 
     if ($count > 1) {
+
+        ksort($min);
+        $first = array_shift($min);
+
         for ($i = 0; $i <= 5; $i++) {
             echo "Replica hook: Join cluster\n";
-            $sql = "JOIN CLUSTER $clusterName at 'worker-" . min($min) . ".worker-svc:9312'";
+            $sql = "JOIN CLUSTER $clusterName at '" . $first . "." . $workerService . ":9312'";
             $connection->query($sql);
             echo "Replica hook: Sql query: $sql\n";
             if ($connection->error) {
