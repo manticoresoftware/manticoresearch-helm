@@ -1,28 +1,28 @@
-0) Wait until all pods moved to running state
+1) Wait until all pods moved to running state
        kubectl --namespace {{ .Release.Namespace }} get po
 
-1) Forward worker port to your local machine:
+2) Forward worker port to your local machine:
        export WORKER_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "manticoresearch.name" . }},app.kubernetes.io/instance={{ .Release.Name }},label=manticore-worker" -o jsonpath="{.items[0].metadata.name}")
        kubectl --namespace {{ .Release.Namespace }} port-forward $WORKER_NAME 7306:{{ .Values.worker.service.port }}
 
-2) Connect to worker
+3) Connect to worker
        mysql -h0 -P7306 -e "SHOW TABLES"
 
-3) Create your first table
+4) Create your first table
        mysql -h0 -P7306 -e "CREATE TABLE t(str text)"
 
-4) Add table to cluster
+5) Add table to cluster
        mysql -h0 -P7306 -e "ALTER CLUSTER {{ .Values.worker.clusterName }} ADD t"
 
-5) Add some data to your table
+6) Add some data to your table
        mysql -h0 -P7306 -e "INSERT INTO {{ .Values.worker.clusterName }}:t (str) VALUES ('My First Match'), ('My Second Match')"
 
-6) Forward worker port to your local machine:
+7) Forward worker port to your local machine:
        export BALANCER_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "manticoresearch.name" . }},app.kubernetes.io/instance={{ .Release.Name }},name={{ include "manticoresearch.fullname" . }}-balancer" -o jsonpath="{.items[0].metadata.name}")
        kubectl --namespace {{ .Release.Namespace }} port-forward $BALANCER_NAME 6306:{{ .Values.balancer.service.balancer.port }}
 
-7) Connect to balancer
+8) Connect to balancer
        mysql -h0 -P6306 -e "SHOW TABLES"
 
-8) Check matches
+9) Check matches
        mysql -h0 -P6306 -e "SELECT * FROM t WHERE match('my')"
