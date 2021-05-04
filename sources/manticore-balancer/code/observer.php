@@ -72,7 +72,7 @@ try {
 /**
  * @var $clusterStatus mysqli_result
  */
-
+$tables        = '';
 $clusterStatus = $connection->query("show status");
 if ($clusterStatus !== null) {
 
@@ -85,12 +85,12 @@ if ($clusterStatus !== null) {
         }
 
 
-        if ($row['Counter'] === "cluster_" . $clusterName . "_indexes") {
+        if ($row['Counter'] === "cluster_" . $clusterName . "_indexes" && trim($row['Value']) !== "") {
             $tables = explode(',', $row['Value']);
         }
     }
 
-    if ( ! empty($tables)) {
+    if ( $tables !== '') {
 
         $hash = sha1(implode('.', $tables) . implode($podsIps));
 
