@@ -59,6 +59,12 @@ worker:
         shutdown_timeout = 25s
       }
 
+exporter:
+  enabled: true
+  image:
+    repository: registry.gitlab.com/manticoresearch/helm-charts/exporter
+    pullPolicy: Always
+
 
 imagePullSecrets: [name: registry-manticore]
 nameOverride: ""
