@@ -100,12 +100,10 @@ kubectl scale statefulsets manticore-manticoresearch-worker -n manticore --repli
 | nodeSelector | Allows to set node selector for worker and balancer | {}
 | tolerations | Allows to set tolerations | {}
 | affinity | Allows to set affinity | {}
-
-# Versioning
-
-We use standard versioning scheme `Major`.`Minor`.`Path`
-
-The helmchart version changes **along** with the package version. That avoids the situation when **worker** has version `0.0.1` and **chart** `0.0.2`
+| exporter.enabled | Enable Prometheus exporter pod | true
+| exporter.image.repository | Repository for getting exporter image | Manticore Search Gitlab
+| exporter.image.tag | Exporter image version | The same as chart version
+| exporter.image.pullPolicy | Exporter image updating policy | Always
 
 # Uninstall
 
