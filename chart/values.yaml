@@ -31,7 +31,7 @@ balancer:
 
 worker:
   replicaCount: 3
-  clusterName: cluster
+  clusterName: manticore
   image:
     repository: registry.gitlab.com/manticoresearch/helm-charts/worker
 #    tag: 0.0.1
@@ -69,7 +69,7 @@ exporter:
 
 imagePullSecrets: [name: registry-manticore]
 nameOverride: ""
-fullnameOverride: ""
+fullNameOverride: ""
 
 serviceAccount:
   # Annotations to add to the service account
