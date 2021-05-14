@@ -30,7 +30,7 @@ helm install manticore -n manticore --create-namespace .
 kubectl --namespace manticore get po
 ```
 
-2) Forward worker port to your local machine:
+2) Forward worker's port to your local machine:
 
 ```
 export WORKER_NAME=$(kubectl get pods --namespace manticore -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=manticore,label=manticore-worker" -o jsonpath="{.items[0].metadata.name}")
@@ -61,7 +61,7 @@ ALTER CLUSTER manticore ADD idx;
 INSERT INTO cluster:idx (title) VALUES ('dog is brown'), ('mouse is small');
 ```
 
-7) Forward worker port to your local machine:
+7) Forward load balancer's port to your local machine:
 
 ```
 export BALANCER_NAME=$(kubectl get pods --namespace manticore -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=manticore,name=manticore-manticoresearch-balancer" -o jsonpath="{.items[0].metadata.name}")
