@@ -42,19 +42,17 @@ spec:
           - name: CONFIGMAP_PATH
             value: {{ .Values.balancer.config.path }}
           - name: BALANCER_PORT
-            value: "{{ .Values.balancer.service.balancer.port }}"
+            value: "{{ .Values.balancer.service.ql.port }}"
           - name: WORKER_PORT
-            value: "{{ .Values.worker.service.port }}"
-          - name: WORKER_PORT
-            value: "{{ .Values.worker.service.port }}"
+            value: "{{ .Values.worker.service.ql.port }}"
         readinessProbe:
           tcpSocket:
-            port: {{ .Values.balancer.service.balancer.port }}
+            port: {{ .Values.balancer.service.ql.port }}
           initialDelaySeconds: 5
           periodSeconds: 3
         livenessProbe:
           tcpSocket:
-            port: {{ .Values.balancer.service.balancer.port }}
+            port: {{ .Values.balancer.service.ql.port }}
           initialDelaySeconds: 5
           periodSeconds: 3
         volumeMounts:

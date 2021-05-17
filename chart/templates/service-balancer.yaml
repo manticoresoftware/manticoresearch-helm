@@ -7,11 +7,14 @@ metadata:
     {{- include "manticoresearch.labels" . | nindent 4 }}
 spec:
   ports:
-  - port: {{ .Values.balancer.service.balancer.port }}
-    targetPort: {{ .Values.balancer.service.balancer.targetPort }}
+  - port: {{ .Values.balancer.service.ql.port }}
+    targetPort: {{ .Values.balancer.service.ql.targetPort }}
     name: balancer
   - port: {{ .Values.balancer.service.observer.port }}
     targetPort: {{ .Values.balancer.service.observer.targetPort }}
     name: observer
+  - port: {{ .Values.balancer.service.http.port }}
+    targetPort: {{ .Values.balancer.service.http.targetPort }}
+    name: http
   selector:
     name: {{ include "manticoresearch.fullname" . }}-balancer

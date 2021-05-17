@@ -41,7 +41,7 @@ spec:
           - name: MANTICORE_HOST
             value: "{{ include "manticoresearch.fullname" . }}-balancer-svc"
           - name: MANTICORE_PORT
-            value: "{{ .Values.balancer.service.balancer.targetPort }}"
+            value: "{{ .Values.balancer.service.ql.targetPort }}"
         livenessProbe:
           httpGet:
             path: /health

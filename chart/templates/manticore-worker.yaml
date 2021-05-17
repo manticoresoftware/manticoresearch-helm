@@ -46,21 +46,21 @@ spec:
           - name: CONFIGMAP_PATH
             value: {{ .Values.worker.config.path }}
           - name: MANTICORE_PORT
-            value: "{{ .Values.worker.service.port }}"
+            value: "{{ .Values.worker.service.ql.port }}"
           - name: CLUSTER_NAME
             value: {{ .Values.worker.clusterName }}
           - name: BALANCER_URL
-            value: {{ include "manticoresearch.fullname" . }}-balancer-svc:{{ .Values.balancer.service.balancer.targetPort }}
+            value: {{ include "manticoresearch.fullname" . }}-balancer-svc:{{ .Values.balancer.service.ql.targetPort }}
           - name: WORKER_SERVICE
             value: {{ include "manticoresearch.fullname" . }}-worker-svc
         readinessProbe:
           tcpSocket:
-            port: {{ .Values.worker.service.port }}
+            port: {{ .Values.worker.service.ql.port }}
           initialDelaySeconds: 5
           periodSeconds: 3
         livenessProbe:
           tcpSocket:
-            port: {{ .Values.worker.service.port }}
+            port: {{ .Values.worker.service.ql.port }}
           initialDelaySeconds: 5
           periodSeconds: 3
         volumeMounts:

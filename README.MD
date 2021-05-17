@@ -25,55 +25,68 @@ helm install manticore -n manticore --create-namespace .
 
 # Quick start guide:
 
-1) Wait until all pods are moved to running state:
+1) Expose namespace to a variable for more convenient
+   
+```
+export NAMESPACE=manticore
+```
+
+2) Wait until all pods are moved to running state:
 
 ```
-kubectl --namespace manticore get po
+kubectl --namespace $NAMESPACE get po
 ```
 
 2) Forward worker's port to your local machine:
+```
+export WORKER_NAME=$(kubectl get pods --namespace $NAMESPACE -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=manticore,label=manticore-worker" -o jsonpath="{.items[0].metadata.name}")
+```
 
-```
-export WORKER_NAME=$(kubectl get pods --namespace manticore -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=manticore,label=manticore-worker" -o jsonpath="{.items[0].metadata.name}")
-kubectl --namespace manticore port-forward $WORKER_NAME 7306:9306
-```
+| QL | HTTP | 
+|---|---|
+|`kubectl --namespace $NAMESPACE port-forward $WORKER_NAME 7306:9306` | `kubectl --namespace $NAMESPACE port-forward $WORKER_NAME 7308:9308` | 
 
 3) Connect to the worker:
 
-```
-mysql -h0 -P7306
-```
+| QL | HTTP | 
+|---|---|
+|`mysql -h0 -P7306`|`curl localhost:7308/sql`|
 
 4) Create your first table:
 
-```
-CREATE TABLE idx(title text);
-```
+| QL | HTTP | 
+|---|---|
+|`CREATE TABLE idx(title text);`|`curl -X "POST" localhost:7308/sql -d "mode=raw&query=create table idx(title text)"`|
 
 5) Add table to cluster:
 
-```
-ALTER CLUSTER manticore ADD idx;
-```
+| QL | HTTP | 
+|---|---|
+|`ALTER CLUSTER manticore ADD idx;`|`curl -X "POST" localhost:7308/sql -d "mode=raw&query=alter cluster manticore add idx"`|
+
 
 6) Add some data to your table:
 
-```
-INSERT INTO cluster:idx (title) VALUES ('dog is brown'), ('mouse is small');
-```
+| QL | HTTP | 
+|---|---|
+|`INSERT INTO cluster:idx (title) VALUES ('dog is brown'), ('mouse is small');`|`curl -X "POST" -H "Content-Type: application/x-ndjson" localhost:7308/bulk -d \ ` <br> `'{"insert": {"cluster":"manticore", "index" : "idx", "doc": { "title" : "dog is brown" } } }`<br>`{"insert": {"cluster":"manticore", "index" : "idx", "doc": { "title" : "mouse is small" } } }'`|
 
 7) Forward load balancer's port to your local machine:
 
 ```
-export BALANCER_NAME=$(kubectl get pods --namespace manticore -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=manticore,name=manticore-manticoresearch-balancer" -o jsonpath="{.items[0].metadata.name}")
-kubectl --namespace manticore port-forward $BALANCER_NAME 6306:9306
+export NAMESPACE=manticore
+export BALANCER_NAME=$(kubectl get pods --namespace $NAMESPACE -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=manticore,name=manticore-manticoresearch-balancer" -o jsonpath="{.items[0].metadata.name}")
 ```
+
+| QL | HTTP | 
+|---|---|
+|`kubectl --namespace $NAMESPACE port-forward $BALANCER_NAME 6306:9306`|`kubectl --namespace $NAMESPACE port-forward $BALANCER_NAME 6308:9308`|
 
 8) Search through the balancer:
 
-```
-mysql -h0 -P6306 -e "SELECT * FROM idx WHERE match('dog')"
-```
+| QL | HTTP | 
+|---|---|
+|`mysql -h0 -P6306 -e "SELECT * FROM idx WHERE match('dog')"`|`curl -X "POST" localhost:6308/search -d '{"index" : "idx", "query": { "match": { "_all": "dog" } } }'`|
 
 9) Scale the cluster:
 
@@ -156,16 +169,20 @@ Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/ser
 | balancer.image.repository | Balancer docker image repository | Docker hub
 | balancer.image.tag | Balancer image version | Same as chart version |
 | balancer.image.pullPolicy | Balancer docker image update policy | Always |
-| balancer.service.balancer.port | Balancer service port (for searchd) | 9306 |
-| balancer.service.balancer.targetPort | Balancer service targetPort (for searchd) | 9306 |
+| balancer.service.ql.port | Balancer service QL port (for searchd) | 9306 |
+| balancer.service.ql.targetPort | Balancer service QL targetPort (for searchd) | 9306 |
+| balancer.service.http.port | Balancer service HTTP port (for searchd) | 9306 |
+| balancer.service.http.targetPort | Balancer service HTTP targetPort (for searchd) | 9306 |
 | balancer.service.observer.port | Balancer service port (for observer) | 8080 |
 | balancer.service.observer.targetPort | Balancer service targetPort (for observer) | 8080 |
 | balancer.config.path | Path to balancer config | /etc/manticoresearch/configmap.conf
 | worker.image.repository | Worker docker image repository | Docker hub |
 | worker.image.tag | Worker image version | Same as chart version |
 | worker.image.pullPolicy | Worker docker image update policy | Always |
-| worker.service.port | Worker service port | 9306 |
-| worker.service.targetPort | Worker service targetPort | 9306 |
+| worker.service.ql.port | Worker service QL port | 9306 |
+| worker.service.ql.targetPort | Worker service QL targetPort | 9306 |
+| worker.service.http.port | Worker service HTTP port | 9306 |
+| worker.service.http.targetPort | Worker service HTTP targetPort | 9306 |
 | worker.config.path | Path to worker config | /etc/manticoresearch/configmap.conf |
 | nameOverride | Allows to override chart name | "" |
 | fullNameOverride | Allows to override full chart name | "" |

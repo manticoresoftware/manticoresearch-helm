@@ -7,7 +7,11 @@ metadata:
     {{- include "manticoresearch.labels" . | nindent 4 }}
 spec:
   ports:
-    - port: {{ .Values.worker.service.port }}
-      targetPort: {{ .Values.worker.service.targetPort }}
+    - port: {{ .Values.worker.service.ql.port }}
+      targetPort: {{ .Values.worker.service.ql.targetPort }}
+      name: ql
+    - port: {{ .Values.worker.service.http.port }}
+      targetPort: {{ .Values.worker.service.http.targetPort }}
+      name: http
   selector:
     name: {{ include "manticoresearch.fullname" . }}-worker

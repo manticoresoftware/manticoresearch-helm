@@ -9,18 +9,22 @@ balancer:
 #    tag: 0.0.1
     pullPolicy: Always
   service:
-    balancer:
+    ql:
       port: 9306
       targetPort: 9306
     observer:
       port: 8080
       targetPort: 8080
+    http:
+      port: 9308
+      targetPort: 9308
   config:
     path: /etc/manticoresearch/configmap.conf
     content: |
       searchd
       {
         listen = 9306:mysql41
+        listen = 9308:http
         log = /var/log/manticore/searchd.log
         query_log = /var/log/manticore/query.log
         query_log_format = sphinxql
@@ -37,8 +41,12 @@ worker:
 #    tag: 0.0.1
     pullPolicy: Always
   service:
-    port: 9306
-    targetPort: 9306
+    ql:
+      port: 9306
+      targetPort: 9306
+    http:
+      port: 9308
+      targetPort: 9308
   volume:
     size: 1Gi
   config:
@@ -47,6 +55,7 @@ worker:
       searchd
       {
         listen = 9306:mysql41
+        listen = 9308:http
         listen = 9301:mysql_vip
         listen = $ip:9312
         listen = $ip:9315-9415:replication
