@@ -9,9 +9,9 @@ The helm chart can be used for:
 * Deploys statefulset with a single Manticore Search balancer instance.
 * Deploys needed services.
 * You can create a table on any worker pod, add it to the cluster and it will be replicated to all the other pods.
-* You can scale the workers statefulset up and a new worker will be setup to become a new replica in the cluster.
-* You can scale the wokers statefulset down and the cluster will forget about the node.
-* If a worker is back up after a downtime it will re-join the cluster and will be synced with active workers.
+* You can scale the workers statefulset up and a new worker will be set up to become a new replica in the cluster.
+* You can scale the workers statefulset down and the cluster will forget about the node.
+* If a worker is back up after a downtime it will rejoin the cluster and will be synced with active workers.
 * When you make a search request against the balancer it will route it to one of the workers.
 * Provides Prometheus exporter for the running instances of Manticore Search.
 
