@@ -23,9 +23,8 @@ php composer.phar update
 
 WORKDIR /var/www/localhost/
 
-RUN chown -R manticore /var/log/manticore/ /var/lib/manticore /var/run/manticore /etc/manticoresearch/ /usr/share/manticore/ /var/log/supervisor && chown -R www-data /var/www/localhost/ /etc/manticoresearch/manticore.conf
-
-#USER manticore:manticore
+RUN chown -R manticore:manticore /var/log/manticore/ /var/lib/manticore/ /var/run/manticore /etc/manticoresearch/ /usr/share/manticore/ /var/log/supervisor /dev/stdout && \
+chown -R www-data /var/www/localhost/ /etc/manticoresearch/manticore.conf /dev/stdout
 
 CMD ["./starter.sh"]
 

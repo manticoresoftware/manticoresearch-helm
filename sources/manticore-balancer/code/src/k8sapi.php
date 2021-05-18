@@ -8,8 +8,6 @@ use GuzzleHttp\Exception\RequestException;
 
 class k8sapi
 {
-//kubectl proxy --port=8080 &
-
 
     const API_URL_SCHEME = '{{API-URL}}/{{API-VERSION}}/namespaces/{{NAMESPACE}}/{{API-SECTION}}';
     const TYPE_STATEFULSET = 'statefulsets';

@@ -1,4 +1,4 @@
 #!/bin/sh
 
-searchd --stopwait >> /var/lib/manticore/replication/stopHook.log 2>&1
+searchd --stopwait
 curl $BALANCER_URL

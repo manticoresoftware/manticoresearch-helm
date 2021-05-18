@@ -4,7 +4,7 @@ use chart\k8sapi;
 
 require 'vendor/autoload.php';
 
-define("INDEX_HASH_STORAGE", 'indexhash.sha1');
+define("INDEX_HASH_STORAGE", DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . 'indexhash.sha1');
 define("LOG_STORAGE", 'run.log');
 define("LOCK_FILE", DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . 'observer.lock');
 define("CONFIGMAP_PATH", getenv('CONFIGMAP_PATH'));
@@ -90,7 +90,7 @@ if ($clusterStatus !== null) {
         }
     }
 
-    if ( $tables !== '') {
+    if ($tables !== '') {
 
         $hash = sha1(implode('.', $tables) . implode($podsIps));
 
@@ -116,7 +116,7 @@ function logger($line)
 {
     $line = date("Y-m-d H:i:s") . ': ' . $line . "\n";
     echo "$line\n";
-    file_put_contents(LOG_STORAGE, $line, FILE_APPEND);
+    //file_put_contents(LOG_STORAGE, $line, FILE_APPEND);
 }
 
 function saveConfig($indexes, $nodes)

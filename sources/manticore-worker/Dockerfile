@@ -2,7 +2,6 @@ FROM registry.gitlab.com/manticoresearch/helm-charts/balancer:0.0.1 AS builder
 
 FROM manticoresearch/manticore:dev
 
-
 RUN apt --fix-broken install -y
 
 
@@ -22,8 +21,6 @@ COPY *.pak /usr/share/manticore/
 
 WORKDIR /etc/manticoresearch/
 
-RUN chown -R manticore /var/log/manticore/ /var/lib/manticore /var/run/manticore /etc/manticoresearch/ /usr/share/manticore/
-
-#USER manticore:manticore
+RUN chown -R manticore:manticore /var/log/manticore/ /var/lib/manticore/ /var/run/manticore /etc/manticoresearch/ /usr/share/manticore/ /dev/stdout
 
 CMD ["./starter.sh"]

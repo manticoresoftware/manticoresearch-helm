@@ -7,7 +7,7 @@ balancer:
   image:
     repository: registry.gitlab.com/manticoresearch/helm-charts/balancer
 #    tag: 0.0.1
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   service:
     ql:
       port: 9306
@@ -25,8 +25,8 @@ balancer:
       {
         listen = 9306:mysql
         listen = 9308:http
-        log = /var/log/manticore/searchd.log
-        query_log = /var/log/manticore/query.log
+        log = /dev/stdout
+        query_log = /dev/stdout
         query_log_format = sphinxql
         pid_file = /var/run/manticore/searchd.pid
         binlog_path = /var/lib/manticore/data
@@ -39,7 +39,7 @@ worker:
   image:
     repository: registry.gitlab.com/manticoresearch/helm-charts/worker
 #    tag: 0.0.1
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   service:
     ql:
       port: 9306
@@ -60,8 +60,8 @@ worker:
         listen = $ip:9312
         listen = $ip:9315-9415:replication
         binlog_path = /var/lib/manticore/data
-        log = /var/lib/manticore/log/searchd.log
-        query_log = /var/log/manticore/query.log
+        log = /dev/stdout
+        query_log = /dev/stdout
         query_log_format = sphinxql
         pid_file = /var/run/manticore/searchd.pid
         data_dir = /var/lib/manticore

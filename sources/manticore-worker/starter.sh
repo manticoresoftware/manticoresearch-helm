@@ -14,8 +14,7 @@ do
   sleep 1;
 done
 
-echo "Work end"
-
+echo "Mount success"
 
 php /etc/manticoresearch/replica.php &
 exec searchd --force-preread --nodetach
