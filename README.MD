@@ -69,7 +69,7 @@ export WORKER_NAME=$(kubectl get pods --namespace $NAMESPACE -l "app.kubernetes.
 
 | QL | HTTP | 
 |---|---|
-|`INSERT INTO cluster:idx (title) VALUES ('dog is brown'), ('mouse is small');`|`curl -X "POST" -H "Content-Type: application/x-ndjson" localhost:7308/bulk -d \ ` <br> `'{"insert": {"cluster":"manticore", "index" : "idx", "doc": { "title" : "dog is brown" } } }`<br>`{"insert": {"cluster":"manticore", "index" : "idx", "doc": { "title" : "mouse is small" } } }'`|
+|`INSERT INTO manticore:idx (title) VALUES ('dog is brown'), ('mouse is small');`|`curl -X "POST" -H "Content-Type: application/x-ndjson" localhost:7308/bulk -d \ ` <br> `'{"insert": {"cluster":"manticore", "index" : "idx", "doc": { "title" : "dog is brown" } } }`<br>`{"insert": {"cluster":"manticore", "index" : "idx", "doc": { "title" : "mouse is small" } } }'`|
 
 7) Forward load balancer's port to your local machine:
 
