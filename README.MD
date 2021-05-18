@@ -67,13 +67,21 @@ export WORKER_NAME=$(kubectl get pods --namespace $NAMESPACE -l "app.kubernetes.
 
 6) Add some data to your table:
 
-| SQL | HTTP | 
-|---|---|
-|`INSERT INTO manticore:idx (title) VALUES ('dog is brown'), ('mouse is small');`|`curl -X "POST" -H "Content-Type: application/x-ndjson" localhost:7308/bulk -d \ ` <br><br> `'{"insert": {"cluster":"manticore", "index" : "idx", "doc": { "title" : "dog is brown" } } }`<br>`{"insert": {"cluster":"manticore", "index" : "idx", "doc": { "title" : "mouse is small" } } }'`|
+### SQL
+```sql
+INSERT INTO manticore:idx (title) VALUES ('dog is brown'), ('mouse is small');
+```
+
+### HTTP 
+```bash
+curl -X "POST" -H "Content-Type: application/x-ndjson" localhost:7308/bulk -d \ 
+'{"insert": {"cluster":"manticore", "index" : "idx", "doc": { "title" : "dog is brown" } } }
+{"insert": {"cluster":"manticore", "index" : "idx", "doc": { "title" : "mouse is small" } } }'
+```
 
 7) Forward load balancer's port to your local machine:
 
-```
+```bash
 export NAMESPACE=manticore
 export BALANCER_NAME=$(kubectl get pods --namespace $NAMESPACE -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=manticore,name=manticore-manticoresearch-balancer" -o jsonpath="{.items[0].metadata.name}")
 ```
