@@ -167,7 +167,7 @@ Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/ser
 | worker.clusterName | Name of replication cluster | manticore |
 | worker.volume.size | Worker max storage size (mounted volume) | 1Gi |
 | worker.config.path | Worker config (only section `searchd`). <br>**Important**: you must always pass `$ip` to the config for proper functioning | searchd<br>      {<br>        listen = 9306:mysql41<br>        listen = 9301:mysql_vip<br>        listen = $ip:9312<br>        listen = $ip:9315-9325:replication<br>        binlog_path = /var/lib/manticore/data<br>        log = /var/lib/manticore/log/searchd.log<br>        query_log = /var/log/manticore/query.log<br>        query_log_format = sphinxql<br>        pid_file = /var/run/manticore/searchd.pid<br>        data_dir = /var/lib/manticore<br>        shutdown_timeout = 25s<br>      } |
-| exporter.enabled | Enable Prometheus exporter pod | true |
+| exporter.enabled | Enable Prometheus exporter pod | false |
 
 #### More Variables
 
@@ -177,7 +177,7 @@ Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/ser
 |---|---|---|
 | balancer.image.repository | Balancer docker image repository | Docker hub
 | balancer.image.tag | Balancer image version | Same as chart version |
-| balancer.image.pullPolicy | Balancer docker image update policy | Always |
+| balancer.image.pullPolicy | Balancer docker image update policy | IfNotPresent |
 | balancer.service.ql.port | Balancer service SQL port (for searchd) | 9306 |
 | balancer.service.ql.targetPort | Balancer service SQL targetPort (for searchd) | 9306 |
 | balancer.service.http.port | Balancer service HTTP port (for searchd) | 9306 |
@@ -187,7 +187,7 @@ Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/ser
 | balancer.config.path | Path to balancer config | /etc/manticoresearch/configmap.conf
 | worker.image.repository | Worker docker image repository | Docker hub |
 | worker.image.tag | Worker image version | Same as chart version |
-| worker.image.pullPolicy | Worker docker image update policy | Always |
+| worker.image.pullPolicy | Worker docker image update policy | IfNotPresent |
 | worker.service.ql.port | Worker service SQL port | 9306 |
 | worker.service.ql.targetPort | Worker service SQL targetPort | 9306 |
 | worker.service.http.port | Worker service HTTP port | 9306 |
@@ -206,8 +206,8 @@ Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/ser
 | affinity | Allows to set affinity (see k8s docs for details) | {} |
 | exporter.image.repository | Prometheus exporter docker image repository | Docker hub |
 | exporter.image.tag | Prometheus exporter image version | Same as chart version |
-| exporter.image.pullPolicy | Prometheus exporter image update policy (see k8s docs for details) | Always |
-
+| exporter.image.pullPolicy | Prometheus exporter image update policy (see k8s docs for details) | IfNotPresent |
+| exporter.image.annotations | Prometheus exporter annotations (Need for correct resolving) |     prometheus.io/path: /metrics<br>    prometheus.io/port: "8081"<br>    prometheus.io/scrape: "true" |
 </details>
 
 # Uninstall
