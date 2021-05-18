@@ -42,32 +42,32 @@ kubectl --namespace $NAMESPACE get po
 export WORKER_NAME=$(kubectl get pods --namespace $NAMESPACE -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=manticore,label=manticore-worker" -o jsonpath="{.items[0].metadata.name}")
 ```
 
-| QL | HTTP | 
+| SQL | HTTP | 
 |---|---|
 |`kubectl --namespace $NAMESPACE port-forward $WORKER_NAME 7306:9306` | `kubectl --namespace $NAMESPACE port-forward $WORKER_NAME 7308:9308` | 
 
 3) Connect to the worker:
 
-| QL | HTTP | 
+| SQL | HTTP | 
 |---|---|
-|`mysql -h0 -P7306`|`curl localhost:7308/sql`|
+|`mysql -h0 -P7306`| No connection required since HTTP is a stateless protocol |
 
 4) Create your first table:
 
-| QL | HTTP | 
+| SQL | HTTP | 
 |---|---|
 |`CREATE TABLE idx(title text);`|`curl -X "POST" localhost:7308/sql -d "mode=raw&query=create table idx(title text)"`|
 
 5) Add table to cluster:
 
-| QL | HTTP | 
+| SQL | HTTP | 
 |---|---|
 |`ALTER CLUSTER manticore ADD idx;`|`curl -X "POST" localhost:7308/sql -d "mode=raw&query=alter cluster manticore add idx"`|
 
 
 6) Add some data to your table:
 
-| QL | HTTP | 
+| SQL | HTTP | 
 |---|---|
 |`INSERT INTO manticore:idx (title) VALUES ('dog is brown'), ('mouse is small');`|`curl -X "POST" -H "Content-Type: application/x-ndjson" localhost:7308/bulk -d \ ` <br> `'{"insert": {"cluster":"manticore", "index" : "idx", "doc": { "title" : "dog is brown" } } }`<br>`{"insert": {"cluster":"manticore", "index" : "idx", "doc": { "title" : "mouse is small" } } }'`|
 
@@ -78,13 +78,13 @@ export NAMESPACE=manticore
 export BALANCER_NAME=$(kubectl get pods --namespace $NAMESPACE -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=manticore,name=manticore-manticoresearch-balancer" -o jsonpath="{.items[0].metadata.name}")
 ```
 
-| QL | HTTP | 
+| SQL | HTTP | 
 |---|---|
 |`kubectl --namespace $NAMESPACE port-forward $BALANCER_NAME 6306:9306`|`kubectl --namespace $NAMESPACE port-forward $BALANCER_NAME 6308:9308`|
 
 8) Search through the balancer:
 
-| QL | HTTP | 
+| SQL | HTTP | 
 |---|---|
 |`mysql -h0 -P6306 -e "SELECT * FROM idx WHERE match('dog')"`|`curl -X "POST" localhost:6308/search -d '{"index" : "idx", "query": { "match": { "_all": "dog" } } }'`|
 
