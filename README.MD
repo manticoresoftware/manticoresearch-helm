@@ -169,8 +169,8 @@ Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/ser
 | balancer.image.repository | Balancer docker image repository | Docker hub
 | balancer.image.tag | Balancer image version | Same as chart version |
 | balancer.image.pullPolicy | Balancer docker image update policy | Always |
-| balancer.service.ql.port | Balancer service QL port (for searchd) | 9306 |
-| balancer.service.ql.targetPort | Balancer service QL targetPort (for searchd) | 9306 |
+| balancer.service.ql.port | Balancer service SQL port (for searchd) | 9306 |
+| balancer.service.ql.targetPort | Balancer service SQL targetPort (for searchd) | 9306 |
 | balancer.service.http.port | Balancer service HTTP port (for searchd) | 9306 |
 | balancer.service.http.targetPort | Balancer service HTTP targetPort (for searchd) | 9306 |
 | balancer.service.observer.port | Balancer service port (for observer) | 8080 |
@@ -179,8 +179,8 @@ Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/ser
 | worker.image.repository | Worker docker image repository | Docker hub |
 | worker.image.tag | Worker image version | Same as chart version |
 | worker.image.pullPolicy | Worker docker image update policy | Always |
-| worker.service.ql.port | Worker service QL port | 9306 |
-| worker.service.ql.targetPort | Worker service QL targetPort | 9306 |
+| worker.service.ql.port | Worker service SQL port | 9306 |
+| worker.service.ql.targetPort | Worker service SQL targetPort | 9306 |
 | worker.service.http.port | Worker service HTTP port | 9306 |
 | worker.service.http.targetPort | Worker service HTTP targetPort | 9306 |
 | worker.config.path | Path to worker config | /etc/manticoresearch/configmap.conf |
