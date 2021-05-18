@@ -67,15 +67,16 @@ export WORKER_NAME=$(kubectl get pods --namespace $NAMESPACE -l "app.kubernetes.
 
 6) Add some data to your table:
 
-### SQL
+**SQL**
 ```sql
 INSERT INTO manticore:idx (title) VALUES ('dog is brown'), ('mouse is small');
 ```
 
-### HTTP 
+**HTTP**
 ```bash
-curl -X "POST" -H "Content-Type: application/x-ndjson" localhost:7308/bulk -d \ 
-'{"insert": {"cluster":"manticore", "index" : "idx", "doc": { "title" : "dog is brown" } } }
+curl -X "POST" -H "Content-Type: application/x-ndjson" localhost:7308/bulk -d '
+
+{"insert": {"cluster":"manticore", "index" : "idx", "doc": { "title" : "dog is brown" } } }
 {"insert": {"cluster":"manticore", "index" : "idx", "doc": { "title" : "mouse is small" } } }'
 ```
 
