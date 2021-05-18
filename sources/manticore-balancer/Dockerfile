@@ -1,4 +1,4 @@
-FROM manticoresearch/manticore:latest
+FROM manticoresearch/manticore:3.6.0
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 RUN apt --fix-broken install -y

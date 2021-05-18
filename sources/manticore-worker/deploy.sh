@@ -7,7 +7,7 @@
 #################################################################################################
 
 
-BUILD_TAG=0.0.1
+BUILD_TAG=3.6.0.0
 echo $BUILD_TAG
-docker build --no-cache -t registry.gitlab.com/manticoresearch/helm-charts/worker:$BUILD_TAG .
-docker push registry.gitlab.com/manticoresearch/helm-charts/worker:$BUILD_TAG
+docker build --no-cache -t manticoresearch/helm-worker:$BUILD_TAG .
+docker push manticoresearch/helm-worker:$BUILD_TAG

@@ -5,8 +5,8 @@
 balancer:
   runInterval: 5
   image:
-    repository: registry.gitlab.com/manticoresearch/helm-charts/balancer
-#    tag: 0.0.1
+    repository: manticoresearch/helm-balancer
+#    tag: 3.6.0.0
     pullPolicy: IfNotPresent
   service:
     ql:
@@ -37,8 +37,8 @@ worker:
   replicaCount: 3
   clusterName: manticore
   image:
-    repository: registry.gitlab.com/manticoresearch/helm-charts/worker
-#    tag: 0.0.1
+    repository: manticoresearch/helm-worker
+#    tag: 3.6.0.0
     pullPolicy: IfNotPresent
   service:
     ql:
@@ -71,16 +71,16 @@ worker:
 exporter:
   enabled: false
   image:
-    repository: registry.gitlab.com/manticoresearch/helm-charts/exporter
+    repository: manticoresearch/prometheus-exporter
     pullPolicy: IfNotPresent
-    tag: 0.0.1
+#    tag: 3.6.0.0
   annotations:
     prometheus.io/path: /metrics
     prometheus.io/port: "8081"
     prometheus.io/scrape: "true"
 
 
-imagePullSecrets: [name: registry-manticore]
+imagePullSecrets: []
 nameOverride: ""
 fullNameOverride: ""
 

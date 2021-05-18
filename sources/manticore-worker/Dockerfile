@@ -1,6 +1,6 @@
-FROM registry.gitlab.com/manticoresearch/helm-charts/balancer:0.0.1 AS builder
+FROM manticoresearch/helm-balancer:3.6.0.0 AS builder
 
-FROM manticoresearch/manticore:dev
+FROM manticoresearch/manticore:3.6.0
 
 RUN apt --fix-broken install -y
 
