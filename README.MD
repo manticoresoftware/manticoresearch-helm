@@ -13,7 +13,7 @@ The helm chart can be used for:
 * You can scale the workers statefulset down and the cluster will forget about the node.
 * If a worker is back up after a downtime it will rejoin the cluster and will be synced with active workers.
 * When you make a search request against the balancer it will route it to one of the workers.
-* Provides Prometheus exporter for the running instances of Manticore Search.
+* Provides Prometheus exporter for running instances of Manticore Search.
 
 # Install
 
@@ -25,7 +25,7 @@ helm install manticore -n manticore --create-namespace .
 
 # Quick start guide:
 
-1) Expose namespace to a variable for more convenient
+1) Expose namespace to a variable for more convenient:
    
 ```
 export NAMESPACE=manticore
