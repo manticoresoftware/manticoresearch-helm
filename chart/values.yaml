@@ -6,7 +6,7 @@ balancer:
   runInterval: 5
   image:
     repository: manticoresearch/helm-balancer
-    tag: 3.6.0.0
+#    tag: 3.6.0.0
     pullPolicy: IfNotPresent
   service:
     ql:
@@ -38,7 +38,7 @@ worker:
   clusterName: manticore
   image:
     repository: manticoresearch/helm-worker
-    tag: 3.6.0.0
+#    tag: 3.6.0.0
     pullPolicy: IfNotPresent
   service:
     ql:
@@ -73,7 +73,7 @@ exporter:
   image:
     repository: manticoresearch/prometheus-exporter
     pullPolicy: IfNotPresent
-    tag: 3.6.0.0
+#    tag: 3.6.0.0
   annotations:
     prometheus.io/path: /metrics
     prometheus.io/port: "8081"
