@@ -1,6 +1,6 @@
-# MOVED TO https://gitlab.com/manticoresearch/manticoresearch-helm on May 19 2021
-
 # Manticore Search Helm Chart
+
+Version: 3.6.0.0
 
 The helm chart can be used for:
 * making highly available Manticore Search cluster
