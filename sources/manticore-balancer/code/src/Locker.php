@@ -12,7 +12,7 @@ class Locker
 
     public function __construct($name)
     {
-        $this->fp   = fopen(DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . $name . '.lock', 'wb+');
+        $this->fp = fopen(DIRECTORY_SEPARATOR.'tmp'.DIRECTORY_SEPARATOR.$name.'.lock', 'wb+');
         $this->name = $name;
         if (defined("OPTIMIZE_FILE")) {
             $this->optimizeLockFile = OPTIMIZE_FILE;
@@ -21,7 +21,7 @@ class Locker
 
     public function checkLock(): bool
     {
-        if ( ! flock($this->fp, LOCK_EX | LOCK_NB)) {
+        if (!flock($this->fp, LOCK_EX | LOCK_NB)) {
             Manticore::logger("Another process of $this->name already runned");
             $this->unlock();
         }
@@ -38,14 +38,18 @@ class Locker
     public function checkOptimizeLock(): bool
     {
         if ($this->optimizeLockFile !== null && file_exists($this->optimizeLockFile)) {
-            $ip         = file_get_contents(OPTIMIZE_FILE);
+            $ip = file_get_contents(OPTIMIZE_FILE);
             $manticore = new Manticore($ip);
-            $rows       = $manticore->showThreads();
-            foreach ($rows as $row) {
-                if (strpos($row, 'optimize') !== false) {
-                    return true;
+            $rows = $manticore->showThreads();
+
+            if ($rows) {
+                foreach ($rows as $row) {
+                    if (strpos($row, 'SYSTEM OPTIMIZE') !== false) {
+                        return true;
+                    }
                 }
             }
+
             unlink(OPTIMIZE_FILE);
         }
 

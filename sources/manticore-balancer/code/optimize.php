@@ -49,7 +49,6 @@ function prepareNodes($nodes): array
     return $clearedNodes;
 }
 
-Manticore::logger(json_encode($nodes));
 $checkedWorkers = $cache->get(Cache::CHECKED_WORKERS);
 $checkedIndexes = $cache->get(Cache::CHECKED_INDEXES);
 
@@ -84,7 +83,7 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
 
         /* Get CPU count from node */
         if ( ! $cpuLimit) {
-            $cpuLimit = $nodes[$pod['spec']['nodeName']];
+            $cpuLimit = (int) $nodes[$pod['spec']['nodeName']];
         }
 
         Manticore::logger("Init Manticore " . $pod['spec']['nodeName'] . " at " . $pod['status']['podIP'] . ":" . WORKER_PORT);
@@ -101,12 +100,17 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
 
             $chunks = $manticore->getChunksCount($index);
 
-            Manticore::logger("Check " . $pod['spec']['nodeName'] . "->" . $index . "  ($chunks * 2 > $cpuLimit) " . (($chunks * 2 > $cpuLimit) ? 'true' : 'false'));
-            if ($chunks * 2 > $cpuLimit) {
-                $manticore->optimize($index);
+            if ($chunks > $cpuLimit * 2) {
+
+                Manticore::logger("Start optimizing $index " . $pod['spec']['nodeName'] . "  ($chunks > $cpuLimit * 2) " .
+                    (($chunks > $cpuLimit * 2) ? 'true' : 'false'));
+
+                $manticore->optimize($index, $cpuLimit * 2);
                 $locker->setOptimizeLock($pod['status']['podIP'] . ":" . WORKER_PORT);
                 $cache->store(Cache::CHECKED_WORKERS, $checkedWorkers);
                 $cache->store(Cache::CHECKED_INDEXES, $checkedIndexes);
+
+                Manticore::logger("Optimize was started successfully. Break watching");
                 $locker->unlock(0);
             }
         }

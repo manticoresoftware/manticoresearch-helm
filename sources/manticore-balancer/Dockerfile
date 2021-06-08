@@ -4,7 +4,7 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 apt-get update && apt-get install -y nano curl unzip git php-cli php-mysqlnd php-curl supervisor && rm -rf /var/lib/apt/lists/* && \
 mkdir /var/www && mkdir /var/www/localhost
 
-COPY code starter.sh job_runner.sh /var/www/localhost/
+COPY code starter.sh job_runner.sh optimize_runner.sh /var/www/localhost/
 COPY supervisord.conf /etc/supervisord.conf
 
 RUN cd /var/www/localhost && \

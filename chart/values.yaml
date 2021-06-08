@@ -79,6 +79,9 @@ exporter:
     prometheus.io/port: "8081"
     prometheus.io/scrape: "true"
 
+optimize:
+  enabled: false
+  interval: "30"
 
 imagePullSecrets: []
 nameOverride: ""

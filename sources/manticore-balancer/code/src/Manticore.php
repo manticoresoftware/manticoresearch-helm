@@ -17,9 +17,9 @@ class Manticore
     private function connect($url): void
     {
         try {
-            $this->connection = new mysqli($url . ":" . WORKER_PORT);
+            $this->connection = new mysqli($url.":".WORKER_PORT);
         } catch (Exception $exception) {
-            self::logger("Can't connect to worker at :" . $url);
+            self::logger("Can't connect to worker at :".$url);
             exit(1);
         }
     }
@@ -36,7 +36,7 @@ class Manticore
                 $clusterName = $row['Value'];
             }
 
-            if ($row['Counter'] === "cluster_" . $clusterName . "_indexes" && trim($row['Value']) !== "") {
+            if ($row['Counter'] === "cluster_".$clusterName."_indexes" && trim($row['Value']) !== "") {
                 $tables = explode(',', $row['Value']);
             }
         }
@@ -49,7 +49,7 @@ class Manticore
     {
         $result = $this->connection->query($query);
 
-        if ( ! empty($result)) {
+        if (!empty($result)) {
             /** @var \mysqli_result $result */
             $result = $result->fetch_all(MYSQLI_ASSOC);
             if ($result !== null) {
@@ -62,7 +62,7 @@ class Manticore
 
     public function showThreads()
     {
-        return $this->fetch('SHOW TREADS');
+        return $this->fetch('SHOW TREADS option format=all');
     }
 
     public function reloadIndexes(): void
@@ -72,25 +72,25 @@ class Manticore
 
     public function getChunksCount($index): int
     {
-        $indexStatus = $this->fetch('SHOW INDEX ' . $index . ' STATUS');
+        $indexStatus = $this->fetch('SHOW INDEX '.$index.' STATUS');
         foreach ($indexStatus as $row) {
 
             if ($row["Variable_name"] === 'disk_chunks') {
-                return (int)$row["Value"];
+                return (int) $row["Value"];
             }
         }
         throw new \RuntimeException("Can't get chunks count");
     }
 
 
-    public function optimize($index): void
+    public function optimize($index, $cutoff): void
     {
-        $this->connection->query('OPTIMIZE INDEX ' . $index);
+        $this->connection->query('OPTIMIZE INDEX '.$index.' OPTION cutoff='.$cutoff);
     }
 
     public static function logger($line): void
     {
-        $line = date("Y-m-d H:i:s") . ': ' . $line . "\n";
+        $line = date("Y-m-d H:i:s").': '.$line."\n";
         echo "$line\n";
     }
 

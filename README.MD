@@ -1,6 +1,6 @@
 # Manticore Search Helm Chart
 
-Version: 3.6.0.0
+Version: 3.6.0.2
 
 The helm chart can be used for:
 * making highly available Manticore Search cluster
@@ -210,6 +210,9 @@ Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/ser
 | exporter.image.tag | Prometheus exporter image version | Same as chart version |
 | exporter.image.pullPolicy | Prometheus exporter image update policy (see k8s docs for details) | IfNotPresent |
 | exporter.image.annotations | Prometheus exporter annotations (Need for correct resolving) |     prometheus.io/path: /metrics<br>    prometheus.io/port: "8081"<br>    prometheus.io/scrape: "true" |
+| optimize.enabled | Switch on auto optimize script  |     false |
+| optimize.interval | Interval in seconds for running optimize script  |     false |
+
 </details>
 
 # Uninstall
