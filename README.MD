@@ -27,7 +27,7 @@ helm install manticore -n manticore --create-namespace .
 
 # Quick start guide:
 
-1) Expose namespace to a variable for more convenient:
+1) Export namespace name to variable for your convenience:
    
 ```
 export NAMESPACE=manticore
