@@ -82,6 +82,7 @@ exporter:
 optimize:
   enabled: false
   interval: "30"
+  coefficient: "2"
 
 imagePullSecrets: []
 nameOverride: ""

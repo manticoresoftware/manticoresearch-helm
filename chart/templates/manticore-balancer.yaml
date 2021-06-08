@@ -45,6 +45,8 @@ spec:
           {{- if .Values.optimize.enabled }}
           - name: OPTIMIZE_RUN_INTERVAL
             value: "{{ .Values.optimize.interval }}"
+          - name: CHUNKS_COEFFICIENT
+            value: "{{ .Values.optimize.coefficient }}"
           {{- end }}
           - name: WORKER_LABEL
             value: "manticore-worker"

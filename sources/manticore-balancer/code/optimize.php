@@ -7,10 +7,11 @@ use chart\Locker;
 
 require 'vendor/autoload.php';
 
-const OPTIMIZE_FILE = DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . 'optimize.process.lock';
+const OPTIMIZE_FILE = DIRECTORY_SEPARATOR.'tmp'.DIRECTORY_SEPARATOR.'optimize.process.lock';
 
 define("WORKER_LABEL", getenv('WORKER_LABEL'));
 define("WORKER_PORT", getenv('WORKER_PORT'));
+define("CHUNKS_COEFFICIENT", (int) getenv('CHUNKS_COEFFICIENT'));
 
 $locker = new Locker('optimize');
 $locker->checkLock();
@@ -55,11 +56,11 @@ $checkedIndexes = $cache->get(Cache::CHECKED_INDEXES);
 foreach ($manticoreStatefulsets['items'] as $pod) {
     if (isset($pod['metadata']['labels']['label'])
         && $pod['metadata']['labels']['label'] === WORKER_LABEL
-        && $pod['status']['phase'] === 'Running') {
-
-        Manticore::logger("Check node " . $pod['spec']['nodeName']);
+        && $pod['status']['phase'] === 'Running'
+    ) {
+        Manticore::logger("Check node ".$pod['spec']['nodeName']);
         if (isset($checkedWorkers[$pod['spec']['nodeName']])) {
-            Manticore::logger("Skip node " . $pod['spec']['nodeName'] . " cause it already handled");
+            Manticore::logger("Skip node ".$pod['spec']['nodeName']." cause it already handled");
             continue;
         }
 
@@ -67,7 +68,6 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
 
         /* Get CPU count as pod limit resources */
         foreach ($pod['spec']['containers'] as $container) {
-
             if (strpos($container['name'], 'worker') === false) {
                 continue;
             }
@@ -75,7 +75,7 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
             if (isset($container['resources']['limits']['cpu'])) {
                 $cpuLimit = $container['resources']['limits']['cpu'];
                 if (stripos($cpuLimit, 'm') !== false) {
-                    $cpuLimit = (int)((int)$cpuLimit / 1000);
+                    $cpuLimit = (int) ((int) $cpuLimit / 1000);
                 }
                 $cpuLimit = ceil($cpuLimit);
             }
@@ -86,27 +86,26 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
             $cpuLimit = (int) $nodes[$pod['spec']['nodeName']];
         }
 
-        Manticore::logger("Init Manticore " . $pod['spec']['nodeName'] . " at " . $pod['status']['podIP'] . ":" . WORKER_PORT);
-        $manticore = new Manticore($pod['status']['podIP'] . ":" . WORKER_PORT);
+        Manticore::logger("Init Manticore ".$pod['spec']['nodeName']." at ".$pod['status']['podIP'].":".WORKER_PORT);
+        $manticore = new Manticore($pod['status']['podIP'].":".WORKER_PORT);
         $indexes   = $manticore->getIndexes();
 
         foreach ($indexes as $index) {
-            Manticore::logger("Check index " . $index);
+            Manticore::logger("Check index ".$index);
             if (isset($checkedIndexes[$index])) {
-                Manticore::logger("Skip index " . $index . " cause it already handled");
+                Manticore::logger("Skip index ".$index." cause it already handled");
                 continue;
             }
             $checkedIndexes[$index] = 1;
 
             $chunks = $manticore->getChunksCount($index);
 
-            if ($chunks > $cpuLimit * 2) {
+            if ($chunks > $cpuLimit * CHUNKS_COEFFICIENT) {
+                Manticore::logger("Start optimizing $index ".$pod['spec']['nodeName']."  ($chunks > $cpuLimit * ".CHUNKS_COEFFICIENT.") ".
+                    (($chunks > $cpuLimit * CHUNKS_COEFFICIENT) ? 'true' : 'false'));
 
-                Manticore::logger("Start optimizing $index " . $pod['spec']['nodeName'] . "  ($chunks > $cpuLimit * 2) " .
-                    (($chunks > $cpuLimit * 2) ? 'true' : 'false'));
-
-                $manticore->optimize($index, $cpuLimit * 2);
-                $locker->setOptimizeLock($pod['status']['podIP'] . ":" . WORKER_PORT);
+                $manticore->optimize($index, $cpuLimit * CHUNKS_COEFFICIENT);
+                $locker->setOptimizeLock($pod['status']['podIP'].":".WORKER_PORT);
                 $cache->store(Cache::CHECKED_WORKERS, $checkedWorkers);
                 $cache->store(Cache::CHECKED_INDEXES, $checkedIndexes);
 
