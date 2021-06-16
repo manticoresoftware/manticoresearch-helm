@@ -34,4 +34,4 @@ mysql -h0 -P6306 -e "SELECT * FROM idx WHERE match('dog')"
 
 9) Scale the cluster:
 
-kubectl scale statefulsets manticore-manticoresearch-worker -n manticore --replicas=5
+kubectl scale statefulsets manticore-manticoresearch-worker -n {{ .Release.Namespace }} --replicas=5

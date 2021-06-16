@@ -31,5 +31,5 @@ roleRef:
   name: {{ include "manticoresearch.fullname" . }}
 subjects:
   - kind: ServiceAccount
-    namespace: helm
+    namespace: {{ .Release.Namespace }}
     name: {{ include "manticoresearch.serviceAccountName" . }}
