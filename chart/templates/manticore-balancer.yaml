@@ -6,7 +6,7 @@ metadata:
     name: {{ include "manticoresearch.fullname" . }}-balancer
     {{- include "manticoresearch.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.balancer.replicaCount }}
   selector:
     matchLabels:
       name: {{ include "manticoresearch.fullname" . }}-balancer

@@ -3,6 +3,7 @@
 # Declare variables to be passed into your templates.
 
 balancer:
+  replicaCount: 1
   runInterval: 5
   image:
     repository: manticoresearch/helm-balancer
