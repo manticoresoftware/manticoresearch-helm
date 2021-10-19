@@ -29,11 +29,7 @@ helm install manticore -n manticore --create-namespace .
 
 # Quick start guide:
 
-### Configure
-To enable automatic index compaction you need to update `values.yaml` and set `optimize.enabled = true`. `optimize.interval` controls how often to attempt disk chunks merging.
-
-### Expose NAMESPACE
-Expose namespace to a variable for more convenient:
+1) Export namespace name to variable for your convenience:
    
 ```
 export NAMESPACE=manticore
