@@ -40,8 +40,14 @@ spec:
         image: "{{ .Values.balancer.image.repository }}:{{ .Values.balancer.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.balancer.image.pullPolicy }}
         env:
-          - name: RUN_INTERVAL
+          - name: OBSERVER_RUN_INTERVAL
             value: "{{ .Values.balancer.runInterval }}"
+          {{- if .Values.optimize.enabled }}
+          - name: OPTIMIZE_RUN_INTERVAL
+            value: "{{ .Values.optimize.interval }}"
+          - name: CHUNKS_COEFFICIENT
+            value: "{{ .Values.optimize.coefficient }}"
+          {{- end }}
           - name: WORKER_LABEL
             value: "manticore-worker"
           - name: CONFIGMAP_PATH

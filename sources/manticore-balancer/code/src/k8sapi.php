@@ -9,10 +9,12 @@ use GuzzleHttp\Exception\RequestException;
 class k8sapi
 {
 
+    const API_URL_SCHEME_NO_NS = '{{API-URL}}/{{API-VERSION}}/{{API-SECTION}}';
     const API_URL_SCHEME = '{{API-URL}}/{{API-VERSION}}/namespaces/{{NAMESPACE}}/{{API-SECTION}}';
     const TYPE_STATEFULSET = 'statefulsets';
     const TYPE_SERVICE = 'services';
     const TYPE_PODS = 'pods';
+    const TYPE_NODES = 'nodes';
 
 
     private $apiUrl = 'https://kubernetes.default.svc';
@@ -24,7 +26,8 @@ class k8sapi
         'configmaps'             => 'api/v1',
         'persistentvolumeclaims' => 'api/v1',
         'secrets'                => 'api/v1',
-        self::TYPE_PODS          => 'api/v1'
+        self::TYPE_PODS          => 'api/v1',
+        self::TYPE_NODES         => 'api/v1',
     ];
 
     private $bearer;
@@ -46,8 +49,12 @@ class k8sapi
         return json_decode($this->request(self::TYPE_PODS)->getBody()->getContents(), true);
     }
 
+    public function getNodes()
+    {
+        return json_decode($this->request(self::TYPE_NODES, 'GET', true)->getBody()->getContents(), true);
+    }
 
-    private function request($section, $type = "GET")
+    private function request($section, $type = "GET", $noNamespace = false)
     {
         $params = [
             'verify'  => $this->cert,
@@ -59,12 +66,17 @@ class k8sapi
             ]
         ];
 
-        return $this->call($type, $this->getUrl($section), $params);
+        return $this->call($type, $this->getUrl($section, $noNamespace), $params);
     }
 
 
-    private function getUrl($section)
+    private function getUrl($section, $noNamespace = false)
     {
+        if ($noNamespace) {
+            return str_replace(['{{API-URL}}', '{{API-VERSION}}', '{{API-SECTION}}'],
+                [$this->apiUrl, $this->apiSections[$section], $section], self::API_URL_SCHEME_NO_NS);
+        }
+
         return str_replace(['{{API-URL}}', '{{API-VERSION}}', '{{NAMESPACE}}', '{{API-SECTION}}'],
             [$this->apiUrl, $this->apiSections[$section], $this->namespace, $section], self::API_URL_SCHEME);
     }

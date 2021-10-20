@@ -1,6 +1,6 @@
 # Manticore Search Helm Chart
 
-Version: 3.6.0.0
+Version: 3.6.0.2
 
 The helm chart can be used for:
 * making highly available Manticore Search cluster
@@ -15,6 +15,7 @@ The helm chart can be used for:
 * You can scale the workers statefulset down and the cluster will forget about the node.
 * If a worker is back up after a downtime it will rejoin the cluster and will be synced with active workers.
 * When you make a search request against the balancer it will route it to one of the workers.
+* Compaction (OPTIMIZE) is done automatically.
 * Provides Prometheus exporter for running instances of Manticore Search.
 
 # Install
@@ -22,6 +23,7 @@ The helm chart can be used for:
 ```
 git clone https://github.com/manticoresoftware/manticoresearch-helm
 cd manticoresearch-helm/chart/
+# update values.yaml if needed, see below
 helm install manticore -n manticore --create-namespace .
 ```
 
@@ -33,13 +35,15 @@ helm install manticore -n manticore --create-namespace .
 export NAMESPACE=manticore
 ```
 
-2) Wait until all pods are moved to running state:
+### Wait until it starts
+Wait until all pods are moved to running state:
 
 ```
 kubectl --namespace $NAMESPACE get po
 ```
 
-2) Forward worker's port to your local machine:
+### Forward worker's port
+Forward worker's port to your local machine:
 ```
 export WORKER_NAME=$(kubectl get pods --namespace $NAMESPACE -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=manticore,label=manticore-worker" -o jsonpath="{.items[0].metadata.name}")
 ```
@@ -48,26 +52,25 @@ export WORKER_NAME=$(kubectl get pods --namespace $NAMESPACE -l "app.kubernetes.
 |---|---|
 |`kubectl --namespace $NAMESPACE port-forward $WORKER_NAME 7306:9306` | `kubectl --namespace $NAMESPACE port-forward $WORKER_NAME 7308:9308` | 
 
-3) Connect to the worker:
+### Connect to the worker
 
 | SQL | HTTP | 
 |---|---|
 |`mysql -h0 -P7306`| No connection required since HTTP is a stateless protocol |
 
-4) Create your first table:
+### Create your first table:
 
 | SQL | HTTP | 
 |---|---|
 |`CREATE TABLE idx(title text);`|`curl -X "POST" localhost:7308/sql -d "mode=raw&query=create table idx(title text)"`|
 
-5) Add table to cluster:
+### Add table to cluster:
 
 | SQL | HTTP | 
 |---|---|
 |`ALTER CLUSTER manticore ADD idx;`|`curl -X "POST" localhost:7308/sql -d "mode=raw&query=alter cluster manticore add idx"`|
 
-
-6) Add some data to your table:
+### Add some data to your table:
 
 **SQL**
 ```sql
@@ -82,7 +85,7 @@ curl -X "POST" -H "Content-Type: application/x-ndjson" localhost:7308/bulk -d '
 {"insert": {"cluster":"manticore", "index" : "idx", "doc": { "title" : "mouse is small" } } }'
 ```
 
-7) Forward load balancer's port to your local machine:
+### Forward load balancer's port to your local machine:
 
 ```bash
 export NAMESPACE=manticore
@@ -93,13 +96,13 @@ export BALANCER_NAME=$(kubectl get pods --namespace $NAMESPACE -l "app.kubernete
 |---|---|
 |`kubectl --namespace $NAMESPACE port-forward $BALANCER_NAME 6306:9306`|`kubectl --namespace $NAMESPACE port-forward $BALANCER_NAME 6308:9308`|
 
-8) Search through the balancer:
+### Search through the balancer:
 
 | SQL | HTTP | 
 |---|---|
 |`mysql -h0 -P6306 -e "SELECT * FROM idx WHERE match('dog')"`|`curl -X "POST" localhost:6308/search -d '{"index" : "idx", "query": { "match": { "_all": "dog" } } }'`|
 
-9) Scale the cluster:
+### Scale the cluster:
 
 ```
 kubectl scale statefulsets manticore-manticoresearch-worker -n manticore --replicas=5
@@ -137,6 +140,19 @@ Each 5 seconds (see `balancer.runInterval`) the balancer:
 
 When a worker stops it also sends a singal to the balancer, so it doesn't have to wait 5 seconds.
 
+### How does auto OPTIMIZE work?
+To enable automatic index compaction you need to update `values.yaml` and set `optimize.enabled = true`. `optimize.interval` controls how often to attempt disk chunks merging.
+
+Automatic index compaction follows this algorithm:
+1) Only one compaction session (OPTIMIZE) at once is allowed, so we check if previous OPTIMIZE finished or never started.
+2) If all is ok we get info about pods labeled as `WORKER_LABEL` and attempt OPTIMIZE on each one by one.
+3) We pick the index which makes sense to compact next.
+4) We get number of CPU cores to calculate the optimial chunks count to leave after the compaction:
+  a) either from the pod's limits
+  b) of it's not set - from the host
+5) And run OPTIMIZE with `cutoff=<cpuCores * values.optimize.coefficient>`
+
+
 ## Making queries to the cluster
 ### Writes
 Write queries (INSERT/UPDATE/DELETE/REPLACE/TRUNCATE/ALTER) are supposed to be made to the worker pods (either of them). From inside k8s you can connect to:
@@ -158,6 +174,7 @@ where:
 * `svc.cluster.local` - means you are connecting to a service
 
 Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/).
+
 
 # Variables
 
@@ -210,6 +227,9 @@ Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/ser
 | exporter.image.tag | Prometheus exporter image version | Same as chart version |
 | exporter.image.pullPolicy | Prometheus exporter image update policy (see k8s docs for details) | IfNotPresent |
 | exporter.image.annotations | Prometheus exporter annotations (Need for correct resolving) |     prometheus.io/path: /metrics<br>    prometheus.io/port: "8081"<br>    prometheus.io/scrape: "true" |
+| optimize.enabled | Switch on auto optimize script  |     false |
+| optimize.interval | Interval in seconds for running optimize script  |     false |
+
 </details>
 
 # Uninstall
