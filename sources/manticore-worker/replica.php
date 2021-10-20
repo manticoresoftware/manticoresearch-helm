@@ -4,10 +4,10 @@ use chart\k8sapi;
 
 require 'vendor/autoload.php';
 
-$port          = getenv("MANTICORE_PORT");
-$clusterName   = getenv("CLUSTER_NAME");
-$balancerUrl   = getenv('BALANCER_URL');
-$label         = getenv('WORKER_LABEL');
+$port = getenv("MANTICORE_PORT");
+$clusterName = getenv("CLUSTER_NAME");
+$balancerUrl = getenv('BALANCER_URL');
+$label = getenv('WORKER_LABEL');
 $workerService = getenv('WORKER_SERVICE');
 
 if (empty($port)) {
@@ -15,9 +15,9 @@ if (empty($port)) {
 }
 
 for ($i = 0; $i <= 50; $i++) {
-    $connection = new mysqli('localhost:' . $port, '', '', '');
+    $connection = new mysqli('localhost:'.$port, '', '', '');
 
-    if ( ! $connection->connect_errno) {
+    if (!$connection->connect_errno) {
         break;
     }
 
@@ -30,7 +30,7 @@ $clusterExists = '';
 $clusterStatus = $connection->query("show status");
 if ($clusterStatus !== null) {
 
-    $clusterStatus = (array)$clusterStatus->fetch_all(MYSQLI_ASSOC);
+    $clusterStatus = (array) $clusterStatus->fetch_all(MYSQLI_ASSOC);
     foreach ($clusterStatus as $row) {
         if ($row['Counter'] === 'cluster_name') {
             $clusterExists = $row['Value'];
@@ -44,13 +44,17 @@ if ($clusterExists === '') {
 
     $manticoreStatefulsets = $api->getManticorePods();
 
-    if ( ! isset($manticoreStatefulsets['items'])) {
+    if (!isset($manticoreStatefulsets['items'])) {
         echo "\n\nK8s api don't responsed\n";
         exit(1);
     }
 
-    $min   = [];
+    $min = [];
     $count = 0;
+
+    $hostname = getenv('HOSTNAME');
+    $hostIndex = preg_match('/^.*?-(\d+)/usi', $hostname, $matches);
+    $hostIndex = (int) $matches[1];
 
     foreach ($manticoreStatefulsets['items'] as $pod) {
         if (isset($pod['metadata']['labels']['label'])
@@ -58,16 +62,16 @@ if ($clusterExists === '') {
             if ($pod['status']['phase'] === 'Running' || $pod['status']['phase'] === 'Pending') {
                 $fullName = trim($pod['metadata']["name"]);
 
-                $key       = (int)substr($fullName, -1);
+                $key = (int) substr($fullName, -1);
                 $min[$key] = $fullName;
                 $count++;
             } else {
-                echo json_encode($pod) . "\n\n";
+                echo json_encode($pod)."\n\n";
             }
         }
     }
 
-    echo "Replica hook: Pods count:" . $count . "\n";
+    echo "Replica hook: Pods count:".$count."\n";
 
 
     if ($count > 1) {
@@ -75,13 +79,18 @@ if ($clusterExists === '') {
         ksort($min);
         $first = array_shift($min);
 
+        if ($hostIndex === 0) {
+            $first = array_shift($min);
+            echo "Replica hook: Zero replica creation. Shift +1:".$first."\n";
+        }
+
         for ($i = 0; $i <= 5; $i++) {
             echo "Replica hook: Join cluster\n";
-            $sql = "JOIN CLUSTER $clusterName at '" . $first . "." . $workerService . ":9312'";
+            $sql = "JOIN CLUSTER $clusterName at '".$first.".".$workerService.":9312'";
             $connection->query($sql);
             echo "Replica hook: Sql query: $sql\n";
             if ($connection->error) {
-                echo "Replica hook: QL error: " . $connection->error . "\n";
+                echo "Replica hook: QL error: ".$connection->error."\n";
             } else {
                 echo "Replica hook: Join success \n";
                 break;
@@ -95,7 +104,7 @@ if ($clusterExists === '') {
         $connection->query($sql);
         echo "Replica hook: Sql query: $sql\n";
         if ($connection->error) {
-            echo "Replica hook: QL error: " . $connection->error . "\n";
+            echo "Replica hook: QL error: ".$connection->error."\n";
         }
     }
 

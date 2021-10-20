@@ -2,5 +2,5 @@
 
 while [ true ]; do
   php observer.php &
-  sleep $RUN_INTERVAL
+  sleep $OBSERVER_RUN_INTERVAL
 done
