@@ -58,9 +58,9 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
         && $pod['metadata']['labels']['label'] === WORKER_LABEL
         && $pod['status']['phase'] === 'Running'
     ) {
-        Manticore::logger("Check pod ".$pod['metadata']['name']);
+        //  Manticore::logger("Check pod ".$pod['metadata']['name']);
         if (isset($checkedWorkers[$pod['metadata']['name']])) {
-            Manticore::logger("Skip pod ".$pod['metadata']['name']." cause it already handled");
+//            Manticore::logger("Skip pod ".$pod['metadata']['name']." cause it already handled");
             continue;
         }
 
@@ -86,14 +86,14 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
             $cpuLimit = (int) $nodes[$pod['spec']['nodeName']];
         }
 
-        Manticore::logger("Init Manticore ".$pod['metadata']['name']." at ".$pod['status']['podIP'].":".WORKER_PORT);
+//        Manticore::logger("Init Manticore ".$pod['metadata']['name']." at ".$pod['status']['podIP'].":".WORKER_PORT);
         $manticore = new Manticore($pod['status']['podIP'].":".WORKER_PORT);
         $indexes   = $manticore->getIndexes();
 
         foreach ($indexes as $index) {
-            Manticore::logger("Check index ".$index);
+//            Manticore::logger("Check index ".$index);
             if (isset($checkedIndexes[$index])) {
-                Manticore::logger("Skip index ".$index." cause it already handled");
+//                Manticore::logger("Skip index ".$index." cause it already handled");
                 continue;
             }
             $checkedIndexes[$index] = 1;
