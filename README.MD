@@ -113,7 +113,7 @@ kubectl scale statefulsets manticore-manticoresearch-worker -n manticore --repli
 In volumes. One volume per worker. The PVC is by default 1 gigabyte (see variable `worker.volume.size`)
 
 #### How does the high availability achieved?
-* synchrounous master-master replication
+* synchronous master-master replication
 * data remains in volume even after the worker is stopped/deleted
 
 #### If a worker goes down, is its data lost?
