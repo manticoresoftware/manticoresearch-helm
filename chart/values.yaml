@@ -23,6 +23,7 @@ balancer:
     content: |
       searchd
       {
+        listen = /var/run/mysqld/mysqld.sock:mysql
         listen = 9306:mysql
         listen = 9308:http
         log = /dev/stdout
@@ -54,6 +55,7 @@ worker:
     content: |
       searchd
       {
+        listen = /var/run/mysqld/mysqld.sock:mysql
         listen = 9306:mysql
         listen = 9308:http
         listen = 9301:mysql_vip
