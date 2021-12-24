@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: {{ include "manticoresearch.fullname" . }}-balancer
   labels:
@@ -10,7 +10,6 @@ spec:
   selector:
     matchLabels:
       name: {{ include "manticoresearch.fullname" . }}-balancer
-  serviceName: {{ include "manticoresearch.fullname" . }}-balancer-svc
   template:
     metadata:
       {{- if or .Values.exporter.enabled .Values.podAnnotations }}
