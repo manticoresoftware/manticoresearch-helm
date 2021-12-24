@@ -1,13 +1,6 @@
 FROM manticoresearch/helm-balancer:dev AS builder
 
-FROM manticoresearch/manticore:4.0.2
-
-RUN apt-get update && \
-    apt-get install -y wget && \
-    wget http://repo.manticoresearch.com/manticore-dev-repo.noarch.deb && \
-    dpkg -i manticore-dev-repo.noarch.deb && \
-    apt update && \
-    apt install manticore=4.0.3-211016-d1baeb72d
+FROM manticoresearch/manticore:4.2.0
 
 RUN apt --fix-broken install -y && echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
 apt-get update && apt-get install -y curl php-cli php-mysqlnd php-curl wget && rm -rf /var/lib/apt/lists/*

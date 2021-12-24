@@ -1,12 +1,5 @@
 FROM manticoresearch/manticore:4.0.2
 
-RUN apt-get update && \
-    apt-get install -y wget && \
-    wget http://repo.manticoresearch.com/manticore-dev-repo.noarch.deb && \
-    dpkg -i manticore-dev-repo.noarch.deb && \
-    apt update && \
-    apt install manticore=4.0.3-211016-d1baeb72d
-
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && apt --fix-broken install -y && \
 apt-get update && apt-get install -y nano curl unzip git php-cli php-mysqlnd php-curl supervisor && rm -rf /var/lib/apt/lists/* && \
 mkdir /var/www && mkdir /var/www/localhost
