@@ -6,6 +6,7 @@ metadata:
     name: {{ include "manticoresearch.fullname" . }}-worker-svc
     {{- include "manticoresearch.labels" . | nindent 4 }}
 spec:
+  clusterIP: "None"
   ports:
     - port: {{ .Values.worker.service.ql.port }}
       targetPort: {{ .Values.worker.service.ql.targetPort }}

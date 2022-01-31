@@ -6,7 +6,7 @@
 #                                                                                               #
 #################################################################################################
 
-BUILD_TAG=4.2.0.0
+BUILD_TAG=4.2.0.1
 echo $BUILD_TAG
 docker build --no-cache -t manticoresearch/helm-balancer:$BUILD_TAG .
 docker push manticoresearch/helm-balancer:$BUILD_TAG
