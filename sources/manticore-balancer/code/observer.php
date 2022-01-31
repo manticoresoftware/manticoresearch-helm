@@ -27,7 +27,7 @@ $cache = new Cache();
 $manticoreStatefulsets = $api->getManticorePods();
 
 if ( ! isset($manticoreStatefulsets['items'])) {
-    Manticore::logger("K8s api don't responsed");
+    Manticore::logger("FATAL: No response from k8s API");
     exit(1);
 }
 
@@ -64,7 +64,7 @@ if ($tables) {
     $hash         = sha1(implode('.', $tables) . implode($podsIps));
 
     if ($previousHash !== $hash) {
-        Manticore::logger("Start recompiling config");
+        Manticore::logger("Starting recompiling config");
         saveConfig($tables, $podsIps);
         $cache->store(Cache::INDEX_HASH, $hash);
     }

@@ -19,7 +19,7 @@ $locker->checkLock();
 /* First we check if now something optimizing? */
 
 if ($locker->checkOptimizeLock()) {
-    Manticore::logger("Optimize don't finished yet");
+    Manticore::logger("Optimize hasn't finished yet");
     $locker->unlock();
 }
 
@@ -32,7 +32,7 @@ $manticoreStatefulsets = $api->getManticorePods();
 $nodesRequest          = $api->getNodes();
 
 if ( ! isset($manticoreStatefulsets['items'])) {
-    Manticore::logger("K8s api don't responsed");
+    Manticore::logger("K8S API didn't respond");
     $locker->unlock();
 }
 
@@ -101,7 +101,7 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
             $chunks = $manticore->getChunksCount($index);
 
             if ($chunks > $cpuLimit * CHUNKS_COEFFICIENT) {
-                Manticore::logger("Start optimizing $index ".$pod['metadata']['name']."  ($chunks > $cpuLimit * ".CHUNKS_COEFFICIENT.") ".
+                Manticore::logger("Starting OPTIMIZE $index ".$pod['metadata']['name']."  ($chunks > $cpuLimit * ".CHUNKS_COEFFICIENT.") ".
                     (($chunks > $cpuLimit * CHUNKS_COEFFICIENT) ? 'true' : 'false'));
 
                 $manticore->optimize($index, $cpuLimit * CHUNKS_COEFFICIENT);
@@ -109,7 +109,7 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
                 $cache->store(Cache::CHECKED_WORKERS, $checkedWorkers);
                 $cache->store(Cache::CHECKED_INDEXES, $checkedIndexes);
 
-                Manticore::logger("Optimize was started successfully. Break watching");
+                Manticore::logger("OPTIMIZED started successfully. Stopping watching.");
                 $locker->unlock(0);
             }
         }

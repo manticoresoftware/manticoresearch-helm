@@ -22,7 +22,7 @@ class Locker
     public function checkLock(): bool
     {
         if (!flock($this->fp, LOCK_EX | LOCK_NB)) {
-            Manticore::logger("Another process of $this->name already runned");
+            Manticore::logger("Another process $this->name is already running");
             $this->unlock();
         }
 
@@ -59,7 +59,7 @@ class Locker
     public function setOptimizeLock($ip): void
     {
         if ($this->optimizeLockFile === null) {
-            throw new \http\Exception\RuntimeException("Optimize lock file is not setted");
+            throw new \http\Exception\RuntimeException("OPTIMIZE lock file is not set");
         }
         file_put_contents($this->optimizeLockFile, $ip);
     }

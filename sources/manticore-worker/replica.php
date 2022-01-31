@@ -11,7 +11,7 @@ $label = getenv('WORKER_LABEL');
 $workerService = getenv('WORKER_SERVICE');
 
 if (empty($port)) {
-    die("Set manticore port to environments\n");
+    die("MANTICORE_PORT is not set\n");
 }
 
 for ($i = 0; $i <= 50; $i++) {
@@ -21,7 +21,7 @@ for ($i = 0; $i <= 50; $i++) {
         break;
     }
 
-    echo "\n\nWait for searchd came alive\n";
+    echo "\n\nWaiting for searchd to come alive\n";
     sleep(1);
 }
 
@@ -45,7 +45,7 @@ if ($clusterExists === '') {
     $manticoreStatefulsets = $api->getManticorePods();
 
     if (!isset($manticoreStatefulsets['items'])) {
-        echo "\n\nK8s api don't responsed\n";
+        echo "\n\nFATAL: No response from k8s API\n";
         exit(1);
     }
 
@@ -85,21 +85,21 @@ if ($clusterExists === '') {
         }
 
         for ($i = 0; $i <= 5; $i++) {
-            echo "Replica hook: Join cluster\n";
+            echo "Replica hook: Joining cluster\n";
             $sql = "JOIN CLUSTER $clusterName at '".$first.".".$workerService.":9312'";
             $connection->query($sql);
             echo "Replica hook: Sql query: $sql\n";
             if ($connection->error) {
                 echo "Replica hook: QL error: ".$connection->error."\n";
             } else {
-                echo "Replica hook: Join success \n";
+                echo "Replica hook: Join success\n";
                 break;
             }
         }
 
     } else {
 
-        echo "Replica hook: Create new cluster\n";
+        echo "Replica hook: Creating new cluster\n";
         $sql = "CREATE CLUSTER $clusterName";
         $connection->query($sql);
         echo "Replica hook: Sql query: $sql\n";
@@ -111,7 +111,7 @@ if ($clusterExists === '') {
 
     $balancerCall = $api->get($balancerUrl);
     if ($balancerCall->getStatusCode() !== 200) {
-        echo "Something went wrong during balancer notification\n";
+        echo "Something went wrong with balancer notification\n";
     }
 
     echo "Replica hook: Replication connect ended\n";

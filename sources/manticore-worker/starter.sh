@@ -10,7 +10,7 @@ fi
 
 while [ -z "$(ls -A /var/lib/manticore/)" ]
 do
-  echo "Waiting for mount volume"
+  echo "Waiting for volume mount"
   sleep 1;
 done
 
