@@ -12,7 +12,7 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ include "manticoresearch.fullname" . }}
+  name: {{ include "manticoresearch.fullname" . }}-{{ .Release.Namespace }}
 rules:
   - apiGroups: [ '' ]
     resources: [ 'nodes', 'configmaps', 'pods', 'services' ]
@@ -24,11 +24,11 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ include "manticoresearch.fullname" . }}
+  name: {{ include "manticoresearch.fullname" . }}-{{ .Release.Namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ include "manticoresearch.fullname" . }}
+  name: {{ include "manticoresearch.fullname" . }}-{{ .Release.Namespace }}
 subjects:
   - kind: ServiceAccount
     namespace: {{ .Release.Namespace }}
