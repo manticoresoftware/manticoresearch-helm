@@ -1,6 +1,6 @@
-FROM manticoresearch/helm-balancer:dev AS builder
+FROM manticoresearch/helm-balancer:5.0.0.0 AS builder
 
-FROM manticoresearch/manticore:4.2.0
+FROM manticoresearch/manticore:5.0.0
 
 RUN apt --fix-broken install -y && echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
 apt-get update && apt-get install -y curl php-cli php-mysqlnd php-curl wget && rm -rf /var/lib/apt/lists/*
