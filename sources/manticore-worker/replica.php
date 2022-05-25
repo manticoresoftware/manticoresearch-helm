@@ -14,7 +14,7 @@ if (empty($port)) {
     die("MANTICORE_PORT is not set\n");
 }
 
-for ($i = 0; $i <= 50; $i++) {
+while (true){
     $connection = new mysqli('localhost:'.$port, '', '', '');
 
     if (!$connection->connect_errno) {
@@ -39,6 +39,13 @@ if ($clusterStatus !== null) {
 }
 
 
+function getStatefulsetIndex($fullName){
+    $parts    = explode("-", $fullName);
+    return (int) array_pop($parts);
+}
+
+
+
 if ($clusterExists === '') {
     $api = new k8sapi();
 
@@ -52,9 +59,7 @@ if ($clusterExists === '') {
     $min = [];
     $count = 0;
 
-    $hostname = getenv('HOSTNAME');
-    $hostIndex = preg_match('/^.*?-(\d+)/usi', $hostname, $matches);
-    $hostIndex = (int) $matches[1];
+    $hostIndex    = getStatefulsetIndex( gethostname());
 
     foreach ($manticoreStatefulsets['items'] as $pod) {
         if (isset($pod['metadata']['labels']['label'])
@@ -62,7 +67,7 @@ if ($clusterExists === '') {
             if ($pod['status']['phase'] === 'Running' || $pod['status']['phase'] === 'Pending') {
                 $fullName = trim($pod['metadata']["name"]);
 
-                $key = (int) substr($fullName, -1);
+                $key = getStatefulsetIndex($fullName);
                 $min[$key] = $fullName;
                 $count++;
             } else {
@@ -84,13 +89,14 @@ if ($clusterExists === '') {
             echo "Replica hook: Zero replica creation. Shift +1:".$first."\n";
         }
 
-        for ($i = 0; $i <= 5; $i++) {
+        for ($i = 0; $i <= 300; $i++) {
             echo "Replica hook: Joining cluster\n";
             $sql = "JOIN CLUSTER $clusterName at '".$first.".".$workerService.":9312'";
             $connection->query($sql);
             echo "Replica hook: Sql query: $sql\n";
             if ($connection->error) {
                 echo "Replica hook: QL error: ".$connection->error."\n";
+                sleep(1);
             } else {
                 echo "Replica hook: Join success\n";
                 break;
