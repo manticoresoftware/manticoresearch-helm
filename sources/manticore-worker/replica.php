@@ -14,6 +14,22 @@ if (empty($port)) {
     die("MANTICORE_PORT is not set\n");
 }
 
+
+$manticoreJson = new \chart\ManticoreJson($clusterName);
+$dnsPods = dns_get_record($workerService, DNS_A|DNS_AAAA);
+
+$podIps = [];
+foreach ($dnsPods as $dnsPod){
+    $podIps[] = $dnsPod['ip'];
+}
+
+if ($podIps!==[]){
+    $manticoreJson->updateNodesList($podIps);
+}
+
+$manticoreJson->startManticore();
+
+
 while (true){
     $connection = new mysqli('localhost:'.$port, '', '', '');
 
