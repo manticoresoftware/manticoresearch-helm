@@ -1,145 +1,71 @@
 <?php
 
-use chart\k8sapi;
+use Core\K8s\ApiClient;
+use Core\K8s\Resources;
+use Core\Manticore\ManticoreConnector;
+use Core\Manticore\ManticoreJson;
 
 require 'vendor/autoload.php';
 
-$port = getenv("MANTICORE_PORT");
-$clusterName = getenv("CLUSTER_NAME");
-$balancerUrl = getenv('BALANCER_URL');
-$label = getenv('WORKER_LABEL');
+$port          = getenv("MANTICORE_PORT");
+$clusterName   = getenv("CLUSTER_NAME");
+$balancerUrl   = getenv('BALANCER_URL');
+$label         = getenv('WORKER_LABEL');
 $workerService = getenv('WORKER_SERVICE');
 
 if (empty($port)) {
     die("MANTICORE_PORT is not set\n");
 }
 
+$api = new ApiClient();
+$resources = new Resources($api, $label, new \Core\Notifications\NotificationStub());
+$manticoreJson = new ManticoreJson($clusterName);
+$dnsPods       = dns_get_record($workerService, DNS_A | DNS_AAAA);
 
-$manticoreJson = new \chart\ManticoreJson($clusterName);
-$dnsPods = dns_get_record($workerService, DNS_A|DNS_AAAA);
-
-$podIps = [];
-foreach ($dnsPods as $dnsPod){
-    $podIps[] = $dnsPod['ip'];
-}
-
-if ($podIps!==[]){
-    $manticoreJson->updateNodesList($podIps);
-}
-
-$manticoreJson->startManticore();
-
-
-while (true){
-    $connection = new mysqli('localhost:'.$port, '', '', '');
-
-    if (!$connection->connect_errno) {
-        break;
-    }
-
-    echo "\n\nWaiting for searchd to come alive\n";
-    sleep(1);
-}
-
-
-$clusterExists = '';
-$clusterStatus = $connection->query("show status");
-if ($clusterStatus !== null) {
-
-    $clusterStatus = (array) $clusterStatus->fetch_all(MYSQLI_ASSOC);
-    foreach ($clusterStatus as $row) {
-        if ($row['Counter'] === 'cluster_name') {
-            $clusterExists = $row['Value'];
-        }
-    }
-}
-
-
-function getStatefulsetIndex($fullName){
-    $parts    = explode("-", $fullName);
-    return (int) array_pop($parts);
-}
-
-
-
-if ($clusterExists === '') {
-    $api = new k8sapi();
-
-    $manticoreStatefulsets = $api->getManticorePods();
-
-    if (!isset($manticoreStatefulsets['items'])) {
-        echo "\n\nFATAL: No response from k8s API\n";
-        exit(1);
-    }
-
-    $min = [];
-    $count = 0;
-
-    $hostIndex    = getStatefulsetIndex( gethostname());
-
-    foreach ($manticoreStatefulsets['items'] as $pod) {
-        if (isset($pod['metadata']['labels']['label'])
-            && $pod['metadata']['labels']['label'] === $label) {
-            if ($pod['status']['phase'] === 'Running' || $pod['status']['phase'] === 'Pending') {
-                $fullName = trim($pod['metadata']["name"]);
-
-                $key = getStatefulsetIndex($fullName);
-                $min[$key] = $fullName;
-                $count++;
-            } else {
-                echo json_encode($pod)."\n\n";
-            }
-        }
-    }
-
-    echo "Replica hook: Pods count:".$count."\n";
-
-
-    if ($count > 1) {
-
-        ksort($min);
-        $first = array_shift($min);
-
-        if ($hostIndex === 0) {
-            $first = array_shift($min);
-            echo "Replica hook: Zero replica creation. Shift +1:".$first."\n";
-        }
-
-        for ($i = 0; $i <= 300; $i++) {
-            echo "Replica hook: Joining cluster\n";
-            $sql = "JOIN CLUSTER $clusterName at '".$first.".".$workerService.":9312'";
-            $connection->query($sql);
-            echo "Replica hook: Sql query: $sql\n";
-            if ($connection->error) {
-                echo "Replica hook: QL error: ".$connection->error."\n";
-                sleep(1);
-            } else {
-                echo "Replica hook: Join success\n";
-                break;
-            }
-        }
-
+if (count($dnsPods) <= 1) {
+    $manticoreJson->startManticore();
+    $manticore = new ManticoreConnector('localhost', $port, $label, -1);
+    $manticore->setMaxAttempts(180);
+    if ($manticore->checkClusterName()) {
+        echo "==> Cluster exist\n";
     } else {
+        $manticore->createCluster();
+        echo "==> Cluster created\n";
+    }
 
-        echo "Replica hook: Creating new cluster\n";
-        $sql = "CREATE CLUSTER $clusterName";
-        $connection->query($sql);
-        echo "Replica hook: Sql query: $sql\n";
-        if ($connection->error) {
-            echo "Replica hook: QL error: ".$connection->error."\n";
-        }
+    $manticore->addNotInClusterTablesIntoCluster();
+
+} elseif ($manticoreJson->getConf() === []) {
+    $podIps = [];
+    foreach ($dnsPods as $dnsPod) {
+        $podIps[] = $dnsPod['ip'];
+    }
+    echo "==> Nodes list was updated\n";
+    $manticoreJson->updateNodesList($podIps);
+    $manticoreJson->startManticore();
+
+    $manticore = new ManticoreConnector('localhost', $port, $label, -1);
+    $manticore->setMaxAttempts(180);
+
+    if ($manticore->checkClusterName()){
+        echo "==> Cluster exist\n";
+        $manticore->addNotInClusterTablesIntoCluster();
+
+    }else{
+        $joinHost = $resources->getMinAvailableReplica();
+        echo "==> Join to $joinHost\n";
+        $manticore->joinCluster($joinHost);
     }
 
 
-    $balancerCall = $api->get($balancerUrl);
-    if ($balancerCall->getStatusCode() !== 200) {
-        echo "Something went wrong with balancer notification\n";
-    }
-
-    echo "Replica hook: Replication connect ended\n";
 } else {
-    echo "Cluster $clusterName already exists\n";
+    $manticoreJson->startManticore();
+
+    $manticore = new ManticoreConnector('localhost', $port, $label, -1);
+    $manticore->setMaxAttempts(180);
+
+    $joinHost = $resources->getMinAvailableReplica();
+    echo "==> Join to $joinHost\n";
+    $manticore->joinCluster($joinHost);
 }
-
-
 ?>

@@ -1,9 +1,9 @@
 <?php
 
-use chart\Cache;
-use chart\Manticore;
-use chart\k8sapi;
-use chart\Locker;
+
+use Core\Cache\Cache;
+use Core\K8s\ApiClient;
+use Core\Mutex\Locker;
 
 require 'vendor/autoload.php';
 
@@ -21,7 +21,7 @@ $locker = new Locker('observer');
 $locker->checkLock();
 
 
-$api   = new k8sapi();
+$api   = new ApiClient();
 $cache = new Cache();
 
 $manticoreStatefulsets = $api->getManticorePods();

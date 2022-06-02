@@ -1,0 +1,20 @@
+{
+    "name": "manticoresearch/state-observer",
+    "description": "",
+    "minimum-stability": "stable",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Klim Todrik",
+            "email": "klim@manticoresearch.com"
+        }
+    ],
+    "require": {
+        "guzzlehttp/guzzle": "^7.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "chart\\": "code/src"
+        }
+    }
+}

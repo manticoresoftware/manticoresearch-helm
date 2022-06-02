@@ -1,5 +1,5 @@
 {
-    "name": "manticoresearch/state-observer",
+    "name": "manticoresearch/worker",
     "description": "",
     "minimum-stability": "stable",
     "license": "proprietary",
@@ -14,7 +14,6 @@
     },
     "autoload": {
         "psr-4": {
-            "chart\\": "src"
         }
     }
 }
