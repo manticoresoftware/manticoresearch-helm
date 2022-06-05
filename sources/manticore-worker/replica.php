@@ -26,7 +26,7 @@ $dnsPods       = dns_get_record($workerService, DNS_A | DNS_AAAA);
 
 if (count($dnsPods) <= 1) {
     $manticoreJson->startManticore();
-    $manticore = new ManticoreConnector('localhost', $port, $label, -1);
+    $manticore = new ManticoreConnector('localhost', $port, 'ms', -1);
     $manticore->setMaxAttempts(180);
     if ($manticore->checkClusterName()) {
         Logger::log('Cluster exist');
@@ -45,7 +45,7 @@ if (count($dnsPods) <= 1) {
     $manticoreJson->updateNodesList($podIps);
     $manticoreJson->startManticore();
 
-    $manticore = new ManticoreConnector('localhost', $port, $label, -1);
+    $manticore = new ManticoreConnector('localhost', $port, 'ms', -1);
     $manticore->setMaxAttempts(180);
 
     if ($manticore->checkClusterName()) {
@@ -59,7 +59,7 @@ if (count($dnsPods) <= 1) {
 } else {
     $manticoreJson->startManticore();
 
-    $manticore = new ManticoreConnector('localhost', $port, $label, -1);
+    $manticore = new ManticoreConnector('localhost', $port, 'ms', -1);
     $manticore->setMaxAttempts(180);
 
     $joinHost = $resources->getMinAvailableReplica();

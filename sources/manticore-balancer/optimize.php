@@ -19,7 +19,7 @@ $locker->checkLock();
 
 /* First we check if now something optimizing? */
 
-if ($locker->checkOptimizeLock()) {
+if ($locker->checkOptimizeLock(OPTIMIZE_FILE)) {
     Logger::log("Optimize hasn't finished yet");
     $locker->unlock();
 }
