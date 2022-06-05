@@ -1,2 +1,2 @@
-/code/vendor
-/code/composer.lock
+vendor
+composer.lock

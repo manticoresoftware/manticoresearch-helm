@@ -10,7 +10,8 @@
         }
     ],
     "require": {
-        "guzzlehttp/guzzle": "^7.3"
+        "guzzlehttp/guzzle": "^7.3",
+        "djklim87/manticoresearch-auto-replication": "dev-dev"
     },
     "autoload": {
         "psr-4": {

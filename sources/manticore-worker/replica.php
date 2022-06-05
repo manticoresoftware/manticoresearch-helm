@@ -2,8 +2,10 @@
 
 use Core\K8s\ApiClient;
 use Core\K8s\Resources;
+use Core\Logger\Logger;
 use Core\Manticore\ManticoreConnector;
 use Core\Manticore\ManticoreJson;
+use Core\Notifications\NotificationStub;
 
 require 'vendor/autoload.php';
 
@@ -17,8 +19,8 @@ if (empty($port)) {
     die("MANTICORE_PORT is not set\n");
 }
 
-$api = new ApiClient();
-$resources = new Resources($api, $label, new \Core\Notifications\NotificationStub());
+$api           = new ApiClient();
+$resources     = new Resources($api, $label, new NotificationStub());
 $manticoreJson = new ManticoreJson($clusterName);
 $dnsPods       = dns_get_record($workerService, DNS_A | DNS_AAAA);
 
@@ -27,37 +29,33 @@ if (count($dnsPods) <= 1) {
     $manticore = new ManticoreConnector('localhost', $port, $label, -1);
     $manticore->setMaxAttempts(180);
     if ($manticore->checkClusterName()) {
-        echo "==> Cluster exist\n";
+        Logger::log('Cluster exist');
     } else {
         $manticore->createCluster();
-        echo "==> Cluster created\n";
+        Logger::log('Cluster created');
     }
 
     $manticore->addNotInClusterTablesIntoCluster();
-
 } elseif ($manticoreJson->getConf() === []) {
     $podIps = [];
     foreach ($dnsPods as $dnsPod) {
         $podIps[] = $dnsPod['ip'];
     }
-    echo "==> Nodes list was updated\n";
+    Logger::log('Nodes list was updated');
     $manticoreJson->updateNodesList($podIps);
     $manticoreJson->startManticore();
 
     $manticore = new ManticoreConnector('localhost', $port, $label, -1);
     $manticore->setMaxAttempts(180);
 
-    if ($manticore->checkClusterName()){
-        echo "==> Cluster exist\n";
+    if ($manticore->checkClusterName()) {
+        Logger::log('Cluster exist');
         $manticore->addNotInClusterTablesIntoCluster();
-
-    }else{
+    } else {
         $joinHost = $resources->getMinAvailableReplica();
-        echo "==> Join to $joinHost\n";
+        Logger::log("Join to $joinHost");
         $manticore->joinCluster($joinHost);
     }
-
-
 } else {
     $manticoreJson->startManticore();
 
@@ -65,7 +63,7 @@ if (count($dnsPods) <= 1) {
     $manticore->setMaxAttempts(180);
 
     $joinHost = $resources->getMinAvailableReplica();
-    echo "==> Join to $joinHost\n";
+    Logger::log("Join to $joinHost");
     $manticore->joinCluster($joinHost);
 }
 ?>
