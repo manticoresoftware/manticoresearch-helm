@@ -1,9 +1,10 @@
 <?php
 
-use chart\Cache;
-use chart\Manticore;
-use chart\k8sapi;
-use chart\Locker;
+
+use Core\Cache\Cache;
+use Core\K8s\ApiClient;
+use Core\Logger\Logger;
+use Core\Mutex\Locker;
 
 require 'vendor/autoload.php';
 
@@ -19,11 +20,11 @@ $locker->checkLock();
 /* First we check if now something optimizing? */
 
 if ($locker->checkOptimizeLock()) {
-    Manticore::logger("Optimize hasn't finished yet");
+    Logger::log("Optimize hasn't finished yet");
     $locker->unlock();
 }
 
-$api   = new k8sapi();
+$api   = new ApiClient();
 $cache = new Cache();
 
 
@@ -32,7 +33,7 @@ $manticoreStatefulsets = $api->getManticorePods();
 $nodesRequest          = $api->getNodes();
 
 if ( ! isset($manticoreStatefulsets['items'])) {
-    Manticore::logger("K8S API didn't respond");
+    Logger::log("K8S API didn't respond");
     $locker->unlock();
 }
 
@@ -87,8 +88,8 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
         }
 
 //        Manticore::logger("Init Manticore ".$pod['metadata']['name']." at ".$pod['status']['podIP'].":".WORKER_PORT);
-        $manticore = new Manticore($pod['status']['podIP'].":".WORKER_PORT);
-        $indexes   = $manticore->getIndexes();
+        $manticore = new \Core\Manticore\ManticoreConnector($pod['status']['podIP'], WORKER_PORT, WORKER_LABEL, -1);
+        $indexes   = $manticore->getTables();
 
         foreach ($indexes as $index) {
 //            Manticore::logger("Check index ".$index);
@@ -101,15 +102,15 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
             $chunks = $manticore->getChunksCount($index);
 
             if ($chunks > $cpuLimit * CHUNKS_COEFFICIENT) {
-                Manticore::logger("Starting OPTIMIZE $index ".$pod['metadata']['name']."  ($chunks > $cpuLimit * ".CHUNKS_COEFFICIENT.") ".
+                Logger::log("Starting OPTIMIZE $index ".$pod['metadata']['name']."  ($chunks > $cpuLimit * ".CHUNKS_COEFFICIENT.") ".
                     (($chunks > $cpuLimit * CHUNKS_COEFFICIENT) ? 'true' : 'false'));
 
                 $manticore->optimize($index, $cpuLimit * CHUNKS_COEFFICIENT);
-                $locker->setOptimizeLock($pod['status']['podIP'].":".WORKER_PORT);
+                $locker->setOptimizeLock($pod['status']['podIP']);
                 $cache->store(Cache::CHECKED_WORKERS, $checkedWorkers);
                 $cache->store(Cache::CHECKED_INDEXES, $checkedIndexes);
 
-                Manticore::logger("OPTIMIZED started successfully. Stopping watching.");
+                Logger::log("OPTIMIZED started successfully. Stopping watching.");
                 $locker->unlock(0);
             }
         }

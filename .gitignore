@@ -1,4 +1,5 @@
-sources/manticore-balancer/code/vendor
+sources/manticore-balancer/vendor
 .idea
-sources/manticore-balancer/code/composer.lock
-sources/manticore-balancer/code/response.json
+sources/manticore-worker/vendor
+sources/manticore-worker/composer.lock
+sources/manticore-balancer/composer.lock
