@@ -9,11 +9,12 @@ use Core\Notifications\NotificationStub;
 
 require 'vendor/autoload.php';
 
-$port          = getenv("MANTICORE_PORT");
-$clusterName   = getenv("CLUSTER_NAME");
-$balancerUrl   = getenv('BALANCER_URL');
-$label         = getenv('WORKER_LABEL');
-$workerService = getenv('WORKER_SERVICE');
+$port                      = getenv("MANTICORE_PORT");
+$clusterName               = getenv("CLUSTER_NAME");
+$balancerUrl               = getenv('BALANCER_URL');
+$label                     = getenv('WORKER_LABEL');
+$workerService             = getenv('WORKER_SERVICE');
+$notAddTablesAutomatically = (bool) getenv('AUTO_ADD_TABLES_IN_CLUSTER');
 
 if (empty($port)) {
     die("MANTICORE_PORT is not set\n");
@@ -22,11 +23,15 @@ if (empty($port)) {
 $api           = new ApiClient();
 $resources     = new Resources($api, $label, new NotificationStub());
 $manticoreJson = new ManticoreJson($clusterName);
-$dnsPods       = dns_get_record($workerService, DNS_A | DNS_AAAA);
 
-if (count($dnsPods) <= 1) {
+$count = $resources->getActivePodsCount();
+
+Logger::log("Pods count ".$count);
+if ($count <= 1) {
+    Logger::log("One pod");
     $manticoreJson->startManticore();
-    $manticore = new ManticoreConnector('localhost', $port, 'ms', -1);
+    $manticore = new ManticoreConnector('localhost', $port, null, -1);
+    $manticore->setCustomClusterName($clusterName);
     $manticore->setMaxAttempts(180);
     if ($manticore->checkClusterName()) {
         Logger::log('Cluster exist');
@@ -34,36 +39,40 @@ if (count($dnsPods) <= 1) {
         $manticore->createCluster();
         Logger::log('Cluster created');
     }
-
-    $manticore->addNotInClusterTablesIntoCluster();
-} elseif ($manticoreJson->getConf() === []) {
-    $podIps = [];
-    foreach ($dnsPods as $dnsPod) {
-        $podIps[] = $dnsPod['ip'];
+    if ($notAddTablesAutomatically) {
+        $manticore->addNotInClusterTablesIntoCluster();
     }
-    Logger::log('Nodes list was updated');
+} elseif ($manticoreJson->getConf() !== []) {
+    Logger::log("Non empty conf");
+    $podIps = $resources->getPodsIPs();
+    Logger::log('Nodes list was updated ('.implode(',', $podIps).')');
     $manticoreJson->updateNodesList($podIps);
     $manticoreJson->startManticore();
 
-    $manticore = new ManticoreConnector('localhost', $port, 'ms', -1);
+    $manticore = new ManticoreConnector('localhost', $port, null, -1);
+    $manticore->setCustomClusterName($clusterName);
     $manticore->setMaxAttempts(180);
 
     if ($manticore->checkClusterName()) {
         Logger::log('Cluster exist');
-        $manticore->addNotInClusterTablesIntoCluster();
+        if ($notAddTablesAutomatically) {
+            $manticore->addNotInClusterTablesIntoCluster();
+        }
     } else {
-        $joinHost = $resources->getMinAvailableReplica();
+        $joinHost = $resources->getOldestActivePodName();
         Logger::log("Join to $joinHost");
-        $manticore->joinCluster($joinHost);
+        $manticore->joinCluster($joinHost.'.'.$workerService);
     }
 } else {
+    Logger::log("Empty conf with more than one node in cluster");
     $manticoreJson->startManticore();
 
-    $manticore = new ManticoreConnector('localhost', $port, 'ms', -1);
+    $manticore = new ManticoreConnector('localhost', $port, null, -1);
+    $manticore->setCustomClusterName($clusterName);
     $manticore->setMaxAttempts(180);
 
-    $joinHost = $resources->getMinAvailableReplica();
+    $joinHost = $resources->getOldestActivePodName();
     Logger::log("Join to $joinHost");
-    $manticore->joinCluster($joinHost);
+    $manticore->joinCluster($joinHost.'.'.$workerService);
 }
 ?>

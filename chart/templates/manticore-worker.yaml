@@ -48,6 +48,8 @@ spec:
         env:
           - name: WORKER_LABEL
             value: "manticore-worker"
+          - name: AUTO_ADD_TABLES_IN_CLUSTER
+            value: "{{ .Values.worker.autoAddTablesInCluster }}"
           - name: CONFIGMAP_PATH
             value: {{ .Values.worker.config.path }}
           - name: MANTICORE_PORT
