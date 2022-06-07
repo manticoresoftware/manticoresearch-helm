@@ -4,6 +4,7 @@
 use Core\Cache\Cache;
 use Core\K8s\ApiClient;
 use Core\Logger\Logger;
+use Core\Manticore\ManticoreConnector;
 use Core\Mutex\Locker;
 
 require 'vendor/autoload.php';
@@ -59,9 +60,7 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
         && $pod['metadata']['labels']['label'] === WORKER_LABEL
         && $pod['status']['phase'] === 'Running'
     ) {
-        //  Manticore::logger("Check pod ".$pod['metadata']['name']);
         if (isset($checkedWorkers[$pod['metadata']['name']])) {
-//            Manticore::logger("Skip pod ".$pod['metadata']['name']." cause it already handled");
             continue;
         }
 
@@ -87,19 +86,16 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
             $cpuLimit = (int) $nodes[$pod['spec']['nodeName']];
         }
 
-//        Manticore::logger("Init Manticore ".$pod['metadata']['name']." at ".$pod['status']['podIP'].":".WORKER_PORT);
-        $manticore = new \Core\Manticore\ManticoreConnector($pod['status']['podIP'], WORKER_PORT, WORKER_LABEL, -1);
-        $indexes   = $manticore->getTables();
+        $manticore = new ManticoreConnector($pod['status']['podIP'], WORKER_PORT, WORKER_LABEL, -1);
+        $indexes   = $manticore->getTables(false);
 
         foreach ($indexes as $index) {
-//            Manticore::logger("Check index ".$index);
             if (isset($checkedIndexes[$index])) {
-//                Manticore::logger("Skip index ".$index." cause it already handled");
                 continue;
             }
             $checkedIndexes[$index] = 1;
 
-            $chunks = $manticore->getChunksCount($index);
+            $chunks = $manticore->getChunksCount($index, false);
 
             if ($chunks > $cpuLimit * CHUNKS_COEFFICIENT) {
                 Logger::log("Starting OPTIMIZE $index ".$pod['metadata']['name']."  ($chunks > $cpuLimit * ".CHUNKS_COEFFICIENT.") ".

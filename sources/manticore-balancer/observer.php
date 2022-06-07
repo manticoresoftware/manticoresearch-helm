@@ -59,7 +59,7 @@ $url = array_shift($manticorePods);
 
 
 $manticore = new ManticoreConnector($url, WORKER_PORT, WORKER_LABEL, -1);
-$tables    = $manticore->getTables();
+$tables    = $manticore->getTables(false);
 
 if ($tables !== []) {
     $previousHash = $cache->get(Cache::INDEX_HASH);
