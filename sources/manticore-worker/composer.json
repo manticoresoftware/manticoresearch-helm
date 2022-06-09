@@ -1,5 +1,5 @@
 {
-    "name": "manticoresearch/state-observer",
+    "name": "manticoresearch/worker",
     "description": "",
     "minimum-stability": "stable",
     "license": "proprietary",
@@ -10,11 +10,14 @@
         }
     ],
     "require": {
-        "guzzlehttp/guzzle": "^7.3"
+        "guzzlehttp/guzzle": "^7.3",
+        "djklim87/manticoresearch-auto-replication": "1.0.1"
+    },
+    "require-dev": {
+        "roave/security-advisories": "dev-latest"
     },
     "autoload": {
         "psr-4": {
-            "chart\\": "src"
         }
     }
 }

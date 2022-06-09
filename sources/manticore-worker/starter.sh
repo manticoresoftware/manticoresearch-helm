@@ -16,5 +16,4 @@ done
 
 echo "Mount success"
 
-php /etc/manticoresearch/replica.php &
-exec searchd --force-preread --nodetach
+/usr/bin/supervisord -n -c /etc/supervisord.conf

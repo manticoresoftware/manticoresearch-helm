@@ -1,9 +1,11 @@
 <?php
 
-use chart\Cache;
-use chart\Manticore;
-use chart\k8sapi;
-use chart\Locker;
+
+use Core\Cache\Cache;
+use Core\K8s\ApiClient;
+use Core\Logger\Logger;
+use Core\Manticore\ManticoreConnector;
+use Core\Mutex\Locker;
 
 require 'vendor/autoload.php';
 
@@ -21,13 +23,13 @@ $locker = new Locker('observer');
 $locker->checkLock();
 
 
-$api   = new k8sapi();
+$api   = new ApiClient();
 $cache = new Cache();
 
 $manticoreStatefulsets = $api->getManticorePods();
 
 if ( ! isset($manticoreStatefulsets['items'])) {
-    Manticore::logger("FATAL: No response from k8s API");
+    Logger::log("FATAL: No response from k8s API");
     exit(1);
 }
 
@@ -43,7 +45,7 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
 }
 
 if (empty($manticorePods)) {
-    Manticore::logger("No workers found");
+    Logger::log("No workers found");
     $locker->unlock();
 }
 
@@ -56,21 +58,21 @@ $url = array_shift($manticorePods);
  */
 
 
-$manticore = new Manticore($url . ":" . WORKER_PORT);
-$tables    = $manticore->getIndexes();
+$manticore = new ManticoreConnector($url, WORKER_PORT, WORKER_LABEL, -1);
+$tables    = $manticore->getTables(false);
 
-if ($tables) {
+if ($tables !== []) {
     $previousHash = $cache->get(Cache::INDEX_HASH);
     $hash         = sha1(implode('.', $tables) . implode($podsIps));
 
     if ($previousHash !== $hash) {
-        Manticore::logger("Starting recompiling config");
+        Logger::log("Starting recompiling config");
         saveConfig($tables, $podsIps);
         $cache->store(Cache::INDEX_HASH, $hash);
     }
 
 } else {
-    Manticore::logger("No tables found");
+    Logger::log("No tables found");
     $locker->unlock();
 }
 
@@ -92,7 +94,7 @@ function saveConfig($indexes, $nodes)
                       DIRECTORY_SEPARATOR . 'manticoresearch' .
                       DIRECTORY_SEPARATOR . 'manticore.conf', $prependConfig . $searchdConfig);
 
-    (new Manticore('localhost:' . BALANCER_PORT))->reloadIndexes();
+    (new ManticoreConnector('localhost', BALANCER_PORT, WORKER_LABEL, -1))->reloadIndexes();
 }
 
 
