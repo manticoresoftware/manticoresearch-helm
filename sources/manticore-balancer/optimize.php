@@ -30,7 +30,7 @@ $cache = new Cache();
 
 
 $nodes                 = [];
-$manticoreStatefulsets = $api->getManticorePods();
+$manticoreStatefulsets = $api->getManticorePods(WORKER_LABEL);
 $nodesRequest          = $api->getNodes();
 
 if ( ! isset($manticoreStatefulsets['items'])) {
@@ -56,10 +56,7 @@ $checkedWorkers = $cache->get(Cache::CHECKED_WORKERS);
 $checkedIndexes = $cache->get(Cache::CHECKED_INDEXES);
 
 foreach ($manticoreStatefulsets['items'] as $pod) {
-    if (isset($pod['metadata']['labels']['label'])
-        && $pod['metadata']['labels']['label'] === WORKER_LABEL
-        && $pod['status']['phase'] === 'Running'
-    ) {
+    if ($pod['status']['phase'] === 'Running') {
         if (isset($checkedWorkers[$pod['metadata']['name']])) {
             continue;
         }

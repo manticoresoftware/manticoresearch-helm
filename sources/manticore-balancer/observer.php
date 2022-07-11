@@ -26,7 +26,7 @@ $locker->checkLock();
 $api   = new ApiClient();
 $cache = new Cache();
 
-$manticoreStatefulsets = $api->getManticorePods();
+$manticoreStatefulsets = $api->getManticorePods(WORKER_LABEL);
 
 if ( ! isset($manticoreStatefulsets['items'])) {
     Logger::log("FATAL: No response from k8s API");
@@ -37,9 +37,7 @@ if ( ! isset($manticoreStatefulsets['items'])) {
 $manticorePods = [];
 
 foreach ($manticoreStatefulsets['items'] as $pod) {
-    if (isset($pod['metadata']['labels']['label'])
-        && $pod['metadata']['labels']['label'] === WORKER_LABEL
-        && $pod['status']['phase'] === 'Running') {
+    if ($pod['status']['phase'] === 'Running') {
         $manticorePods[$pod["metadata"]['name']] = $pod['status']['podIP'];
     }
 }

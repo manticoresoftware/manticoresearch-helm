@@ -1,6 +1,6 @@
 # Manticore Search Helm Chart
 
-Version: 5.0.0.1
+Version: 5.0.0.2
 
 The helm chart can be used for:
 * making highly available Manticore Search cluster
