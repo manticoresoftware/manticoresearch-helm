@@ -4,12 +4,14 @@ metadata:
   name: {{ include "manticoresearch.fullname" . }}-balancer
   labels:
     name: {{ include "manticoresearch.fullname" . }}-balancer
+    app.kubernetes.io/component: balancer
     {{- include "manticoresearch.labels" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: {{ include "manticoresearch.fullname" . }}-balancer
+      app.kubernetes.io/component: balancer
+      {{- include "manticoresearch.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- if or .Values.exporter.enabled .Values.podAnnotations }}
@@ -23,6 +25,7 @@ spec:
       {{- end }}
       labels:
         name: {{ include "manticoresearch.fullname" . }}-balancer
+        app.kubernetes.io/component: balancer
         {{- include "manticoresearch.selectorLabels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ include "manticoresearch.serviceAccountName" . }}
@@ -33,28 +36,28 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-      - name: {{ .Chart.Name }}-balancer
+      - name: balancer
         securityContext:
           {{- toYaml .Values.securityContext | nindent 12 }}
         image: "{{ .Values.balancer.image.repository }}:{{ .Values.balancer.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.balancer.image.pullPolicy }}
         env:
           - name: OBSERVER_RUN_INTERVAL
-            value: "{{ .Values.balancer.runInterval }}"
+            value: {{ .Values.balancer.runInterval | quote }}
           {{- if .Values.optimize.enabled }}
           - name: OPTIMIZE_RUN_INTERVAL
-            value: "{{ .Values.optimize.interval }}"
+            value: {{ .Values.optimize.interval | quote }}
           - name: CHUNKS_COEFFICIENT
-            value: "{{ .Values.optimize.coefficient }}"
+            value: {{ .Values.optimize.coefficient | quote }}
           {{- end }}
           - name: WORKER_LABEL
             value: "manticore-worker"
           - name: CONFIGMAP_PATH
-            value: {{ .Values.balancer.config.path }}
+            value: {{ .Values.balancer.config.path | quote }}
           - name: BALANCER_PORT
-            value: "{{ .Values.balancer.service.ql.port }}"
+            value: {{ .Values.balancer.service.ql.port | quote }}
           - name: WORKER_PORT
-            value: "{{ .Values.worker.service.ql.port }}"
+            value: {{ .Values.worker.service.ql.port | quote }}
         readinessProbe:
           tcpSocket:
             port: {{ .Values.balancer.service.ql.port }}
@@ -70,9 +73,9 @@ spec:
             mountPath: {{ .Values.balancer.config.path }}
             subPath: manticore.conf
         resources:
-          {{- toYaml .Values.resources | nindent 10 }}
+          {{- toYaml .Values.balancer.resources | nindent 10 }}
       {{- if .Values.exporter.enabled }}
-      - name: {{ .Chart.Name }}-exporter
+      - name: exporter
         securityContext:
           {{- toYaml .Values.securityContext | nindent 12 }}
         image: "{{ .Values.exporter.image.repository }}:{{ .Values.exporter.image.tag | default .Chart.AppVersion }}"
@@ -91,21 +94,21 @@ spec:
           initialDelaySeconds: 3
           periodSeconds: 3
         resources:
-          {{- toYaml .Values.resources | nindent 10 }}
+          {{- toYaml .Values.exporter.resources | nindent 10 }}
       {{- end }}
       volumes:
         - name: config-volume
           configMap:
             name: {{ include "manticoresearch.fullname" . }}-balancer-config
-      {{- with .Values.nodeSelector }}
+      {{- with .Values.balancer.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
+      {{- with .Values.balancer.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.tolerations }}
+      {{- with .Values.balancer.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
