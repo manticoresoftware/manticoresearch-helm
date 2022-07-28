@@ -4,13 +4,15 @@ metadata:
   name: {{ include "manticoresearch.fullname" . }}-worker
   labels:
     name: {{ include "manticoresearch.fullname" . }}-worker
-    {{- include "manticoresearch.labels" . | nindent 4 }}
     label: "{{ include "manticoresearch.fullname" . }}-worker"
+    app.kubernetes.io/component: worker
+    {{- include "manticoresearch.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.worker.replicaCount }}
   selector:
     matchLabels:
-      name: {{ include "manticoresearch.fullname" . }}-worker
+      app.kubernetes.io/component: worker
+      {{- include "manticoresearch.selectorLabels" . | nindent 6 }}
   serviceName: {{ include "manticoresearch.fullname" . }}-worker-svc
   template:
     metadata:
@@ -26,6 +28,7 @@ spec:
       labels:
         name: "{{ include "manticoresearch.fullname" . }}-worker"
         label: "manticore-worker"
+        app.kubernetes.io/component: worker
         {{- include "manticoresearch.selectorLabels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ include "manticoresearch.serviceAccountName" . }}
@@ -36,7 +39,7 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-      - name: {{ .Chart.Name }}-worker
+      - name: worker
         securityContext:
           {{- toYaml .Values.securityContext | nindent 12 }}
         image: {{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag | default .Chart.AppVersion }}
@@ -49,7 +52,7 @@ spec:
           - name: WORKER_LABEL
             value: "manticore-worker"
           - name: AUTO_ADD_TABLES_IN_CLUSTER
-            value: "{{ .Values.worker.autoAddTablesInCluster }}"
+            value: {{ .Values.worker.autoAddTablesInCluster | quote }}
           - name: CONFIGMAP_PATH
             value: {{ .Values.worker.config.path }}
           - name: MANTICORE_PORT
@@ -77,9 +80,9 @@ spec:
             mountPath: {{ .Values.worker.config.path }}
             subPath: manticore.conf
         resources:
-          {{- toYaml .Values.resources | nindent 10 }}
+          {{- toYaml .Values.worker.resources | nindent 10 }}
       {{- if .Values.exporter.enabled }}
-      - name: {{ .Chart.Name }}-exporter
+      - name: exporter
         securityContext:
           {{- toYaml .Values.securityContext | nindent 12 }}
         image: "{{ .Values.exporter.image.repository }}:{{ .Values.exporter.image.tag | default .Chart.AppVersion }}"
@@ -98,21 +101,21 @@ spec:
           initialDelaySeconds: 3
           periodSeconds: 3
         resources:
-          {{- toYaml .Values.resources | nindent 10 }}
+          {{- toYaml .Values.exporter.resources | nindent 10 }}
       {{- end }}
       volumes:
         - name: config-volume
           configMap:
             name: {{ include "manticoresearch.fullname" . }}-worker-config
-      {{- with .Values.nodeSelector }}
+      {{- with .Values.worker.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
+      {{- with .Values.worker.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.tolerations }}
+      {{- with .Values.worker.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
