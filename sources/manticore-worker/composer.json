@@ -11,18 +11,11 @@
     ],
     "require": {
         "guzzlehttp/guzzle": "^7.3",
-        "djklim87/manticoresearch-auto-replication": "dev-dev"
+        "djklim87/manticoresearch-auto-replication": "1.0.4"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest"
     },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/djklim87/manticoresearch-auto-replication.git",
-            "no-api": true
-        }
-    ],
     "autoload": {
         "psr-4": {
         }
