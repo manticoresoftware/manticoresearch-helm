@@ -1,27 +1,58 @@
 <?php
 
-
 use Core\Cache\Cache;
 use Core\K8s\ApiClient;
-use Core\Logger\Logger;
 use Core\Manticore\ManticoreConnector;
 use Core\Mutex\Locker;
+use Analog\Analog;
+use Analog\Handler\EchoConsole;
 
 require 'vendor/autoload.php';
+Analog::handler(EchoConsole::init());
 
 const OPTIMIZE_FILE = DIRECTORY_SEPARATOR.'tmp'.DIRECTORY_SEPARATOR.'optimize.process.lock';
 
-define("WORKER_LABEL", getenv('WORKER_LABEL'));
-define("WORKER_PORT", getenv('WORKER_PORT'));
-define("CHUNKS_COEFFICIENT", (int) getenv('CHUNKS_COEFFICIENT'));
+$workerPort        = null;
+$clusterName       = null;
+$instance          = null;
+$chunksCoefficient = null;
+
+$variables = [
+    'workerPort'        => ['env' => 'WORKER_PORT', 'type' => 'int'],
+    'clusterName'       => ['env' => 'CLUSTER_NAME', 'type' => 'string'],
+    'instance'          => ['env' => 'INSTANCE_LABEL', 'type' => 'string'],
+    'chunksCoefficient' => ['env' => 'CHUNKS_COEFFICIENT', 'type' => 'int'],
+];
+
+foreach ($variables as $variable => $desc) {
+    $$variable = getenv($desc['env']);
+
+    if ($$variable === false) {
+        Analog::error($desc['env']." is not defined\n");
+        exit(1);
+    }
+
+    if ($desc['type'] === 'int') {
+        $$variable = (int)$$variable;
+    } elseif ($desc['type'] === 'bool') {
+        $$variable = (bool)$$variable;
+    }
+}
+
+
+$labels = [
+    'app.kubernetes.io/component' => 'worker',
+    'app.kubernetes.io/instance'  => $instance,
+];
+
 
 $locker = new Locker('optimize');
 $locker->checkLock();
 
 /* First we check if now something optimizing? */
 
-if ($locker->checkOptimizeLock(OPTIMIZE_FILE)) {
-    Logger::log("Optimize hasn't finished yet");
+if ($locker->checkOptimizeLock(OPTIMIZE_FILE, $workerPort)) {
+    Analog::log("Optimize hasn't finished yet");
     $locker->unlock();
 }
 
@@ -30,11 +61,11 @@ $cache = new Cache();
 
 
 $nodes                 = [];
-$manticoreStatefulsets = $api->getManticorePods(WORKER_LABEL);
+$manticoreStatefulsets = $api->getManticorePods($labels);
 $nodesRequest          = $api->getNodes();
 
 if ( ! isset($manticoreStatefulsets['items'])) {
-    Logger::log("K8S API didn't respond");
+    Analog::log("K8S API didn't respond");
     $locker->unlock();
 }
 
@@ -72,7 +103,7 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
             if (isset($container['resources']['limits']['cpu'])) {
                 $cpuLimit = $container['resources']['limits']['cpu'];
                 if (stripos($cpuLimit, 'm') !== false) {
-                    $cpuLimit = (int) ((int) $cpuLimit / 1000);
+                    $cpuLimit = (int)((int)$cpuLimit / 1000);
                 }
                 $cpuLimit = ceil($cpuLimit);
             }
@@ -80,10 +111,10 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
 
         /* Get CPU count from node */
         if ( ! $cpuLimit) {
-            $cpuLimit = (int) $nodes[$pod['spec']['nodeName']];
+            $cpuLimit = (int)$nodes[$pod['spec']['nodeName']];
         }
 
-        $manticore = new ManticoreConnector($pod['status']['podIP'], WORKER_PORT, WORKER_LABEL, -1);
+        $manticore = new ManticoreConnector($pod['status']['podIP'], $workerPort, $clusterName, -1);
         $indexes   = $manticore->getTables(false);
 
         foreach ($indexes as $index) {
@@ -94,16 +125,18 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
 
             $chunks = $manticore->getChunksCount($index, false);
 
-            if ($chunks > $cpuLimit * CHUNKS_COEFFICIENT) {
-                Logger::log("Starting OPTIMIZE $index ".$pod['metadata']['name']."  ($chunks > $cpuLimit * ".CHUNKS_COEFFICIENT.") ".
-                    (($chunks > $cpuLimit * CHUNKS_COEFFICIENT) ? 'true' : 'false'));
+            if ($chunks > $cpuLimit * $chunksCoefficient) {
+                Analog::log(
+                    "Starting OPTIMIZE $index ".$pod['metadata']['name']."  ($chunks > $cpuLimit * ".$chunksCoefficient.") ".
+                    (($chunks > $cpuLimit * $chunksCoefficient) ? 'true' : 'false')
+                );
 
-                $manticore->optimize($index, $cpuLimit * CHUNKS_COEFFICIENT);
+                $manticore->optimize($index, $cpuLimit * $chunksCoefficient);
                 $locker->setOptimizeLock($pod['status']['podIP']);
                 $cache->store(Cache::CHECKED_WORKERS, $checkedWorkers);
                 $cache->store(Cache::CHECKED_INDEXES, $checkedIndexes);
 
-                Logger::log("OPTIMIZED started successfully. Stopping watching.");
+                Analog::log("OPTIMIZED started successfully. Stopping watching.");
                 $locker->unlock(0);
             }
         }
