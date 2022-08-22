@@ -11,7 +11,7 @@
     ],
     "require": {
         "guzzlehttp/guzzle": "^7.3",
-        "djklim87/manticoresearch-auto-replication": "1.0.4"
+        "manticoresoftware/manticoresearch-auto-replication": "1.0.0"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest"
