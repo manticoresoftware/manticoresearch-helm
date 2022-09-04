@@ -19,4 +19,4 @@ helm install my-<chart-name> manticoresearch/manticoresearch-helm
 
     helm delete my-<chart-name>
 
-ManticoreSearch Helm repo [documentation](https://github.com/djklim87/manticoresearch-helm#manticore-search-helm-chart) 
+ManticoreSearch Helm repo [documentation](https://github.com/manticoresoftware/manticoresearch-helm#manticore-search-helm-chart) 
