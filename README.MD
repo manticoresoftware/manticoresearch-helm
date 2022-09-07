@@ -2,6 +2,7 @@
 
 Version: 5.0.0.2
 
+
 The helm chart can be used for:
 * making highly available Manticore Search cluster
 * increasing read throughput by automatic load balancing
