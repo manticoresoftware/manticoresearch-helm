@@ -6,7 +6,7 @@ Helm's [documentation](https://helm.sh/docs) to get started.
 Once Helm has been set up correctly, add the repo as follows:
 
 ```
-helm repo add manticoresearch https://manticoresoftware.github.io/manticoresearch-helm
+helm repo add manticoresearch https://helm.manticoresearch.com
 ```
 
 If you had already added this repo earlier, run `helm repo update` to retrieve
@@ -15,7 +15,7 @@ manticoresearch` to see the charts.
 
 To install the `manticoresearch-helm` chart:
 
-helm install my-<chart-name> manticoresearch/manticoresearch-helm
+helm install my-<chart-name> manticoresearch/manticoresearch
 
     To uninstall the chart:
 
