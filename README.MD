@@ -112,7 +112,7 @@ kubectl scale statefulsets manticore-manticoresearch-worker -n manticore --repli
 #### Where is the data actually stored?
 In volumes. One volume per worker. The PVC is by default 1 gigabyte (see variable `worker.volume.size`)
 
-#### How does the high availability achieved?
+#### How is high availability achieved?
 * synchronous master-master replication
 * data remains in volume even after the worker is stopped/deleted
 
@@ -152,7 +152,7 @@ Automatic index compaction follows this algorithm:
   b) of it's not set - from the host
 5) And run OPTIMIZE with `cutoff=<cpuCores * values.optimize.coefficient>`
 
-### How replication work?
+### How does replication work?
 Replication script affects only worker pods. In each start executes schema below:
 ![Replication workflow](replication.jpg)
 
