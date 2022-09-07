@@ -13,12 +13,14 @@ If you had already added this repo earlier, run `helm repo update` to retrieve
 the latest versions of the packages.  You can then run `helm search repo
 manticoresearch` to see the charts.
 
-To install the `manticoresearch-helm` chart:
-
+To install the `manticoresearch` chart:
+```
 helm install my-<chart-name> manticoresearch/manticoresearch
+```
 
-    To uninstall the chart:
+To uninstall the chart:
 
-    helm delete my-<chart-name>
-
+```
+helm delete my-<chart-name>
+```
 ManticoreSearch Helm repo [documentation](https://github.com/manticoresoftware/manticoresearch-helm#manticore-search-helm-chart) 
