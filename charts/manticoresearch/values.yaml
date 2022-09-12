@@ -2,13 +2,6 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-global:
-#   imageRegistry: myRegistryName
-#   imagePullSecrets:
-#     - myRegistryKeySecretName
-#   storageClass: myStorageClass
-  manticoresearch: {}
-
 balancer:
   runInterval: 5
   image:
@@ -56,26 +49,8 @@ worker:
     http:
       port: 9308
       targetPort: 9308
-  persistence:
-    enabled: true
-    ## redis data Persistent Volume Storage Class
-    ## If defined, storageClassName: <storageClass>
-    ## If set to "-", storageClassName: "", which disables dynamic provisioning
-    ## If undefined (the default) or set to null, no storageClassName spec is
-    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-    ##   GKE, AWS & OpenStack)
-    ##
-    # storageClass: "-"
-    accessModes:
-      - ReadWriteOnce
+  volume:
     size: 1Gi
-    ## Persistent Volume selectors
-    ## https://kubernetes.io/docs/concepts/storage/persistent-volumes/#selector
-    matchLabels: {}
-    matchExpressions: {}
-#  volume:
-#    size: 1Gi
-#    storageClassName: false
   config:
     path: /etc/manticoresearch/configmap.conf
     content: |
@@ -156,9 +131,3 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
-
-persistence: {}
-  ## A manually managed Persistent Volume and Claim
-  ## Requires persistence.enabled: true
-  ## If defined, PVC must be created manually before volume will be bound
-# existingClaim:

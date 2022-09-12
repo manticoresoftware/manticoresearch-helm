@@ -56,38 +56,3 @@ Create the name of the service account to use
 {{- define "manticoresearch.serviceAccountName" -}}
 {{- default (include "manticoresearch.fullname" .) .Values.serviceAccount.name }}
 {{- end }}
-
-{{/*
-Return  the proper Storage Class for worker
-*/}}
-{{- define "manticoresearch.worker.storageClass" -}}
-{{/*
-Helm 2.11 supports the assignment of a value to a variable defined in a different scope,
-but Helm 2.9 and 2.10 does not support it, so we need to implement this if-else logic.
-*/}}
-{{- if .Values.global -}}
-    {{- if .Values.global.storageClass -}}
-        {{- if (eq "-" .Values.global.storageClass) -}}
-            {{- printf "storageClassName: \"\"" -}}
-        {{- else }}
-            {{- printf "storageClassName: %s" .Values.global.storageClass -}}
-        {{- end -}}
-    {{- else -}}
-        {{- if .Values.worker.persistence.storageClass -}}
-              {{- if (eq "-" .Values.worker.persistence.storageClass) -}}
-                  {{- printf "storageClassName: \"\"" -}}
-              {{- else }}
-                  {{- printf "storageClassName: %s" .Values.worker.persistence.storageClass -}}
-              {{- end -}}
-        {{- end -}}
-    {{- end -}}
-{{- else -}}
-    {{- if .Values.worker.persistence.storageClass -}}
-        {{- if (eq "-" .Values.worker.persistence.storageClass) -}}
-            {{- printf "storageClassName: \"\"" -}}
-        {{- else }}
-            {{- printf "storageClassName: %s" .Values.worker.persistence.storageClass -}}
-        {{- end -}}
-    {{- end -}}
-{{- end -}}
-{{- end -}}
