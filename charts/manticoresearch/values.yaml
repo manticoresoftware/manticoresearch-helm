@@ -25,6 +25,9 @@ balancer:
     http:
       port: 9308
       targetPort: 9308
+    binary:
+      port: 9312
+      targetPort: 9312
   config:
     path: /etc/manticoresearch/configmap.conf
     content: |
@@ -39,7 +42,20 @@ balancer:
         pid_file = /var/run/manticore/searchd.pid
         binlog_path = /var/lib/manticore/data
       }
-
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
 worker:
   replicaCount: 3
@@ -56,6 +72,9 @@ worker:
     http:
       port: 9308
       targetPort: 9308
+    binary:
+      port: 9312
+      targetPort: 9312
   persistence:
     enabled: true
     ## redis data Persistent Volume Storage Class
@@ -96,6 +115,11 @@ worker:
         shutdown_timeout = 25s
         auto_optimize = 0
       }
+  resources: {}
+  # See comment on balancer.resources
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
 exporter:
   enabled: false
@@ -107,6 +131,8 @@ exporter:
     prometheus.io/path: /metrics
     prometheus.io/port: "8081"
     prometheus.io/scrape: "true"
+  resources: {}
+  # See comment on balancer.resources
 
 optimize:
   enabled: true

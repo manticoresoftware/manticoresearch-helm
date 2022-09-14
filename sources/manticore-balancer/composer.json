@@ -11,11 +11,13 @@
     ],
     "require": {
         "guzzlehttp/guzzle": "^7.3",
-        "djklim87/manticoresearch-auto-replication": "1.0.3"
+        "manticoresoftware/manticoresearch-auto-replication": "1.0.2"
+    },
+    "require-dev": {
+        "roave/security-advisories": "dev-latest"
     },
     "autoload": {
         "psr-4": {
-            "chart\\": "code/src"
         }
     }
 }

@@ -2,7 +2,7 @@ FROM manticoresearch/manticore:5.0.0
 
 RUN apt-get --fix-broken install -y && echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
 apt-get update && apt-get -y install software-properties-common && add-apt-repository -y ppa:ondrej/php && apt-get update && \
-    apt-get install -y curl php7.4-cli php7.4-mysqlnd php7.4-curl wget git supervisor && rm -rf /var/lib/apt/lists/*
+    apt-get install -y curl php7.4-cli php7.4-mysqlnd php7.4-curl php7.4-zip wget git supervisor && rm -rf /var/lib/apt/lists/*
 
 COPY composer.json manticore.conf shutdown.sh starter.sh replica.php /etc/manticoresearch/
 COPY supervisord.conf /etc/supervisord.conf

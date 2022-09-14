@@ -1,6 +1,7 @@
 # Manticore Search Helm Chart
 
-Version: 5.0.0.2
+Version: 5.0.0.4
+
 
 The helm chart can be used for:
 * making highly available Manticore Search cluster
@@ -145,7 +146,7 @@ To enable automatic index compaction you need to update `values.yaml` and set `o
 
 Automatic index compaction follows this algorithm:
 1) Only one compaction session (OPTIMIZE) at once is allowed, so we check if previous OPTIMIZE finished or never started.
-2) If all is ok we get info about pods labeled as `WORKER_LABEL` and attempt OPTIMIZE on each one by one.
+2) If all is ok we get info about pods labeled as `component=worker + instance` and attempt OPTIMIZE on each one by one.
 3) We pick the index which makes sense to compact next.
 4) We get number of CPU cores to calculate the optimial chunks count to leave after the compaction:
   a) either from the pod's limits
