@@ -188,7 +188,8 @@ Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/ser
 | balancer.config.content | Balancer config (only section `searchd`) | searchd<br>      {<br>       listen = /var/run/mysqld/mysqld.sock:mysql<br>        listen = 9306:mysql<br>        listen = 9308:http<br>        log = /dev/stdout<br>        query_log = /dev/stdout<br>        query_log_format = sphinxql<br>        pid_file = /var/run/manticore/searchd.pid<br>        binlog_path = /var/lib/manticore/data<br>      } |
 | worker.replicaCount | Default workers count (number of replicas) | 3 |
 | worker.clusterName | Name of replication cluster | manticore |
-| worker.volume.size | Worker max storage size (mounted volume) | 1Gi |
+| worker.persistence.size | Worker max storage size (mounted volume) | 1Gi |
+| worker.persistence.storageClass | Worker storage class | - |
 | worker.config.content | Worker config (only section `searchd`). <br>**Important**: you must always pass `$ip` to the config for proper functioning | searchd<br>      {<br>        listen = /var/run/mysqld/mysqld.sock:mysql<br>        listen = 9306:mysql<br>        listen = 9308:http<br>        listen = 9301:mysql_vip<br>        listen = $ip:9312<br>        listen = $ip:9315-9415:replication<br>        binlog_path = /var/lib/manticore/data<br>        log = /dev/stdout<br>        query_log = /dev/stdout<br>        query_log_format = sphinxql<br>        pid_file = /var/run/manticore/searchd.pid<br>        data_dir = /var/lib/manticore<br>        shutdown_timeout = 25s<br>        auto_optimize = 0<br>      } |
 | exporter.enabled | Enable Prometheus exporter pod | false |
 

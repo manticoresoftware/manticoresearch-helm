@@ -126,11 +126,31 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+  {{- if and .Values.worker.persistence.enabled (not .Values.persistence.existingClaim) }}
   volumeClaimTemplates:
     - metadata:
         name: data
+        labels:
+          app: {{ template "manticoresearch.name" . }}
+          release: {{ .Release.Name }}
+          heritage: {{ .Release.Service }}
+          app.kubernetes.io/component: worker
       spec:
-        accessModes: [ "ReadWriteOnce" ]
+        accessModes:
+        {{- range .Values.worker.persistence.accessModes }}
+          - {{ . | quote }}
+        {{- end }}
         resources:
           requests:
-            storage: {{ .Values.worker.volume.size }}
+            storage: {{ .Values.worker.persistence.size | quote }}
+        {{ include "manticoresearch.worker.storageClass" . }}
+        selector:
+        {{- if .Values.worker.persistence.matchLabels }}
+          matchLabels:
+{{ toYaml .Values.worker.persistence.matchLabels | indent 12 }}
+        {{- end -}}
+        {{- if .Values.worker.persistence.matchExpressions }}
+        matchExpressions:
+{{ toYaml .Values.worker.persistence.matchExpressions | indent 12 }}
+        {{- end -}}
+  {{- end }}
