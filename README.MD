@@ -2,26 +2,24 @@
 
 Version: 5.0.0.4
 
-
-The helm chart can be used for:
-* making highly available Manticore Search cluster
-* increasing read throughput by automatic load balancing
+The helm chart is to be used to run Manticore Search in Kubernetes. It enables high availability by providing out-of-the-box replication and higher read throughput by automatic load balancing.
 
 ### What this helm chart does
-* Deploys statefulset with one or multiple Manticore Search pods (aka workers) that constitute a replication cluster.
-* Deploys statefulset with a single Manticore Search balancer instance.
-* Deploys needed services.
-* You can create a table on any worker pod, add it to the cluster and it will be replicated to all the other pods.
-* You can scale the workers statefulset up and a new worker will be set up to become a new replica in the cluster.
-* You can scale the workers statefulset down and the cluster will forget about the node.
-* If a worker is back up after a downtime it will rejoin the cluster and will be synced with active workers.
-* When you make a search request against the balancer it will route it to one of the workers.
-* Compaction (OPTIMIZE) is done automatically.
+* Deploys a StatefulSet with one or multiple Manticore Search pods (aka workers) that constitute a replication cluster.
+* Deploys a StatefulSet with a single Manticore Search balancer instance.
+* Deploys the needed services.
 * Provides Prometheus exporter for running instances of Manticore Search.
 
-# Install
+### What you can do with the helm chart
+* You can create a table on any worker pod, add it to the cluster and it will be replicated to all the other pods.
+* You can scale the workers StatefulSet up and a new worker will be set up automatically to become a new replica in the cluster.
+* You can scale the workers StatefulSet down and the cluster will forget about the node.
+* If a worker is back up after a downtime it will rejoin the cluster and will be synced up to the active workers.
+* When you make a search request to the balancer it will route it to one of the workers.
+* [Data compaction](https://manual.manticoresearch.com/Securing_and_compacting_an_index/Compacting_an_index#Compacting-an-index) is done automatically.
 
-```
+# Install
+```bash
 git clone https://github.com/manticoresoftware/manticoresearch-helm
 cd manticoresearch-helm/chart/
 # update values.yaml if needed, see below
@@ -32,20 +30,20 @@ helm install manticore -n manticore --create-namespace .
 
 1) Export namespace name to variable for your convenience:
    
-```
+```bash
 export NAMESPACE=manticore
 ```
 
 ### Wait until it starts
 Wait until all pods are moved to running state:
 
-```
+```bash
 kubectl --namespace $NAMESPACE get po
 ```
 
 ### Forward worker's port
 Forward worker's port to your local machine:
-```
+```bash
 export WORKER_NAME=$(kubectl get pods --namespace $NAMESPACE -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=manticore,label=manticore-worker" -o jsonpath="{.items[0].metadata.name}")
 ```
 
