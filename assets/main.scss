@@ -1,6 +1,12 @@
 ---
 ---
 
+.page-content{
+	padding: 80px 0 30px;
+    flex: 1;
+}
+
+
 @import "minima";
 
 
@@ -21,7 +27,3 @@
     box-shadow: 0 5px 11px 0 rgba(50, 50, 50, 0.08);
 }
 
-.page-content{
-	padding: 80px 0 30px;
-    flex: 1;
-}
