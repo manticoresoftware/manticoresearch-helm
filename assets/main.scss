@@ -1,11 +1,6 @@
 ---
 ---
 
-@import
-  "minima/skins/{{ site.minima.skin | default: 'classic' }}",
-  "minima/initialize";
-
-
 .logo-section {
     float: left;
     margin-top: 5px;
@@ -22,3 +17,10 @@
     border-bottom: 1px solid var(--dark-gray) -webkit-box-shadow:0 5px 11px 0 rgba(50,50,50,.08);
     box-shadow: 0 5px 11px 0 rgb(50 50 50 / 8%);
 }
+
+@import
+  "minima/skins/classic",
+  "minima/initialize";
+
+
+
