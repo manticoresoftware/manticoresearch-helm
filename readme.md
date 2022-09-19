@@ -156,6 +156,22 @@ Automatic index compaction follows this algorithm:
 Replication script affects only worker pods. In each start executes schema below:
 ![Replication workflow](replication.jpg)
 
+### My cluster was down and any `Workers` can't start?
+This case is possible if all nodes where pods deployed were down (like all workers were on the same node).
+After restarting the replication script can't find the oldest node to call `CREATE CLUSTER`.
+
+To restore cluster
+1. Scale down `worker` to 0 replicas
+2. Wait until you will have no replicas in `worker` statefulset
+3. Scale up to previous replicas count
+4. That's all
+
+Pay attention, this is most short and convenient way to restore cluster. But there are some underwater rocks here
+1) If you where write through worker service as described below - it is no way to understand which node had 
+the most up-to-date information before cluster was down
+2) Accordingly, the proposed algorithm has the risk of losing data recorded during a fall
+3) So longer the interval between node drops, the greater the data loss. If all nodes fell at the same time, then the risk is minimal
+
 ## Making queries to the cluster
 ### Writes
 Write queries (INSERT/UPDATE/DELETE/REPLACE/TRUNCATE/ALTER) are supposed to be made to the worker pods (either of them). From inside k8s you can connect to:
