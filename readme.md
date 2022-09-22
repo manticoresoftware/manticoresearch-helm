@@ -156,6 +156,21 @@ Automatic index compaction follows this algorithm:
 Replication script affects only worker pods. In each start executes schema below:
 ![Replication workflow](replication.jpg)
 
+### What do I do if all workers get down **without graceful shutdown**?
+It's unlikely, but possible that all workers suddenly get down (for example due to a power issue in the data center, OOM or when all the pods are on the same node). In this case when they are back up the replication script can't find the oldest node to call `CREATE CLUSTER`.
+
+Here's what you can do to restore the cluster:
+1. Scale `worker` down to 0 replicas
+2. Wait until you have no replicas in the `worker` statefulset
+3. Scale it up to the previous replicas count
+
+Pay attention, this is the easiest and the most convenient way to restore the cluster in this case, but there are some things you need to be aware of:
+1) If you were using the worker service for writing and all your nodes went off at about the same time there may be no way to understand which replica was 
+the most up-to-date at the moment of the shutdown.
+2) So there's a risk of losing data recorded during the shutdown.
+3) The longer was the interval between hard shutdowns of the worker pods, the greater is the chance to lose data, since it's possible that the pod which was crashed first will form the new cluster, then the other pods that have fresher documents will just become it's replicas and the newer documents will be lost.
+4) If all the nodes were shut down at the same time the risk is minimal.
+
 ## Making queries to the cluster
 ### Writes
 Write queries (INSERT/UPDATE/DELETE/REPLACE/TRUNCATE/ALTER) are supposed to be made to the worker pods (either of them). From inside k8s you can connect to:
