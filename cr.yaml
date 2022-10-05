@@ -1,0 +1,4 @@
+pages-branch: gh-pages
+pages-index-path: index.yaml
+release-name-template: "v{{ .Version }}"
+release-notes-file: CHANGELOG.md
