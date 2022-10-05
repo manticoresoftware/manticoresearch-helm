@@ -18,7 +18,12 @@ The helm chart is to be used to run Manticore Search in Kubernetes. It enables h
 * When you make a search request to the balancer it will route it to one of the workers.
 * [Data compaction](https://manual.manticoresearch.com/Securing_and_compacting_an_index/Compacting_an_index#Compacting-an-index) is done automatically.
 
-# Install
+
+# Install from repo
+```bash
+helm repo add manticoresearch https://helm.manticoresearch.com
+# update values.yaml if needed, see below
+helm install manticore -n manticore --create-namespace manticoresearch/manticoresearch
 ```bash
 git clone https://github.com/manticoresoftware/manticoresearch-helm
 cd manticoresearch-helm/chart/
