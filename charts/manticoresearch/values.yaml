@@ -67,7 +67,7 @@ worker:
   ##
   ## Master-slave expects that you will write only on zero replicas, so there will be most actual data.
   ## In case the cluster was broken all nodes will try to connect at zero node
-  relplicationMode: multi-master
+  replicationMode: multi-master
   autoAddTablesInCluster: true
   image:
     repository: manticoresearch/helm-worker
