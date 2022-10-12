@@ -1,6 +1,6 @@
 ### 5.0.22
-We added replication mode switcher. This feature can take one of two values `multi-master` or `master-slave`.
+Added replication mode switcher. Now you can choose between `multi-master` and `master-slave`.
 
-In master-master mode has no matter which node you use for writing and reading. This is a more simple way but you can't control the relevance of data at nodes in case the emergency shutdown
+In the `multi-master` mode it doesn't matter to which node you write and from what node you read. This is a simpler and more efficient approach, but in case of an emergency cluster shutdown when all the nodes are down at the same time you have to recover the cluster  manually.
 
-Master-slave expects that you will write only on zero replicas, so there will be most actual data. In case the cluster was broken all nodes will try to connect at zero node
+The `master-slave` mode expects that you write only to node 0, so it's guaranteed to always have the most actual data. Then in case the cluster is fully shut down and then back up all other nodes will connect to the node 0.
