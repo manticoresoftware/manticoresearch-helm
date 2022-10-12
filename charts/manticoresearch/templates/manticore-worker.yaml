@@ -57,6 +57,8 @@ spec:
             value: {{ .Values.worker.service.binary.port | quote }}
           - name: CLUSTER_NAME
             value: {{ .Values.worker.clusterName }}
+          - name: REPLICATION_MODE
+            value: {{ .Values.worker.replicationMode }}
           - name: INSTANCE_LABEL
             value: {{ .Release.Name }}
           - name: BALANCER_URL
