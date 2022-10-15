@@ -1,6 +1,6 @@
 # Manticore Search Helm Chart
 
-Version: 5.0.2.2
+Version: 5.0.2.3
 
 The helm chart is to be used to run Manticore Search in Kubernetes. It enables high availability by providing out-of-the-box replication and higher read throughput by automatic load balancing.
 
