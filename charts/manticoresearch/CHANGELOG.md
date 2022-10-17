@@ -1,3 +1,3 @@
 ### 5.0.23
 
-Added handling replication quorum issues. Now in case replication breacks via quorum exceeded, k8s probe will runs repair script which will fix cluster at zero node
+Added better handling of replication quorum issues. Now in case replication breaks due to no quorum, k8s probe will run a repair script which will fix the cluster at node 0.
