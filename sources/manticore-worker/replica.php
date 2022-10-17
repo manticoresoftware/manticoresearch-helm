@@ -25,34 +25,9 @@ $instance = null;
 $workerService = null;
 $notAddTablesAutomatically = null;
 $replicationMode = null;
+$labels = null;
 
-$variables = [
-    'qlPort' => ['env' => 'MANTICORE_PORT', 'type' => 'int'],
-    'binaryPort' => ['env' => 'MANTICORE_BINARY_PORT', 'type' => 'int'],
-    'clusterName' => ['env' => 'CLUSTER_NAME', 'type' => 'string'],
-    'balancerUrl' => ['env' => 'BALANCER_URL', 'type' => 'string'],
-    'instance' => ['env' => 'INSTANCE_LABEL', 'type' => 'string'],
-    'workerService' => ['env' => 'WORKER_SERVICE', 'type' => 'string'],
-    'replicationMode' => ['env' => 'REPLICATION_MODE', 'type' => 'string'],
-    'notAddTablesAutomatically' => ['env' => 'AUTO_ADD_TABLES_IN_CLUSTER', 'type' => 'bool'],
-];
-
-
-foreach ($variables as $variable => $desc) {
-    $$variable = getenv($desc['env']);
-
-    if ($$variable === false) {
-        Analog::log($desc['env']." is not defined\n");
-        exit(1);
-    }
-
-    if ($desc['type'] === 'int') {
-        $$variable = (int)$$variable;
-    } elseif ($desc['type'] === 'bool') {
-        $$variable = (bool)$$variable;
-    }
-}
-
+include("env_reader.php");
 
 if ($replicationMode !== null &&
     !in_array($replicationMode, [REPLICATION_MODE_MULTI_MASTER, REPLICATION_MODE_MASTER_SLAVE])) {
@@ -60,11 +35,6 @@ if ($replicationMode !== null &&
 }
 
 Analog::log("Replication mode: ".$replicationMode);
-
-$labels = [
-    'app.kubernetes.io/component' => 'worker',
-    'app.kubernetes.io/instance' => $instance,
-];
 
 
 $api = new ApiClient();
@@ -74,7 +44,7 @@ $manticoreJson = new ManticoreJson($clusterName.'_cluster', $binaryPort);
 $count = $resources->getActivePodsCount();
 
 Analog::log("Pods count ".$count);
-if ($count <= 1) {
+if ($count === 0) {
     Analog::log("One pod");
     $manticoreJson->startManticore();
     $manticore = new ManticoreConnector('localhost', $qlPort, $clusterName, -1);
