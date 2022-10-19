@@ -157,7 +157,7 @@ Automatic index compaction follows this algorithm:
 5) And run OPTIMIZE with `cutoff=<cpuCores * values.optimize.coefficient>`
 
 ### How does replication work?
-Replication script affects only worker pods. In each start executes schema below:
+The replication script affects only worker pods. Each worker does the following every time it starts:
 ![Replication workflow](replication.jpg)
 
 ## Making queries to the cluster
