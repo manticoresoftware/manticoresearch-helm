@@ -7,8 +7,8 @@ The helm chart is to be used to run Manticore Search in Kubernetes. It enables h
 ### What this helm chart does
 * Deploys a StatefulSet with one or multiple Manticore Search pods (aka workers) that constitute a replication cluster.
 * Deploys a StatefulSet with a single Manticore Search balancer instance.
-* Deploys the needed services.
-* Provides Prometheus exporter for running instances of Manticore Search.
+* Deploys needed services.
+* Provides Prometheus exporter for the running instances of Manticore Search.
 
 ### What you can do with the helm chart
 * You can create a table on any worker pod, add it to the cluster and it will be replicated to all the other pods.
@@ -19,11 +19,16 @@ The helm chart is to be used to run Manticore Search in Kubernetes. It enables h
 * [Data compaction](https://manual.manticoresearch.com/Securing_and_compacting_an_index/Compacting_an_index#Compacting-an-index) is done automatically.
 
 
-# Install from repo
+# Installation
+
+## From Helm repo
 ```bash
 helm repo add manticoresearch https://helm.manticoresearch.com
 # update values.yaml if needed, see below
 helm install manticore -n manticore --create-namespace manticoresearch/manticoresearch
+```
+
+## Installation from GitHub
 ```bash
 git clone https://github.com/manticoresoftware/manticoresearch-helm
 cd manticoresearch-helm/chart/
