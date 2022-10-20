@@ -64,6 +64,10 @@ worker:
 
   ## The `master-slave` mode expects that you write only to node 0, so it's guaranteed to always have the most actual data. Then in case the cluster is fully shut down and then back up all other nodes will connect to the node 0.
   replicationMode: multi-master
+  ## Allows automatically restore cluster if it is broken via quorum absent
+  quorumRecovery: true
+  ## interval in seconds to run cluster status check
+  quorumCheckInterval: 15
   autoAddTablesInCluster: true
   image:
     repository: manticoresearch/helm-worker

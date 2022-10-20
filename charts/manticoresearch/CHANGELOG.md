@@ -1,3 +1,4 @@
-### 5.0.23
+### 5.0.24
 
-Added better handling of replication quorum issues. Now in case replication breaks due to no quorum, k8s probe will run a repair script which will fix the cluster at node 0.
+* Expose to values replication quorum recovery switcher
+* add different behaviour of quorum recovery for each one of replication modes

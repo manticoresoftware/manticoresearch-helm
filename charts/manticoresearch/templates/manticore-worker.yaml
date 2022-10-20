@@ -65,8 +65,12 @@ spec:
             value: {{ include "manticoresearch.fullname" . }}-balancer-svc:{{ .Values.balancer.service.ql.targetPort }}
           - name: WORKER_SERVICE
             value: {{ include "manticoresearch.fullname" . }}-worker-svc
+          {{- if .Values.worker.quorumRecovery }}
+          - name: QUORUM_RECOVERY
+            value: "true"
           - name: QUORUM_RUN_INTERVAL
-            value: "15"
+            value: {{ .Values.worker.quorumCheckInterval | quote }}
+          {{- end }}
         readinessProbe:
           tcpSocket:
             port: {{ .Values.worker.service.ql.port }}
