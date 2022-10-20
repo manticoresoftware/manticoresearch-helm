@@ -30,15 +30,8 @@ include("env_reader.php");
 
 $api = new ApiClient();
 $resources = new Resources($api, $labels, new NotificationStub());
-
-try {
-    $count = $resources->getActivePodsCount();
-} catch (JsonException $e) {
-    Analog::error("Can't parse active pods JSON. ".$e->getMessage());
-}
-
-
 $manticore = new ManticoreConnector('localhost', $qlPort, $clusterName, -1);
+
 if ($manticore->checkClusterName() && !$manticore->isClusterPrimary()) {
     try {
         if (($replicationMode === REPLICATION_MODE_MASTER_SLAVE
