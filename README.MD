@@ -160,6 +160,30 @@ Automatic index compaction follows this algorithm:
 The replication script affects only worker pods. Each worker does the following every time it starts:
 ![Replication workflow](replication.jpg)
 
+### Which different between the replication modes?
+
+ManticoreSearch Helm chart has two replication modes. `Master-to-Master` and `Master-to-Slave`
+##### Master to Master
+All nodes connect to the oldest node. The user writes new records via service and in case the crash leader node will be the next oldest node.
+Most convenient for support mode, but does not guarantee data integrity.
+
+##### Master to Master
+All writes user perform on ZERO replica. All another nodes connects to her (@sanikolaev can you spell another here, on my point it's it sounds awful).
+In case it's down any new records can't be accepted by cluster. But reading actions can perform any node
+
+### What is `quorumRecovery` feature?
+
+Sometimes cluster can lose most part of nodes (connection or datacentre issues). 
+The [Raft Consensus Algorithm](https://raft.github.io/) which we use for election replication leader, 
+expects that in cluster have quorum (most count of nodes need to be available and alive).
+So in case you loose most part of nodes (eq 3 of 5, 2 of 3, etc) cluster will be switched to `non-primary` mode.  
+
+#### Master to Master quorum recovery
+![Master to Master quorum recovery scheme](m2m_quorum.jpg)
+
+#### Master to Slave quorum recovery
+![Master to Slave quorum recovery scheme](m2s_quorum.jpg)
+
 ## Making queries to the cluster
 ### Writes
 Write queries (INSERT/UPDATE/DELETE/REPLACE/TRUNCATE/ALTER) are supposed to be made to the worker pods (either of them). From inside k8s you can connect to:
