@@ -41,9 +41,9 @@ if ($manticore->checkClusterName() && !$manticore->isClusterPrimary()) {
             $manticoreJson = new ManticoreJson($clusterName.'_cluster', $binaryPort);
 
             if ($manticoreJson->isAllNodesNonPrimary($resources, $qlPort)) {
-                Analog::info("Node on in cluster but hasn't primary status. Trying to fix it");
+                Analog::info("The node is on in the cluster, but is not in primary state. Trying to fix it");
                 $manticore->restoreCluster();
-                Analog::info("Successfully fixed non primary cluster state");
+                Analog::info("Successfully fixed non-primary cluster state");
             }
         }
     } catch (JsonException $e) {
