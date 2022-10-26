@@ -160,23 +160,19 @@ Automatic index compaction follows this algorithm:
 The replication script affects only worker pods. Each worker does the following every time it starts:
 ![Replication workflow](replication.jpg)
 
-### Which different between the replication modes?
+### What's the difference between the replication modes?
 
-ManticoreSearch Helm chart has two replication modes. `Master-to-Master` and `Master-to-Slave`
-##### Master to Master
-All nodes connect to the oldest node. The user writes new records via service and in case the crash leader node will be the next oldest node.
-Most convenient for support mode, but does not guarantee data integrity.
+Manticore Search Helm chart can work in one of the two replication modes: master-to-master and master-to-slave. The modes control behaviour of a node is being added to a cluster or an existing node which starts and for some reason can't connect to the cluster.
 
-##### Master to Master
-All writes user perform on ZERO replica. All another nodes connects to her (@sanikolaev can you spell another here, on my point it's it sounds awful).
-In case it's down any new records can't be accepted by cluster. But reading actions can perform any node
+##### Master to master replication mode
+In this mode a node connects to the oldest node. Write queries are to be made via service and are load balanced among all the nodes, i.e. **writes are highly-available**. In case of a crash the oldest node will become a base node for others. This mode is recommended in most cases, but in case of a full shutdown and `quorumRecovery` enabled it may cause data loss if there were writes to the cluster while the nodes were being stopped. Imagine, node 0 stops, but we keep writing to node 1, then it stops as well, then node 2 stops too, then all of them come back up starting from node 0 and if we then connect to the oldest node (0) on nodes 1 and 2 we'll lose the writes landed on node 1.
+
+##### Master to slave replication mode
+In this mode all writes are to be made to node 0. All other nodes connect only to node 0 on start if they lose the cluster info. In case node 0 is down no writes are accepted any more, i.e. there's no highly available writes, but since we know that node 0 is the most advanced we can be sure that we won't lose any data. 
 
 ### What is `quorumRecovery` feature?
 
-Sometimes cluster can lose most part of nodes (connection or datacentre issues). 
-The [Raft Consensus Algorithm](https://raft.github.io/) which we use for election replication leader, 
-expects that in cluster have quorum (most count of nodes need to be available and alive).
-So in case you loose most part of nodes (eq 3 of 5, 2 of 3, etc) cluster will be switched to `non-primary` mode.  
+If a cluster loses more than a half of nodes it loses the quorum and writes are blocked until it's recovered. If you set `quorumRecovery: true` Manticore will try to recover the quorum automatically by reinitializing the cluster from the oldest node or node 0 depending on the replication mode:
 
 #### Master to Master quorum recovery
 ![Master to Master quorum recovery scheme](m2m_quorum.jpg)
