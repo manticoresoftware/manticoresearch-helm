@@ -174,11 +174,11 @@ In this mode all writes are to be made to node 0. All other nodes connect only t
 
 If a cluster loses more than a half of nodes it loses the quorum and writes are blocked until it's recovered. If you set `quorumRecovery: true` Manticore will try to recover the quorum automatically by reinitializing the cluster from the oldest node or node 0 depending on the replication mode:
 
-#### Master to Master quorum recovery
+#### Master to master quorum recovery
 ![Master to Master quorum recovery scheme](m2m_quorum.jpg)
 
-#### Master to Slave quorum recovery
-![Master to Slave quorum recovery scheme](m2s_quorum.jpg)
+#### Master to slave quorum recovery
+![Master to slave quorum recovery scheme](m2s_quorum.jpg)
 
 ## Making queries to the cluster
 ### Writes
