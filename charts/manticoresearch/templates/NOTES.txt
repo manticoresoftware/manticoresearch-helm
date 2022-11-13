@@ -4,7 +4,7 @@ kubectl --namespace {{ .Release.Namespace }} get po
 
 2) Forward worker port to your local machine:
 
-export WORKER_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "manticoresearch.name" . }},app.kubernetes.io/instance={{ .Release.Name }},label=manticore-worker" -o jsonpath="{.items[0].metadata.name}")
+export WORKER_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "manticoresearch.name" . }},app.kubernetes.io/instance={{ .Release.Name }},app.kubernetes.io/component=worker" -o jsonpath="{.items[0].metadata.name}")
 kubectl --namespace {{ .Release.Namespace }} port-forward $WORKER_NAME 7306:{{ .Values.worker.service.ql.port }}
 
 3) Connect to the worker:
@@ -17,11 +17,11 @@ CREATE TABLE idx(title text);
 
 5) Add table to cluster:
 
-ALTER CLUSTER {{ .Values.worker.clusterName }} ADD idx;
+ALTER CLUSTER {{ .Values.worker.clusterName }}_cluster ADD idx;
 
 6) Add some data to your table:
 
-INSERT INTO {{ .Values.worker.clusterName }}:idx (title) VALUES ('dog is brown'), ('mouse is small');
+INSERT INTO {{ .Values.worker.clusterName }}_cluster:idx (title) VALUES ('dog is brown'), ('mouse is small');
 
 7) Forward worker port to your local machine:
 
