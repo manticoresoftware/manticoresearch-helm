@@ -7,8 +7,8 @@ The helm chart is to be used to run Manticore Search in Kubernetes. It enables h
 ### What this helm chart does
 * Deploys a StatefulSet with one or multiple Manticore Search pods (aka workers) that constitute a replication cluster.
 * Deploys a StatefulSet with a single Manticore Search balancer instance.
-* Deploys the needed services.
-* Provides Prometheus exporter for running instances of Manticore Search.
+* Deploys needed services.
+* Provides Prometheus exporter for the running instances of Manticore Search.
 
 ### What you can do with the helm chart
 * You can create a table on any worker pod, add it to the cluster and it will be replicated to all the other pods.
@@ -19,11 +19,16 @@ The helm chart is to be used to run Manticore Search in Kubernetes. It enables h
 * [Data compaction](https://manual.manticoresearch.com/Securing_and_compacting_an_index/Compacting_an_index#Compacting-an-index) is done automatically.
 
 
-# Install from repo
+# Installation
+
+## Installation from Helm repo
 ```bash
 helm repo add manticoresearch https://helm.manticoresearch.com
 # update values.yaml if needed, see below
 helm install manticore -n manticore --create-namespace manticoresearch/manticoresearch
+```
+
+## Installation from GitHub
 ```bash
 git clone https://github.com/manticoresoftware/manticoresearch-helm
 cd manticoresearch-helm/chart/
@@ -120,13 +125,13 @@ In volumes. One volume per worker. The PVC is by default 1 gigabyte (see variabl
 * synchronous master-master replication
 * data remains in volume even after the worker is stopped/deleted
 
-#### If a worker goes down, is its data lost?
+#### If a worker pod goes down, is its data lost?
 The volume associated with the work doesn't get deleted.
 
-#### What happens when the node goes back up?
-It reuses the data existing before it went down. Then it tries to join the cluster and if the data is fresh enough it will catch up by applying recent changes occurred in the cluster, otherwise it will do full sync like if it was a completely new worker.
+#### What happens when a worker pod goes back up?
+It reuses the data existing before it went down. Then it tries to join the cluster and if the data is fresh enough it will catch up by applying recent changes occurred in the cluster, otherwise it will do full sync like if it was a completely new worker. If it can't find the cluster at all it will try to join the oldest node or node 0 (see below about replication modes).
 
-#### How do I delete the data?
+#### How do I delete data?
 Clean up the volumes manually or delete the whole namespace.
 
 #### What happens when a new worker pod comes up?
@@ -135,7 +140,7 @@ Clean up the volumes manually or delete the whole namespace.
 * If it finds some, it joins to the oldest one
 
 #### What happens if I uninstall the helm chart?
-The volumes will still retain and if you install the chart again to the same namespace you'll be able to access the data.
+The volumes will still retain the data and if you install the chart again to the same namespace you'll be able to access it.
 
 ### How does the balancer work?
 Each 5 seconds (see `balancer.runInterval`) the balancer:
@@ -160,29 +165,24 @@ Automatic index compaction follows this algorithm:
 The replication script affects only worker pods. Each worker does the following every time it starts:
 ![Replication workflow](replication.jpg)
 
-### Which different between the replication modes?
+### What's the difference between the replication modes?
 
-ManticoreSearch Helm chart has two replication modes. `Master-to-Master` and `Master-to-Slave`
-##### Master to Master
-All nodes connect to the oldest node. The user writes new records via service and in case the crash leader node will be the next oldest node.
-Most convenient for support mode, but does not guarantee data integrity.
+Manticore Search Helm chart can work in one of the two replication modes: master-to-master and master-to-slave. The modes control behaviour of a worker pod which is being added to a cluster or an existing worker which restarts and for some reason can't connect to the cluster.
 
-##### Master to Master
-All writes user perform on ZERO replica. All another nodes connects to her (@sanikolaev can you spell another here, on my point it's it sounds awful).
-In case it's down any new records can't be accepted by cluster. But reading actions can perform any node
+#### Master to master replication mode
+In this mode a worker pod connects to the oldest node. Write queries are to be made via service and are load balanced among all the workers, i.e. **writes are highly-available**. In case of a crash the oldest worker will become a base worker for others. This mode is recommended in most cases, but in case of a full shutdown and `quorumRecovery` enabled it may cause data loss if there were writes to the cluster while the workers were being stopped. Imagine, worker 0 stops, but we keep writing to worker 1, then it stops as well, then worer 2 stops too, then all of them come back up starting from worker 0 and if we then connect to the oldest worker (0) on workers 1 and 2 we'll lose the writes landed on worker 1.
 
-### What is `quorumRecovery` feature?
+#### Master to slave replication mode
+In this mode all writes are to be made to worker 0. All other workers connect to it on start if they lose the cluster info. In case worker 0 is down no writes are accepted any more, i.e. **there's no highly available writes**, but since we know that worker 0 is the most advanced we can be sure that we won't lose any data during failover. 
 
-Sometimes cluster can lose most part of nodes (connection or datacentre issues). 
-The [Raft Consensus Algorithm](https://raft.github.io/) which we use for election replication leader, 
-expects that in cluster have quorum (most count of nodes need to be available and alive).
-So in case you loose most part of nodes (eq 3 of 5, 2 of 3, etc) cluster will be switched to `non-primary` mode.  
+### What is `quorumRecovery`?
+If a cluster loses more than a half of nodes it means it's lost the quorum and writes are blocked until it's recovered. If you set `quorumRecovery: true` Manticore will try to recover the quorum automatically by reinitializing the cluster from the oldest worker or worker 0 depending on the replication mode:
 
-#### Master to Master quorum recovery
+#### Master to master quorum recovery
 ![Master to Master quorum recovery scheme](m2m_quorum.jpg)
 
-#### Master to Slave quorum recovery
-![Master to Slave quorum recovery scheme](m2s_quorum.jpg)
+#### Master to slave quorum recovery
+![Master to slave quorum recovery scheme](m2s_quorum.jpg)
 
 ## Making queries to the cluster
 ### Writes
@@ -239,6 +239,8 @@ Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/ser
 | worker.image.repository | Worker docker image repository | Docker hub |
 | worker.image.tag | Worker image version | Same as chart version |
 | worker.image.pullPolicy | Worker docker image update policy | IfNotPresent |
+| worker.quorumRecovery | Worker quorum auto recovery | false |
+| worker.quorumCheckInterval | Check quorum ever so often (seconds) | 15 |
 | worker.service.ql.port | Worker service SQL port | 9306 |
 | worker.service.ql.targetPort | Worker service SQL targetPort | 9306 |
 | worker.service.http.port | Worker service HTTP port | 9306 |
