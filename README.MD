@@ -31,7 +31,7 @@ helm install manticore -n manticore --create-namespace manticoresearch/manticore
 ## Installation from GitHub
 ```bash
 git clone https://github.com/manticoresoftware/manticoresearch-helm
-cd manticoresearch-helm/chart/
+cd manticoresearch-helm/charts/manticoresearch/
 # update values.yaml if needed, see below
 helm install manticore -n manticore --create-namespace .
 ```
@@ -54,7 +54,9 @@ kubectl --namespace $NAMESPACE get po
 ### Forward worker's port
 Forward worker's port to your local machine:
 ```bash
-export WORKER_NAME=$(kubectl get pods --namespace $NAMESPACE -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=manticore,label=manticore-worker" -o jsonpath="{.items[0].metadata.name}")
+export WORKER_NAME=$(kubectl get pods --namespace $NAMESPACE \
+-l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=manticore,app.kubernetes.io/component=worker" \
+-o jsonpath="{.items[0].metadata.name}")
 ```
 
 | SQL | HTTP | 
@@ -77,28 +79,30 @@ export WORKER_NAME=$(kubectl get pods --namespace $NAMESPACE -l "app.kubernetes.
 
 | SQL | HTTP | 
 |---|---|
-|`ALTER CLUSTER manticore ADD idx;`|`curl -X "POST" localhost:7308/sql -d "mode=raw&query=alter cluster manticore add idx"`|
+|`ALTER CLUSTER manticore_cluster ADD idx;`|`curl -X "POST" localhost:7308/sql -d "mode=raw&query=alter cluster manticore_cluster add idx"`|
 
 ### Add some data to your table:
 
 **SQL**
 ```sql
-INSERT INTO manticore:idx (title) VALUES ('dog is brown'), ('mouse is small');
+INSERT INTO manticore_cluster:idx (title) VALUES ('dog is brown'), ('mouse is small');
 ```
 
 **HTTP**
 ```bash
 curl -X "POST" -H "Content-Type: application/x-ndjson" localhost:7308/bulk -d '
 
-{"insert": {"cluster":"manticore", "index" : "idx", "doc": { "title" : "dog is brown" } } }
-{"insert": {"cluster":"manticore", "index" : "idx", "doc": { "title" : "mouse is small" } } }'
+{"insert": {"cluster":"manticore_cluster", "index" : "idx", "doc": { "title" : "dog is brown" } } }
+{"insert": {"cluster":"manticore_cluster", "index" : "idx", "doc": { "title" : "mouse is small" } } }'
 ```
 
 ### Forward load balancer's port to your local machine:
 
 ```bash
 export NAMESPACE=manticore
-export BALANCER_NAME=$(kubectl get pods --namespace $NAMESPACE -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=manticore,name=manticore-manticoresearch-balancer" -o jsonpath="{.items[0].metadata.name}")
+export BALANCER_NAME=$(kubectl get pods --namespace $NAMESPACE \
+-l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=manticore,name=manticore-manticoresearch-balancer" \
+-o jsonpath="{.items[0].metadata.name}")
 ```
 
 | SQL | HTTP | 
