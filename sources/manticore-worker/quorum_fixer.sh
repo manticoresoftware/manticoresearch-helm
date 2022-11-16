@@ -5,4 +5,6 @@ if [ "$QUORUM_RECOVERY" = true ] ; then
       php quorum.php &
       sleep $QUORUM_RUN_INTERVAL
     done
+  else
+    sleep infinity
 fi

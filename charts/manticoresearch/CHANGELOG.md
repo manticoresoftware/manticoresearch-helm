@@ -1,4 +1,3 @@
-### 5.0.24
+### 5.0.25
 
-* Exposed replication quorum recovery switcher to `values.yaml`
-* Added different behaviours of quorum recovery for different replication modes
+* Minor fixes in post-installation notice
