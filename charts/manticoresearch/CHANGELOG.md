@@ -1,3 +1,3 @@
-### 5.0.25
+### 5.0.26
 
-* Minor fixes in post-installation notice
+* Expose and change default HA strategy
