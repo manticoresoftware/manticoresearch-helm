@@ -28,13 +28,15 @@ helm repo add manticoresearch https://helm.manticoresearch.com
 helm install manticore -n manticore --create-namespace manticoresearch/manticoresearch
 ```
 
-## Installation from GitHub
+## Installation from GitHub (dev version)
 ```bash
 git clone https://github.com/manticoresoftware/manticoresearch-helm
 cd manticoresearch-helm/charts/manticoresearch/
 # update values.yaml if needed, see below
 helm install manticore -n manticore --create-namespace .
 ```
+
+If you want to install a release version use `git checkout` <release tag> or download an archive from https://github.com/manticoresoftware/manticoresearch-helm/releases .
 
 # Quick start guide:
 
