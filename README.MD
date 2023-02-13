@@ -1,6 +1,6 @@
 # Manticore Search Helm Chart
 
-Version: 5.0.2.5
+Version: 5.0.2.6
 
 The helm chart is to be used to run Manticore Search in Kubernetes. It enables high availability by providing out-of-the-box replication and higher read throughput by automatic load balancing.
 
@@ -242,6 +242,7 @@ Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/ser
 | balancer.service.observer.port | Balancer service port (for observer) | 8080 |
 | balancer.service.observer.targetPort | Balancer service targetPort (for observer) | 8080 |
 | balancer.config.path | Path to balancer config | /etc/manticoresearch/configmap.conf
+| balancer.config.index_ha_strategy | Distributed indexes HA strategy | nodeads
 | worker.image.repository | Worker docker image repository | Docker hub |
 | worker.image.tag | Worker image version | Same as chart version |
 | worker.image.pullPolicy | Worker docker image update policy | IfNotPresent |
