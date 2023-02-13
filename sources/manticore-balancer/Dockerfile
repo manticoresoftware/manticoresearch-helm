@@ -1,4 +1,4 @@
-FROM manticoresearch/manticore:5.0.2-extra
+FROM manticoresearch/manticore:6.0.2
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && apt --fix-broken install -y && \
 apt-get update && apt -y install software-properties-common && add-apt-repository -y ppa:ondrej/php && apt-get update && \
