@@ -1,3 +1,3 @@
 ### 6.0.20
 
-* Migrate to Manticore Search 6.0.2
+* Switched to Manticore Search 6.0.2
