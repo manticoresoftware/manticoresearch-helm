@@ -1,3 +1,3 @@
-### 5.0.26
+### 6.0.20
 
-* Expose and change default HA strategy
+* Switched to Manticore Search 6.0.2
