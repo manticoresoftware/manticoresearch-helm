@@ -6,7 +6,7 @@
 #                                                                                               #
 #################################################################################################
 
-BUILD_TAG=6.0.2.0
+BUILD_TAG=6.0.2.1
 echo $BUILD_TAG
 docker build --no-cache -t manticoresearch/helm-worker:$BUILD_TAG .
 docker push manticoresearch/helm-worker:$BUILD_TAG

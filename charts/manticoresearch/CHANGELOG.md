@@ -1,3 +1,3 @@
-### 6.0.20
+### 6.0.21
 
-* Switched to Manticore Search 6.0.2
+* Fix not working buddy issue
