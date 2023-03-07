@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ ! -d "/var/lib/manticore/log" ]; then
   mkdir -p "/var/lib/manticore/log"

@@ -1,6 +1,6 @@
 # Manticore Search Helm Chart
 
-Version: 6.0.2.0
+Version: 6.0.2.1
 
 The helm chart is to be used to run Manticore Search in Kubernetes. It enables high availability by providing out-of-the-box replication and higher read throughput by automatic load balancing.
 
@@ -241,7 +241,7 @@ Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/ser
 | balancer.service.http.targetPort | Balancer service HTTP targetPort (for searchd) | 9306 |
 | balancer.service.observer.port | Balancer service port (for observer) | 8080 |
 | balancer.service.observer.targetPort | Balancer service targetPort (for observer) | 8080 |
-| balancer.config.path | Path to balancer config | /etc/manticoresearch/configmap.conf
+| balancer.config.path | Path to balancer config | /mnt/configmap.conf
 | balancer.config.index_ha_strategy | Distributed indexes HA strategy | nodeads
 | worker.image.repository | Worker docker image repository | Docker hub |
 | worker.image.tag | Worker image version | Same as chart version |
@@ -252,7 +252,7 @@ Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/ser
 | worker.service.ql.targetPort | Worker service SQL targetPort | 9306 |
 | worker.service.http.port | Worker service HTTP port | 9306 |
 | worker.service.http.targetPort | Worker service HTTP targetPort | 9306 |
-| worker.config.path | Path to worker config | /etc/manticoresearch/configmap.conf |
+| worker.config.path | Path to worker config | /mnt/configmap.conf |
 | nameOverride | Allows to override chart name | "" |
 | fullNameOverride | Allows to override full chart name | "" |
 | serviceAccount.annotations | Allows to add service account annotations | "" |
