@@ -1,3 +1,3 @@
-### 6.0.21
+### 6.0.41
 
-* Resolve the Manticore Buddy malfunction
+* Switched to Manticore Search 6.0.4

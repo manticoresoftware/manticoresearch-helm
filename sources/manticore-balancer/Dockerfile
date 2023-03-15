@@ -1,8 +1,8 @@
-FROM manticoresearch/manticore:6.0.2-extra3
+FROM manticoresearch/manticore:6.0.4
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && apt --fix-broken install -y && \
 apt-get update && apt -y install software-properties-common && add-apt-repository -y ppa:ondrej/php && apt-get update && \
-    apt-get install -y nano curl unzip git php7.4-cli php7.4-mysqlnd php7.4-curl supervisor && rm -rf /var/lib/apt/lists/* && \
+    apt-get install -y nano curl unzip git php8.1-cli php8.1-mysqlnd php8.1-curl supervisor && rm -rf /var/lib/apt/lists/* && \
 mkdir /var/www && mkdir /var/www/localhost
 
 COPY composer.json observer.php optimize.php starter.sh job_runner.sh optimize_runner.sh /var/www/localhost/
