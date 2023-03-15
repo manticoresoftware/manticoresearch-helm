@@ -1,1 +1,2 @@
 release-notes-file: CHANGELOG.md
+skip-existing: true
