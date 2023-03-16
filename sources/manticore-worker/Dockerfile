@@ -1,15 +1,13 @@
-FROM manticoresearch/manticore:6.0.2-extra3
+FROM manticoresearch/manticore:6.0.4
 
 RUN apt-get --fix-broken install -y && echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
 apt-get update && apt-get -y install software-properties-common && add-apt-repository -y ppa:ondrej/php && apt-get update && \
-    apt-get install -y curl php7.4-cli php7.4-mysqlnd php7.4-curl php7.4-zip wget git supervisor && rm -rf /var/lib/apt/lists/*
+    apt-get install -y curl php8.1-cli php8.1-mysqlnd php8.1-curl php8.1-zip wget git supervisor && rm -rf /var/lib/apt/lists/*
 
 COPY composer.json manticore.conf shutdown.sh starter.sh replica.php quorum_fixer.sh quorum.php env_reader.php /etc/manticoresearch/
 COPY supervisord.conf /etc/supervisord.conf
 
-RUN wget https://repo.manticoresearch.com/repository/morphology/en.pak.tgz https://repo.manticoresearch.com/repository/morphology/de.pak.tgz https://repo.manticoresearch.com/repository/morphology/ru.pak.tgz -P /tmp && \
-tar -xvzf /tmp/en.pak.tgz -C /usr/share/manticore/ && tar -xvzf /tmp/ru.pak.tgz -C /usr/share/manticore/ && tar -xvzf /tmp/de.pak.tgz -C /usr/share/manticore/ && \
-chown -R manticore:manticore /var/log/manticore/ /var/lib/manticore/ /var/run/manticore /etc/manticoresearch/ /usr/share/manticore/ /dev/stdout
+RUN chown -R manticore:manticore /var/log/manticore/ /var/lib/manticore/ /var/run/manticore /etc/manticoresearch/ /usr/share/manticore/ /dev/stdout
 
 RUN cd /etc/manticoresearch/ && \
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
