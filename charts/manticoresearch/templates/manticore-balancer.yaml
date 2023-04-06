@@ -4,6 +4,7 @@ metadata:
   name: {{ include "manticoresearch.fullname" . }}-balancer
   labels:
     name: {{ include "manticoresearch.fullname" . }}-balancer
+    release: {{ .Release.Name }}
     app.kubernetes.io/component: balancer
     {{- include "manticoresearch.labels" . | nindent 4 }}
 spec:
@@ -25,6 +26,7 @@ spec:
       {{- end }}
       labels:
         name: {{ include "manticoresearch.fullname" . }}-balancer
+        release: {{ .Release.Name }}
         app.kubernetes.io/component: balancer
         {{- include "manticoresearch.selectorLabels" . | nindent 8 }}
     spec:

@@ -1,0 +1,19 @@
+{{- if .Values.serviceMonitor.enabled  }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "manticoresearch.fullname" . }}-metrics
+  labels:
+    app: {{ template "manticoresearch.name" . }}
+    release: {{ .Release.Name }}
+    component: "all"
+    chart: {{ template "manticoresearch.chart" . }}
+    heritage: {{ .Release.Service }}
+spec:
+  ports:
+    - name: metrics
+      port: 80
+      targetPort: {{ index .Values.exporter.annotations "prometheus.io/port" }}
+  selector:
+    release: {{ .Release.Name }}
+{{- end  }}
