@@ -1,0 +1,16 @@
+{{- if .Values.serviceMonitor.enabled  }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "manticoresearch.fullname" . }}-metrics-svc
+  labels:
+    name: {{ include "manticoresearch.fullname" . }}-metrics-svc
+    {{- include "manticoresearch.labels" . | nindent 4 }}
+spec:
+  ports:
+    - name: metrics
+      port: 80
+      targetPort: {{ index .Values.exporter.annotations "prometheus.io/port" }}
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end  }}
