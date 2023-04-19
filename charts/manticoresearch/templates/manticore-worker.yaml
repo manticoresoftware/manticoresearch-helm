@@ -4,7 +4,6 @@ metadata:
   name: {{ include "manticoresearch.fullname" . }}-worker
   labels:
     name: {{ include "manticoresearch.fullname" . }}-worker
-    release: {{ .Release.Name }}
     app.kubernetes.io/component: worker
     {{- include "manticoresearch.labels" . | nindent 4 }}
 spec:
@@ -27,7 +26,6 @@ spec:
       {{- end }}
       labels:
         name: "{{ include "manticoresearch.fullname" . }}-worker"
-        release: {{ .Release.Name }}
         app.kubernetes.io/component: worker
         {{- include "manticoresearch.selectorLabels" . | nindent 8 }}
     spec:

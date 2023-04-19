@@ -3,12 +3,12 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: {{ template "manticoresearch.fullname" . }}
-  labels:
-    app: {{ template "manticoresearch.name" . }}
-    {{- include "manticoresearch.labels" . | nindent 4 }}
   {{- if .Values.serviceMonitor.namespace }}
   namespace: {{ .Values.serviceMonitor.namespace }}
   {{- end }}
+  labels:
+    app: {{ template "manticoresearch.name" . }}
+    {{- include "manticoresearch.labels" . | nindent 4 }}
 spec:
   endpoints:
     - port: metrics
