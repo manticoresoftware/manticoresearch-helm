@@ -1,0 +1,26 @@
+{{- if .Values.serviceMonitor.enabled  }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "manticoresearch.fullname" . }}
+  {{- if .Values.serviceMonitor.namespace }}
+  namespace: {{ .Values.serviceMonitor.namespace }}
+  {{- end }}
+  labels:
+    app: {{ template "manticoresearch.name" . }}
+    {{- include "manticoresearch.labels" . | nindent 4 }}
+spec:
+  endpoints:
+    - port: metrics
+      path: {{ index .Values.exporter.annotations "prometheus.io/path" }}
+      {{- if .Values.serviceMonitor.interval }}
+      interval: {{ .Values.serviceMonitor.interval }}
+      {{- end }}
+      {{- if .Values.serviceMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
+      {{- end }}
+  selector:
+    matchLabels:
+      name: {{ include "manticoresearch.fullname" . }}-metrics-svc
+      {{- include "manticoresearch.labels" . | nindent 6 }}
+{{- end }}
