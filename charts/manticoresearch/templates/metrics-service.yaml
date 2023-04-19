@@ -2,18 +2,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "manticoresearch.fullname" . }}-metrics
+  name: {{ include "manticoresearch.fullname" . }}-metrics-svc
   labels:
-    app: {{ template "manticoresearch.name" . }}
-    release: {{ .Release.Name }}
-    component: "all"
-    chart: {{ template "manticoresearch.chart" . }}
-    heritage: {{ .Release.Service }}
+    name: {{ include "manticoresearch.fullname" . }}-metrics-svc
+    {{- include "manticoresearch.labels" . | nindent 4 }}
 spec:
   ports:
     - name: metrics
       port: 80
       targetPort: {{ index .Values.exporter.annotations "prometheus.io/port" }}
   selector:
-    release: {{ .Release.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end  }}

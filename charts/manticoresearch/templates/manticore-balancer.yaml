@@ -17,7 +17,7 @@ spec:
     metadata:
       {{- if or .Values.exporter.enabled .Values.podAnnotations }}
       annotations:
-        {{- if .Values.exporter.enabled }}
+        {{- if or .Values.exporter.enabled .Values.serviceMonitor.enabled }}
         {{- toYaml .Values.exporter.annotations | nindent 8 }}
         {{- end }}
         {{- with .Values.podAnnotations }}
@@ -93,7 +93,7 @@ spec:
             subPath: manticore.conf
         resources:
           {{- toYaml .Values.balancer.resources | nindent 10 }}
-      {{- if .Values.exporter.enabled }}
+      {{- if or .Values.exporter.enabled .Values.serviceMonitor.enabled }}
       - name: exporter
         securityContext:
           {{- toYaml .Values.securityContext | nindent 12 }}

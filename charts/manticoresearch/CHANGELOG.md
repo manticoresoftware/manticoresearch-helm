@@ -1,3 +1,3 @@
-### 6.0.41
+### 6.0.42
 
-* Switched to Manticore Search 6.0.4
+* Add a Prometheus service monitor to enable the use of an Operator for exposing metrics.
