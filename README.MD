@@ -243,6 +243,7 @@ Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/ser
 | balancer.service.observer.targetPort | Balancer service targetPort (for observer) | 8080 |
 | balancer.config.path | Path to balancer config | /mnt/configmap.conf
 | balancer.config.index_ha_strategy | Distributed indexes HA strategy | nodeads
+| balancer.resources | Allows to set resources for balancer like mem or cpu requests and limits (see k8s docs for details) | {} |
 | worker.image.repository | Worker docker image repository | Docker hub |
 | worker.image.tag | Worker image version | Same as chart version |
 | worker.image.pullPolicy | Worker docker image update policy | IfNotPresent |
@@ -253,6 +254,7 @@ Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/ser
 | worker.service.http.port | Worker service HTTP port | 9306 |
 | worker.service.http.targetPort | Worker service HTTP targetPort | 9306 |
 | worker.config.path | Path to worker config | /mnt/configmap.conf |
+| worker.resources | Allows to set resources for worker like mem or cpu requests and limits (see k8s docs for details) | {} |
 | nameOverride | Allows to override chart name | "" |
 | fullNameOverride | Allows to override full chart name | "" |
 | serviceAccount.annotations | Allows to add service account annotations | "" |
@@ -260,7 +262,6 @@ Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/ser
 | podAnnotations | Allows to set pods annotations for worker and balancer | {} |
 | podSecurityContext | Allows to set pod security contexts | {} |
 | securityContext | Allows to set security contexts (see k8s docs for details) | {} |
-| resources | Allows to set resources like mem or cpu requests and limits (see k8s docs for details) | {} |
 | nodeSelector | Allows to set node selector for worker and balancer | {} |
 | tolerations | Allows to set tolerations (see k8s docs for details) | {} |
 | affinity | Allows to set affinity (see k8s docs for details) | {} |
@@ -268,6 +269,7 @@ Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/ser
 | exporter.image.tag | Prometheus exporter image version | Same as chart version |
 | exporter.image.pullPolicy | Prometheus exporter image update policy (see k8s docs for details) | IfNotPresent |
 | exporter.image.annotations | Prometheus exporter annotations (Need for correct resolving) |     prometheus.io/path: /metrics<br>    prometheus.io/port: "8081"<br>    prometheus.io/scrape: "true" |
+| exporter.resources | Allows to set resources for exporter like mem or cpu requests and limits (see k8s docs for details) | {} |
 | optimize.enabled | Switch on auto optimize script  |     false |
 | optimize.interval | Interval in seconds for running optimize script  |     false |
 
