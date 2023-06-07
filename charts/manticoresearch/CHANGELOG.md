@@ -1,3 +1,3 @@
-### 6.0.42
+### 6.0.51
 
-* Add a Prometheus service monitor to enable the use of an Operator for exposing metrics.
+* Start using domains in replication instead IP 

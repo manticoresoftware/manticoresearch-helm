@@ -67,7 +67,7 @@ worker:
   ## In the `multi-master` mode it doesn't matter to which node you write and from what node you read. This is a simpler and more efficient approach, but in case of an emergency cluster shutdown when all the nodes are down at the same time you have to recover the cluster  manually.
 
   ## The `master-slave` mode expects that you write only to node 0, so it's guaranteed to always have the most actual data. Then in case the cluster is fully shut down and then back up all other nodes will connect to the node 0.
-  replicationMode: multi-master
+  replicationMode: master-slave
   ## Allows automatic restore of a replication cluster if it is broken due to no quorum. Recommended with the master-slave `replicationMode`. May be dangerous in terms of data loss in the master-master `replicationMode`.
   quorumRecovery: false
   ## interval in seconds to run cluster status check
@@ -117,8 +117,9 @@ worker:
         listen = 9306:mysql41
         listen = 9308:http
         listen = 9301:mysql_vip
-        listen = $ip:9312
-        listen = $ip:9315-9415:replication
+        listen = $hostname:9312
+        listen = $hostname:9315-9415:replication
+        node_address = $hostname
         binlog_path = /var/lib/manticore/data
         log = /dev/stdout
         query_log = /dev/stdout
