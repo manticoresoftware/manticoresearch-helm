@@ -42,7 +42,7 @@ balancer:
         query_log = /dev/stdout
         query_log_format = sphinxql
         pid_file = /var/run/manticore/searchd.pid
-        binlog_path = /var/lib/manticore/data
+        binlog_path = /var/lib/manticore
         shutdown_timeout = 25s
         auto_optimize = 0
       }
@@ -120,7 +120,7 @@ worker:
         listen = $hostname:9312
         listen = $hostname:9315-9415:replication
         node_address = $hostname
-        binlog_path = /var/lib/manticore/data
+        binlog_path = /var/lib/manticore
         log = /dev/stdout
         query_log = /dev/stdout
         query_log_format = sphinxql

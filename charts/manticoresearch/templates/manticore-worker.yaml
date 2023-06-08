@@ -75,11 +75,6 @@ spec:
           - name: QUORUM_RUN_INTERVAL
             value: {{ .Values.worker.quorumCheckInterval | quote }}
           {{- end }}
-        readinessProbe:
-          tcpSocket:
-            port: {{ .Values.worker.service.ql.port }}
-          initialDelaySeconds: 5
-          periodSeconds: 3
         livenessProbe:
           tcpSocket:
             port: {{ .Values.worker.service.ql.port }}

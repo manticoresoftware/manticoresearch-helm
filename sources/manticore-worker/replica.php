@@ -44,7 +44,7 @@ $manticoreJson = new ManticoreJson($clusterName.'_cluster', $binaryPort);
 $count = $resources->getActivePodsCount();
 
 Analog::log("Pods count ".$count);
-if ($count === 0) {
+if ($count <= 1) {
     Analog::log("One pod");
     $manticoreJson->startManticore();
     $manticore = new ManticoreConnector('localhost', $qlPort, $clusterName, -1);
