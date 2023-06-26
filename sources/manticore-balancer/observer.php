@@ -87,7 +87,7 @@ if ( $tables !== [] ) {
 	$hash         = sha1( implode( '.', $tables ) . implode( $podsIps ) );
 
 	if ( $previousHash !== $hash ) {
-		Analog::log( "Starting recompiling config" );
+		Analog::log( "Starting config recompiling" );
 		saveConfig( $tables, $podsIps, $balancerPort, $configMapPath, $indexHAStrategy );
 		$cache->store( Cache::INDEX_HASH, $hash );
 	}

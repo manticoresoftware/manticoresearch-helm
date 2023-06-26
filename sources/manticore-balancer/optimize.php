@@ -52,7 +52,7 @@ $locker->checkLock();
 /* First we check if now something optimizing? */
 
 if ($locker->checkOptimizeLock(OPTIMIZE_FILE, $workerPort)) {
-    Analog::log("Optimize hasn't finished yet");
+    Analog::log("OPTIMIZE is not complete yet");
     $locker->unlock();
 }
 
@@ -127,7 +127,7 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
 
             if ($chunks > $cpuLimit * $chunksCoefficient) {
                 Analog::log(
-                    "Starting OPTIMIZE $index ".$pod['metadata']['name']."  ($chunks > $cpuLimit * ".$chunksCoefficient.") ".
+                    "Starting optimizing $index ".$pod['metadata']['name']."  ($chunks > $cpuLimit * ".$chunksCoefficient.") ".
                     (($chunks > $cpuLimit * $chunksCoefficient) ? 'true' : 'false')
                 );
 
@@ -136,7 +136,7 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
                 $cache->store(Cache::CHECKED_WORKERS, $checkedWorkers);
                 $cache->store(Cache::CHECKED_INDEXES, $checkedIndexes);
 
-                Analog::log("OPTIMIZED started successfully. Stopping watching.");
+                Analog::log("OPTIMIZE started successfully. Stopping watching");
                 $locker->unlock(0);
             }
         }
