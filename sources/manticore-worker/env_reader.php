@@ -4,7 +4,6 @@ $variables = [
     'qlPort' => ['env' => 'MANTICORE_PORT', 'type' => 'int'],
     'binaryPort' => ['env' => 'MANTICORE_BINARY_PORT', 'type' => 'int'],
     'clusterName' => ['env' => 'CLUSTER_NAME', 'type' => 'string'],
-    'balancerUrl' => ['env' => 'BALANCER_URL', 'type' => 'string'],
     'instance' => ['env' => 'INSTANCE_LABEL', 'type' => 'string'],
     'workerService' => ['env' => 'WORKER_SERVICE', 'type' => 'string'],
     'replicationMode' => ['env' => 'REPLICATION_MODE', 'type' => 'string'],

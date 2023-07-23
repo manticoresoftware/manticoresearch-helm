@@ -43,6 +43,21 @@ $manticoreJson = new ManticoreJson($clusterName.'_cluster', $binaryPort);
 
 $count = $resources->getActivePodsCount();
 
+
+function notifyBalancers(ApiClient $apiClient, $labels){
+    $labels['app.kubernetes.io/component'] = 'balancer';
+    $balancerPods = $apiClient->getManticorePods($labels);
+
+    if (isset($balancerPods['items'])) {
+        foreach ($balancerPods['items'] as $pod) {
+
+            $balancerIp = $pod['status']['podIP'].":8080";
+            $dbgResult = $apiClient->get($balancerIp);
+            Analog::log("Call balancer ".$balancerIp.". Response: ".json_encode($dbgResult));
+        }
+    }
+}
+
 Analog::log("Pods count ".$count);
 if ($count === 0) {
     Analog::log("One pod");
@@ -86,6 +101,7 @@ if ($count === 0) {
         }
         if (empty($joinHost)) {
             Analog::log("No host to join");
+            notifyBalancers($api, $labels);
             exit(1);
         }
         Analog::log("Join to $joinHost");
@@ -112,10 +128,13 @@ if ($count === 0) {
 
     if (empty($joinHost)) {
         Analog::log("No host to join");
+        notifyBalancers($api, $labels);
         exit(1);
     }
 
     Analog::log("Join to $joinHost");
     $manticore->joinCluster($joinHost.'.'.$workerService);
 }
+
+notifyBalancers($api, $labels);
 ?>
