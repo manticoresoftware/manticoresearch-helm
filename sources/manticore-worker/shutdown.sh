@@ -1,5 +1,6 @@
 #!/bin/sh
 
+echo "Start manticore worker graceful shutdown"
 searchd --stopwait
 
 KUBE_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
