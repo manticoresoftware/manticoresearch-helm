@@ -42,13 +42,24 @@ $resources = new Resources($api, $labels, new NotificationStub());
 $manticoreJson = new ManticoreJson($clusterName.'_cluster', $binaryPort);
 
 $count = $resources->getActivePodsCount();
+$hostname = gethostname();
 
 Analog::log("Pods count ".$count);
-if ($count <= 1) {
+
+$min = 0;
+if (getenv("POD_START_VIA_PROBE") === false ){
+    $min = 1;
+}
+
+if ($count <= $min) {
     Analog::log("One pod");
     $manticoreJson->startManticore();
     $manticore = new ManticoreConnector('localhost', $qlPort, $clusterName, -1);
     $manticore->setMaxAttempts(180);
+
+    Analog::log("Wait until $hostname came alive");
+    $resources->wait($hostname, 60);
+
     if ($manticore->checkClusterName()) {
         Analog::log('Cluster exist');
     } else {
@@ -67,6 +78,9 @@ if ($count <= 1) {
     $manticore = new ManticoreConnector('localhost', $qlPort, null, -1);
     $manticore->setCustomClusterName($clusterName);
     $manticore->setMaxAttempts(180);
+
+    Analog::log("Wait until $hostname came alive");
+    $resources->wait($hostname, 60);
 
     if ($manticore->checkClusterName()) {
         Analog::log('Cluster exist');
@@ -115,6 +129,9 @@ if ($count <= 1) {
         exit(1);
     }
 
+
+    Analog::log("Wait until $hostname came alive");
+    $resources->wait($hostname, 60);
     Analog::log("Join to $joinHost");
     $manticore->joinCluster($joinHost.'.'.$workerService);
 }

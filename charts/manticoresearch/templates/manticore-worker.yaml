@@ -47,6 +47,10 @@ spec:
             exec:
               command: [ "/bin/sh", "-c", "./shutdown.sh" ]
         env:
+          {{- if semverCompare ">=1.20-0" $.Capabilities.KubeVersion.GitVersion }}
+          - name: POD_START_VIA_PROBE
+            value: "true"
+          {{- end }}
           - name: AUTO_ADD_TABLES_IN_CLUSTER
             value: {{ .Values.worker.autoAddTablesInCluster | quote }}
           - name: CONFIGMAP_PATH
