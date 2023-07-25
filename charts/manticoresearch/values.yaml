@@ -10,6 +10,7 @@ global:
   manticoresearch: {}
 
 balancer:
+  replicaCount: 1
   runInterval: 5
   extraPackages: true
   image:

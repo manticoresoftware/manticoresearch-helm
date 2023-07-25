@@ -65,6 +65,7 @@ $cache  = new Cache();
 $locker = new Locker( 'observer' );
 $locker->checkLock();
 
+Analog::log( "Check lock" );
 
 $resources = new Resources( new ApiClient(), $labels, new NotificationStub() );
 
