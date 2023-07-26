@@ -52,8 +52,8 @@ function notifyBalancers(ApiClient $apiClient, $labels){
         foreach ($balancerPods['items'] as $pod) {
 
             $balancerIp = $pod['status']['podIP'].":8080";
-            $dbgResult = $apiClient->get($balancerIp);
-            Analog::log("Call balancer ".$balancerIp.". Response: ".json_encode($dbgResult));
+            $dbgResult = $apiClient->get($balancerIp)->getBody()->getContents();
+            Analog::log("Call balancer ".$balancerIp.". Response: ".$dbgResult);
         }
     }
 }

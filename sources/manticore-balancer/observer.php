@@ -81,7 +81,8 @@ if ( empty( $oldestWorker ) ) {
 
 $manticore = new ManticoreConnector( $oldestWorker . '.' . $workerService, $workerPort, null, - 1 );
 $tables    = $manticore->getTables( false );
-$podsIps   = $resources->getPodsIp();
+$podsIps   = $resources->getPodIpAllConditions();
+
 
 if ( $tables !== [] ) {
 	$previousHash = $cache->get( Cache::INDEX_HASH );
@@ -122,3 +123,5 @@ function saveConfig( $indexes, $nodes, $port, $configMapPath, $indexHAStrategy )
 
 
 $locker->unlock( 0 );
+
+Analog::log( "Finish" );
