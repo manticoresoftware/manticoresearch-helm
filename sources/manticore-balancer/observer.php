@@ -65,8 +65,6 @@ $cache  = new Cache();
 $locker = new Locker( 'observer' );
 $locker->checkLock();
 
-Analog::log( "Check lock" );
-
 $resources = new Resources( new ApiClient(), $labels, new NotificationStub() );
 
 if ( $resources->getActivePodsCount() === 0 ) {
@@ -123,5 +121,3 @@ function saveConfig( $indexes, $nodes, $port, $configMapPath, $indexHAStrategy )
 
 
 $locker->unlock( 0 );
-
-Analog::log( "Finish" );
