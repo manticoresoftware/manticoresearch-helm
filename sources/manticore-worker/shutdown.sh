@@ -1,7 +1,5 @@
 #!/bin/sh
 
-set -e
-
 echo "Start manticore worker graceful shutdown"
 searchd --stopwait
 
