@@ -16,7 +16,7 @@ balancer:
   image:
     repository: manticoresearch/helm-balancer
 #    tag: 3.6.0.0
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   service:
     ql:
       port: 9306
@@ -78,7 +78,7 @@ worker:
   image:
     repository: manticoresearch/helm-worker
 #    tag: 3.6.0.0
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   service:
     ql:
       port: 9306
