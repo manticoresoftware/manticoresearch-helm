@@ -1,3 +1,3 @@
-### 6.0.42
+### 6.0.43
 
-* Add a Prometheus service monitor to enable the use of an Operator for exposing metrics.
+* Added support for multiple load balancers to enhance High Availability (HA).

@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/component: balancer
     {{- include "manticoresearch.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.balancer.replicaCount }}
   selector:
     matchLabels:
       app.kubernetes.io/component: balancer

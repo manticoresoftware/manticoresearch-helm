@@ -6,15 +6,11 @@ apt-get update && apt-get -y install software-properties-common && add-apt-repos
 
 COPY composer.json manticore.conf shutdown.sh starter.sh replica.php quorum_fixer.sh quorum.php env_reader.php /etc/manticoresearch/
 COPY supervisord.conf /etc/supervisord.conf
+COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 
 RUN chown -R manticore:manticore /var/log/manticore/ /var/lib/manticore/ /var/run/manticore /etc/manticoresearch/ /usr/share/manticore/ /dev/stdout
 
-RUN cd /etc/manticoresearch/ && \
-php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
-php -r "if (hash_file('sha384', 'composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" && \
-php composer-setup.php && \
-php -r "unlink('composer-setup.php');" && \
-php composer.phar update
+RUN cd /etc/manticoresearch/ && composer update
 
 WORKDIR /etc/manticoresearch/
 

@@ -5,15 +5,11 @@ apt-get update && apt -y install software-properties-common && add-apt-repositor
     apt-get install -y nano curl unzip git php8.1-cli php8.1-mysqlnd php8.1-curl supervisor && rm -rf /var/lib/apt/lists/* && \
 mkdir /var/www && mkdir /var/www/localhost
 
-COPY composer.json observer.php optimize.php starter.sh job_runner.sh optimize_runner.sh /var/www/localhost/
+COPY composer.json observer.php optimize.php starter.sh observer_runner.sh optimize_runner.sh /var/www/localhost/
 COPY supervisord.conf /etc/supervisord.conf
+COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 
-RUN cd /var/www/localhost && \
-php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
-php -r "if (hash_file('sha384', 'composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" && \
-php composer-setup.php && \
-php -r "unlink('composer-setup.php');" && \
-php composer.phar update && \
+RUN cd /var/www/localhost && composer update && \
 chown -R manticore:manticore /var/log/manticore/ /var/lib/manticore/ /var/run/manticore /etc/manticoresearch/ /usr/share/manticore/ /var/log/supervisor /dev/stdout && \
 chown -R www-data /var/www/localhost/ /etc/manticoresearch/manticore.conf /dev/stdout
 
