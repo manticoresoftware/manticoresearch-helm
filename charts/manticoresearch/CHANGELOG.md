@@ -1,3 +1,3 @@
 ### 6.0.43
 
-* Add several balancers support, to increase HA
+* Added support for multiple load balancers to enhance High Availability (HA).
