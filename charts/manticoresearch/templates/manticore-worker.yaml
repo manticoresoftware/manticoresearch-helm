@@ -65,10 +65,12 @@ spec:
             value: {{ .Values.worker.replicationMode }}
           - name: INSTANCE_LABEL
             value: {{ .Release.Name }}
-          - name: BALANCER_URL
-            value: {{ include "manticoresearch.fullname" . }}-balancer-svc:{{ .Values.balancer.service.ql.targetPort }}
           - name: WORKER_SERVICE
             value: {{ include "manticoresearch.fullname" . }}-worker-svc
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
           {{- if .Values.worker.extraPackages }}
           - name: EXTRA
             value: "1"
@@ -111,7 +113,7 @@ spec:
               fieldRef:
                 fieldPath: status.podIP
           - name: MANTICORE_PORT
-            value: "{{ .Values.balancer.service.ql.targetPort }}"
+            value: "{{ .Values.worker.service.ql.targetPort }}"
         livenessProbe:
           httpGet:
             path: /health

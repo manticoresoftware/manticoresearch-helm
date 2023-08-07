@@ -6,7 +6,7 @@
 #                                                                                               #
 #################################################################################################
 
-BUILD_TAG=6.0.5.1
+BUILD_TAG=$(cat ../../charts/manticoresearch/Chart.yaml | grep appVersion | cut -d" " -f2)
 echo $BUILD_TAG
 docker build --no-cache -t manticoresearch/helm-worker:$BUILD_TAG .
 docker push manticoresearch/helm-worker:$BUILD_TAG

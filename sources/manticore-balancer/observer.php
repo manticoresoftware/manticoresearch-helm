@@ -65,7 +65,6 @@ $cache  = new Cache();
 $locker = new Locker( 'observer' );
 $locker->checkLock();
 
-
 $resources = new Resources( new ApiClient(), $labels, new NotificationStub() );
 
 if ( $resources->getActivePodsCount() === 0 ) {
@@ -80,14 +79,15 @@ if ( empty( $oldestWorker ) ) {
 
 $manticore = new ManticoreConnector( $oldestWorker . '.' . $workerService, $workerPort, null, - 1 );
 $tables    = $manticore->getTables( false );
-$podsIps   = $resources->getPodsIp();
+$podsIps   = $resources->getPodIpAllConditions();
+
 
 if ( $tables !== [] ) {
 	$previousHash = $cache->get( Cache::INDEX_HASH );
 	$hash         = sha1( implode( '.', $tables ) . implode( $podsIps ) );
 
 	if ( $previousHash !== $hash ) {
-		Analog::log( "Starting recompiling config" );
+		Analog::log( "Starting config recompiling" );
 		saveConfig( $tables, $podsIps, $balancerPort, $configMapPath, $indexHAStrategy );
 		$cache->store( Cache::INDEX_HASH, $hash );
 	}
