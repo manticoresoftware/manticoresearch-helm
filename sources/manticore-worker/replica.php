@@ -38,7 +38,7 @@ Analog::log("Replication mode: ".$replicationMode);
 
 
 $api = new ApiClient();
-$resources = new Resources($api, $labels, new NotificationStub());
+$resources = new Resources($api, (array) $labels, new NotificationStub());
 $manticoreJson = new ManticoreJson($clusterName.'_cluster', $binaryPort);
 
 $count = $resources->getActivePodsCount();
