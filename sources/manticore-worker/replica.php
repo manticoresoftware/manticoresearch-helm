@@ -149,6 +149,17 @@ if ($count <= $min) {
 
     Analog::log("Wait until $hostname came alive");
     $resources->wait($hostname, 60);
+
+
+
+    Analog::log("Wait for NS...");
+    $resultCode = 1;
+    while ($resultCode !== 0){
+        $output=[];
+        exec("nslookup $(hostname -f)", $output, $resultCode);
+        sleep(1);
+    }
+
     Analog::log("Join to $joinHost");
     $manticore->joinCluster($joinHost.'.'.$workerService);
 }
