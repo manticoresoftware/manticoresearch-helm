@@ -1,3 +1,4 @@
-### 6.0.43
+### 6.2.12
 
-* Added support for multiple load balancers to enhance High Availability (HA).
+* Update Manticore Search daemon to version 6.2.12
+* Removed data folder from binlog path
