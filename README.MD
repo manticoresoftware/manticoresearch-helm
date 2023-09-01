@@ -6,7 +6,7 @@ The helm chart is to be used to run Manticore Search in Kubernetes. It enables h
 
 ### What this helm chart does
 * Deploys a StatefulSet with one or multiple Manticore Search pods (aka workers) that constitute a replication cluster.
-* Rolling out a Deployment with one or multiple (you can configure it in `values.yaml`) Manticore Search balancer instance.
+* Rolls out a Deployment with one or multiple (you can configure it in `values.yaml`) Manticore Search balancer instance.
 * Deploys needed services.
 * Provides Prometheus exporter for the running instances of Manticore Search.
 
@@ -236,7 +236,7 @@ Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/ser
 
 | Variable                              | Description                                                                                         | Default                                                                                            |
 |---------------------------------------|-----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
-| balancer.extraPackages                | Should we install extra packages like Manricore Columnar Lib, Buddy, secondary indexes, etc         | true                                                                                               |
+| balancer.extraPackages                | Should it install the extra packages like Manticore Columnar Library for support of the columnar storage and secondary indexes, Manticore Buddy for support for specific commands etc         | true                                                                                               |
 | balancer.image.repository             | Balancer docker image repository                                                                    | Docker hub                                                                                         |
 | balancer.image.tag                    | Balancer image version                                                                              | Same as chart version                                                                              |
 | balancer.image.pullPolicy             | Balancer docker image update policy                                                                 | IfNotPresent                                                                                       |
