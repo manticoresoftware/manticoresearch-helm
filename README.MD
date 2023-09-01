@@ -6,7 +6,7 @@ The helm chart is to be used to run Manticore Search in Kubernetes. It enables h
 
 ### What this helm chart does
 * Deploys a StatefulSet with one or multiple Manticore Search pods (aka workers) that constitute a replication cluster.
-* Deploys a StatefulSet with a single Manticore Search balancer instance.
+* Rolls out a Deployment with one or multiple (you can configure it in `values.yaml`) Manticore Search balancer instance.
 * Deploys needed services.
 * Provides Prometheus exporter for the running instances of Manticore Search.
 
@@ -153,7 +153,9 @@ Each 5 seconds (see `balancer.runInterval`) the balancer:
 * Checks tables on the 1st active worker.
 * If it differs from its current state it catches up by reloading itself with a new tables configuration.
 
-When a worker stops it also sends a singal to the balancer, so it doesn't have to wait 5 seconds.
+When a worker starts or stops it also sends a signal to the balancer, so it doesn't have to wait 5 seconds.
+
+To increase high availability (HA) read operations, you can increment the balancer replica count. For this reason, you have the `balancer.replicaCount` parameter in `values.json`.
 
 ### How does auto OPTIMIZE work?
 To enable automatic index compaction you need to update `values.yaml` and set `optimize.enabled = true`. `optimize.interval` controls how often to attempt disk chunks merging.
@@ -215,63 +217,72 @@ Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/ser
 
 # Variables
 
-| Variable | Description | Default |
-|---|---|---|
-| balancer.runInterval | How often to check for schema changes on workers, seconds | 5 |
-| balancer.config.content | Balancer config (only section `searchd`) | searchd<br>      {<br>       listen = /var/run/mysqld/mysqld.sock:mysql<br>        listen = 9306:mysql<br>        listen = 9308:http<br>        log = /dev/stdout<br>        query_log = /dev/stdout<br>        query_log_format = sphinxql<br>        pid_file = /var/run/manticore/searchd.pid<br>        binlog_path = /var/lib/manticore/data<br>      } |
-| worker.replicaCount | Default workers count (number of replicas) | 3 |
-| worker.clusterName | Name of replication cluster | manticore |
-| worker.persistence.size | Worker max storage size (mounted volume) | 1Gi |
-| worker.persistence.storageClass | Worker storage class | - |
+| Variable | Description                                                                                                                | Default                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+|---|----------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| balancer.replicaCount | Default balancers count (number of replicas)                                                                               | 1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| balancer.runInterval | How often to check for schema changes on workers, seconds                                                                  | 5                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| balancer.config.content | Balancer config (only section `searchd`)                                                                                   | searchd<br>      {<br>       listen = /var/run/mysqld/mysqld.sock:mysql<br>        listen = 9306:mysql<br>        listen = 9308:http<br>        log = /dev/stdout<br>        query_log = /dev/stdout<br>        query_log_format = sphinxql<br>        pid_file = /var/run/manticore/searchd.pid<br>        binlog_path = /var/lib/manticore/data<br>      }                                                                                                                                                                                                                        |
+| worker.replicaCount | Default workers count (number of replicas)                                                                                 | 3                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| worker.replicationMode | Workers replication mode                                                                                                   | master-slave                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| worker.clusterName | Name of replication cluster                                                                                                | manticore                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| worker.persistence.size | Worker max storage size (mounted volume)                                                                                   | 1Gi                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| worker.persistence.storageClass | Worker storage class                                                                                                       | -                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | worker.config.content | Worker config (only section `searchd`). <br>**Important**: you must always pass `$ip` to the config for proper functioning | searchd<br>      {<br>        listen = /var/run/mysqld/mysqld.sock:mysql<br>        listen = 9306:mysql<br>        listen = 9308:http<br>        listen = 9301:mysql_vip<br>        listen = $ip:9312<br>        listen = $ip:9315-9415:replication<br>        binlog_path = /var/lib/manticore/data<br>        log = /dev/stdout<br>        query_log = /dev/stdout<br>        query_log_format = sphinxql<br>        pid_file = /var/run/manticore/searchd.pid<br>        data_dir = /var/lib/manticore<br>        shutdown_timeout = 25s<br>        auto_optimize = 0<br>      } |
-| exporter.enabled | Enable Prometheus exporter pod | false |
+| exporter.enabled | Enable Prometheus exporter pod                                                                                             | false                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 
 #### More Variables
 
 <details>
 
-| Variable | Description | Default |
-|---|---|---|
-| balancer.image.repository | Balancer docker image repository | Docker hub
-| balancer.image.tag | Balancer image version | Same as chart version |
-| balancer.image.pullPolicy | Balancer docker image update policy | IfNotPresent |
-| balancer.service.ql.port | Balancer service SQL port (for searchd) | 9306 |
-| balancer.service.ql.targetPort | Balancer service SQL targetPort (for searchd) | 9306 |
-| balancer.service.http.port | Balancer service HTTP port (for searchd) | 9306 |
-| balancer.service.http.targetPort | Balancer service HTTP targetPort (for searchd) | 9306 |
-| balancer.service.observer.port | Balancer service port (for observer) | 8080 |
-| balancer.service.observer.targetPort | Balancer service targetPort (for observer) | 8080 |
-| balancer.config.path | Path to balancer config | /mnt/configmap.conf
-| balancer.config.index_ha_strategy | Distributed indexes HA strategy | nodeads
-| balancer.resources | Allows to set resources for balancer like mem or cpu requests and limits (see k8s docs for details) | {} |
-| worker.image.repository | Worker docker image repository | Docker hub |
-| worker.image.tag | Worker image version | Same as chart version |
-| worker.image.pullPolicy | Worker docker image update policy | IfNotPresent |
-| worker.quorumRecovery | Worker quorum auto recovery | false |
-| worker.quorumCheckInterval | Check quorum ever so often (seconds) | 15 |
-| worker.service.ql.port | Worker service SQL port | 9306 |
-| worker.service.ql.targetPort | Worker service SQL targetPort | 9306 |
-| worker.service.http.port | Worker service HTTP port | 9306 |
-| worker.service.http.targetPort | Worker service HTTP targetPort | 9306 |
-| worker.config.path | Path to worker config | /mnt/configmap.conf |
-| worker.resources | Allows to set resources for worker like mem or cpu requests and limits (see k8s docs for details) | {} |
-| nameOverride | Allows to override chart name | "" |
-| fullNameOverride | Allows to override full chart name | "" |
-| serviceAccount.annotations | Allows to add service account annotations | "" |
-| serviceAccount.name | Service account name | "manticore-sa" |
-| podAnnotations | Allows to set pods annotations for worker and balancer | {} |
-| podSecurityContext | Allows to set pod security contexts | {} |
-| securityContext | Allows to set security contexts (see k8s docs for details) | {} |
-| nodeSelector | Allows to set node selector for worker and balancer | {} |
-| tolerations | Allows to set tolerations (see k8s docs for details) | {} |
-| affinity | Allows to set affinity (see k8s docs for details) | {} |
-| exporter.image.repository | Prometheus exporter docker image repository | Docker hub |
-| exporter.image.tag | Prometheus exporter image version | Same as chart version |
-| exporter.image.pullPolicy | Prometheus exporter image update policy (see k8s docs for details) | IfNotPresent |
-| exporter.image.annotations | Prometheus exporter annotations (Need for correct resolving) |     prometheus.io/path: /metrics<br>    prometheus.io/port: "8081"<br>    prometheus.io/scrape: "true" |
-| exporter.resources | Allows to set resources for exporter like mem or cpu requests and limits (see k8s docs for details) | {} |
-| optimize.enabled | Switch on auto optimize script  |     false |
-| optimize.interval | Interval in seconds for running optimize script  |     false |
+| Variable                              | Description                                                                                         | Default                                                                                            |
+|---------------------------------------|-----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
+| balancer.extraPackages                | Should it install the extra packages like Manticore Columnar Library for support of the columnar storage and secondary indexes, Manticore Buddy for support for specific commands etc         | true                                                                                               |
+| balancer.image.repository             | Balancer docker image repository                                                                    | Docker hub                                                                                         |
+| balancer.image.tag                    | Balancer image version                                                                              | Same as chart version                                                                              |
+| balancer.image.pullPolicy             | Balancer docker image update policy                                                                 | IfNotPresent                                                                                       |
+| balancer.service.ql.port              | Balancer service SQL port (for searchd)                                                             | 9306                                                                                               |
+| balancer.service.ql.targetPort        | Balancer service SQL targetPort (for searchd)                                                       | 9306                                                                                               |
+| balancer.service.http.port            | Balancer service HTTP port (for searchd)                                                            | 9306                                                                                               |
+| balancer.service.http.targetPort      | Balancer service HTTP targetPort (for searchd)                                                      | 9306                                                                                               |
+| balancer.service.observer.port        | Balancer service port (for observer)                                                                | 8080                                                                                               |
+| balancer.service.observer.targetPort  | Balancer service targetPort (for observer)                                                          | 8080                                                                                               |
+| balancer.service.binary.port          | Balancer service binary port (for searchd)                                                          | 9312                                                                                               |
+| balancer.service.binary.targetPort    | Balancer service binary targetPort (for searchd)                                                    | 9312                                                                                               |
+| balancer.config.path                  | Path to balancer config                                                                             | /mnt/configmap.conf                                                                                |
+| balancer.config.index_ha_strategy     | Distributed indexes HA strategy                                                                     | nodeads                                                                                            |
+| balancer.resources                    | Allows to set resources for balancer like mem or cpu requests and limits (see k8s docs for details) | {}                                                                                                 |
+| worker.image.repository               | Worker docker image repository                                                                      | Docker hub                                                                                         |
+| worker.image.tag                      | Worker image version                                                                                | Same as chart version                                                                              |
+| worker.image.pullPolicy               | Worker docker image update policy                                                                   | IfNotPresent                                                                                       |
+| worker.quorumRecovery                 | Worker quorum auto recovery                                                                         | false                                                                                              |
+| worker.quorumCheckInterval            | Check quorum ever so often (seconds)                                                                | 15                                                                                                 |
+| worker.autoAddTablesInCluster         | Automatically adds all tables into cluster                                                          | 15                                                                                                 |
+| worker.service.ql.port                | Worker service SQL port                                                                             | 9306                                                                                               |
+| worker.service.ql.targetPort          | Worker service SQL targetPort                                                                       | 9306                                                                                               |
+| worker.service.http.port              | Worker service HTTP port                                                                            | 9306                                                                                               |
+| worker.service.http.targetPort        | Worker service HTTP targetPort                                                                      | 9306                                                                                               |
+| worker.config.path                    | Path to worker config                                                                               | /mnt/configmap.conf                                                                                |
+| worker.resources                      | Allows to set resources for worker like mem or cpu requests and limits (see k8s docs for details)   | {}                                                                                                 |
+| nameOverride                          | Allows to override chart name                                                                       | ""                                                                                                 |
+| fullNameOverride                      | Allows to override full chart name                                                                  | ""                                                                                                 |
+| serviceAccount.annotations            | Allows to add service account annotations                                                           | ""                                                                                                 |
+| serviceAccount.name                   | Service account name                                                                                | "manticore-sa"                                                                                     |
+| podAnnotations                        | Allows to set pods annotations for worker and balancer                                              | {}                                                                                                 |
+| podSecurityContext                    | Allows to set pod security contexts                                                                 | {}                                                                                                 |
+| securityContext                       | Allows to set security contexts (see k8s docs for details)                                          | {}                                                                                                 |
+| nodeSelector                          | Allows to set node selector for worker and balancer                                                 | {}                                                                                                 |
+| tolerations                           | Allows to set tolerations (see k8s docs for details)                                                | {}                                                                                                 |
+| affinity                              | Allows to set affinity (see k8s docs for details)                                                   | {}                                                                                                 |
+| exporter.image.repository             | Prometheus exporter docker image repository                                                         | Docker hub                                                                                         |
+| exporter.image.tag                    | Prometheus exporter image version                                                                   | Same as chart version                                                                              |
+| exporter.image.pullPolicy             | Prometheus exporter image update policy (see k8s docs for details)                                  | IfNotPresent                                                                                       |
+| exporter.image.annotations            | Prometheus exporter annotations (Need for correct resolving)                                        | prometheus.io/path: /metrics<br>    prometheus.io/port: "8081"<br>    prometheus.io/scrape: "true" |
+| exporter.resources                    | Allows to set resources for exporter like mem or cpu requests and limits (see k8s docs for details) | {}                                                                                                 |
+| optimize.enabled                      | Switch on auto optimize script                                                                      | true                                                                                               |
+| optimize.interval                     | Interval in seconds for running optimize script                                                     | 30                                                                                                 |
+| serviceMonitor.enabled                | Enables service monitor resource for exporting runtime metrics to Prometheus                        | false                                                                                              |
+| serviceMonitor.interval               | Set how frequently Prometheus should scrape                        | 30s                                                                                                |
+| serviceMonitor.scrapeTimeout          | Set timeout for scrape                        | 10s                                                                                                |
 
 </details>
 
