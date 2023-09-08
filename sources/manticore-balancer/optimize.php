@@ -115,7 +115,7 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
         }
 
         $manticore = new ManticoreConnector($pod['status']['podIP'], $workerPort, $clusterName, -1);
-        $indexes   = $manticore->getTables(false);
+        $indexes   = $manticore->getTables(false, ['rt']);
 
         foreach ($indexes as $index) {
             if (isset($checkedIndexes[$index])) {
