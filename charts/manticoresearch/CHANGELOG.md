@@ -1,4 +1,3 @@
-### 6.2.12
+### 6.2.122
 
-* Update Manticore Search daemon to version 6.2.12
-* Removed data folder from binlog path
+* Fixed error with optimizing percolate indexes
