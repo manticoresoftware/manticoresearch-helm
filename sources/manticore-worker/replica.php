@@ -44,6 +44,13 @@ $manticoreJson = new ManticoreJson($clusterName.'_cluster', $binaryPort);
 $count = $resources->getActivePodsCount();
 $hostname = gethostname();
 
+foreach ($resources->getPodsFullHostnames() as $fullHostname) {
+    if (strpos($fullHostname, $hostname) !== false &&
+        mb_strlen($hostname) >= 253) {
+        Analog::log("Full hostname exceeds max length in 253. Decrease chart name or namespace name length");
+        exit(1);
+    }
+}
 
 function notifyBalancers(ApiClient $apiClient, $labels){
     $labels['app.kubernetes.io/component'] = 'balancer';
