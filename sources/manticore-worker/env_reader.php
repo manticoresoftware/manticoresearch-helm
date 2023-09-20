@@ -8,6 +8,7 @@ $variables = [
     'workerService' => ['env' => 'WORKER_SERVICE', 'type' => 'string'],
     'replicationMode' => ['env' => 'REPLICATION_MODE', 'type' => 'string'],
     'notAddTablesAutomatically' => ['env' => 'AUTO_ADD_TABLES_IN_CLUSTER', 'type' => 'bool'],
+    'logLevel' => ['env' => 'LOG_LEVEL', 'type' => 'level'],
 ];
 
 
@@ -15,12 +16,18 @@ foreach ($variables as $variable => $desc) {
     $$variable = getenv($desc['env']);
 
     if ($$variable === false) {
-        Analog::log($desc['env']." is not defined\n");
+        if ($desc['type'] === 'level') {
+            $$variable = \Monolog\Logger::WARNING;
+            continue;
+        }
+        \Core\Logger\Logger::error($desc['env']." is not defined\n");
         exit(1);
     }
 
     if ($desc['type'] === 'int') {
         $$variable = (int)$$variable;
+    } elseif ($desc['type'] === 'level') {
+        $$variable = \Monolog\Logger::toMonologLevel($$variable);
     } elseif ($desc['type'] === 'bool') {
         $$variable = (bool)$$variable;
     }

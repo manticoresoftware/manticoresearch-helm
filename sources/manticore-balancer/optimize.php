@@ -2,13 +2,11 @@
 
 use Core\Cache\Cache;
 use Core\K8s\ApiClient;
+use Core\Logger\Logger;
 use Core\Manticore\ManticoreConnector;
 use Core\Mutex\Locker;
-use Analog\Analog;
-use Analog\Handler\EchoConsole;
 
 require 'vendor/autoload.php';
-Analog::handler(EchoConsole::init());
 
 const OPTIMIZE_FILE = DIRECTORY_SEPARATOR.'tmp'.DIRECTORY_SEPARATOR.'optimize.process.lock';
 
@@ -28,7 +26,7 @@ foreach ($variables as $variable => $desc) {
     $$variable = getenv($desc['env']);
 
     if ($$variable === false) {
-        Analog::error($desc['env']." is not defined\n");
+        Logger::error($desc['env']." is not defined\n");
         exit(1);
     }
 
@@ -52,7 +50,7 @@ $locker->checkLock();
 /* First we check if now something optimizing? */
 
 if ($locker->checkOptimizeLock(OPTIMIZE_FILE, $workerPort)) {
-    Analog::log("OPTIMIZE is not complete yet");
+    Logger::info("OPTIMIZE is not complete yet");
     $locker->unlock();
 }
 
@@ -65,7 +63,7 @@ $manticoreStatefulsets = $api->getManticorePods($labels);
 $nodesRequest          = $api->getNodes();
 
 if ( ! isset($manticoreStatefulsets['items'])) {
-    Analog::log("K8S API didn't respond");
+    Logger::info("K8S API didn't respond");
     $locker->unlock();
 }
 
@@ -126,7 +124,7 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
             $chunks = $manticore->getChunksCount($index, false);
 
             if ($chunks > $cpuLimit * $chunksCoefficient) {
-                Analog::log(
+                Logger::info(
                     "Starting optimizing $index ".$pod['metadata']['name']."  ($chunks > $cpuLimit * ".$chunksCoefficient.") ".
                     (($chunks > $cpuLimit * $chunksCoefficient) ? 'true' : 'false')
                 );
@@ -136,7 +134,7 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
                 $cache->store(Cache::CHECKED_WORKERS, $checkedWorkers);
                 $cache->store(Cache::CHECKED_INDEXES, $checkedIndexes);
 
-                Analog::log("OPTIMIZE started successfully. Stopping watching");
+                Logger::info("OPTIMIZE started successfully. Stopping watching");
                 $locker->unlock(0);
             }
         }

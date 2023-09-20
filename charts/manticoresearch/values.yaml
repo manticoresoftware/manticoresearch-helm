@@ -75,6 +75,7 @@ worker:
   extraPackages: true
   quorumCheckInterval: 15
   autoAddTablesInCluster: true
+  logLevel: INFO
   image:
     repository: manticoresearch/helm-worker
 #    tag: 3.6.0.0

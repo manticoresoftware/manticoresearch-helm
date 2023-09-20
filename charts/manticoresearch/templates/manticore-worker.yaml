@@ -63,6 +63,8 @@ spec:
             value: {{ .Values.worker.clusterName }}
           - name: REPLICATION_MODE
             value: {{ .Values.worker.replicationMode }}
+          - name: LOG_LEVEL
+            value: {{ .Values.worker.logLevel }}
           - name: INSTANCE_LABEL
             value: {{ .Release.Name }}
           - name: WORKER_SERVICE
