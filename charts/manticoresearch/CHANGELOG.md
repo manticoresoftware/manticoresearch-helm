@@ -1,3 +1,3 @@
-### 6.2.122
+### 6.2.124
 
-* Fixed error with optimizing percolate indexes
+* Added support for priorityClassName
