@@ -14,7 +14,7 @@ jobs:
           sleep 20
           kubectl get pods -A
           helm version
-          echo $KUBECONFIG
+          cat $KUBECONFIG
 #  clt:
 #    name: Run CLT tests
 #    runs-on: ubuntu-22.04
