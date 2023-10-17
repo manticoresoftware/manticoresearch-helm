@@ -1,0 +1,25 @@
+name: k3s Testing
+on: push
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: debianmaster/actions-k3s@master
+        id: k3s
+        with:
+          version: 'latest'
+      - run: |
+          kubectl get nodes
+          kubectl get pods -A
+          sleep 20
+          kubectl get pods -A
+          helm version
+#  clt:
+#    name: Run CLT tests
+#    runs-on: ubuntu-22.04
+#    steps:
+#      - uses: manticoresoftware/clt@0.1.5
+#        with:
+#          image: ubuntu:bionic
+#          test_prefix: test/clt-tests/
+#          run_args: -e TELEMETRY=0

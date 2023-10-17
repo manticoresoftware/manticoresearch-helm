@@ -1,0 +1,8 @@
+––– input –––
+export KUBECONFIG=/root/.kube/config
+––– output –––
+––– input –––
+kubectl get nodes
+––– output –––
+NAME           STATUS   ROLES                  AGE#!/\s+/!#VERSION
+610fbafbcbdd   Ready    control-plane,master   #!/[0-9]+/!#m   v1.25.14+k3s1
