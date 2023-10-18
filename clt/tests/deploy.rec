@@ -1,8 +1,5 @@
 ––– input –––
-ls /tmp
-––– output –––
-––– input –––
-export KUBECONFIG=/root/.kube/config
+export KUBECONFIG=/tmp/output/kubeconfig-latest.yaml
 ––– output –––
 ––– input –––
 kubectl get nodes
