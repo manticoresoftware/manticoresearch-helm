@@ -15,5 +15,5 @@ jobs:
       - uses: manticoresoftware/clt@0.1.5
         with:
           image: manticoresearch/helm-test-kit:0.0.1
-          test_prefix: ./clt/tests/
+          test_prefix: test/clt-tests/
           run_args: -e TELEMETRY=0
