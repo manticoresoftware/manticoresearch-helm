@@ -12,10 +12,8 @@ jobs:
           kubectl get nodes
           kubectl get pods -A
           sleep 20
-          kubectl get pods -A
-          helm version
-          cat $KUBECONFIG
       - uses: manticoresoftware/clt@0.1.5
         with:
           image: manticoresearch/helm-test-kit:0.0.1
           test_prefix: clt/tests/
+          run_args: -e TELEMETRY=0

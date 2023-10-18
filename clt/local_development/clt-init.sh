@@ -15,7 +15,7 @@ docker run -d --name k3s -v $(pwd)/k3s.yaml:/etc/rancher/k3s/k3s.yaml --privileg
 
 sleep 30
 
-docker build -t kubectl:latest .
+docker build -t manticoresearch/helm-test-kit:0.0.1 .
 
 cp k3s.yaml k3s_copy.yaml
 
@@ -26,9 +26,7 @@ K3SIP=$(docker inspect k3s -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}
 sed -i "s/127.0.0.1/${K3SIP}/g" k3s_copy.yaml
 
 # CLT record guide
-# RUN_ARGS="-v "$(pwd)/clt/local_development/k3s_copy.yaml:/root/.kube/config"" /work/clt/clt record kubectl:latest
-# export KUBECONFIG=/root/.kube/config
+#RUN_ARGS="-v "$(pwd)/clt/local_development/k3s_copy.yaml:/tmp/output/kubeconfig-latest.yaml"" /work/clt/clt test -d -t clt/tests/deploy.rec manticoresearch/helm-test-kit:0.0.1
+# export KUBECONFIG=/tmp/output/kubeconfig-latest.yaml
 # kubectl get nodes
 
-# Docker start guide
-# docker run --name kubectl -v "$(pwd)/clt/local_development/k3s_copy.yaml:/root/.kube/config" -it --rm kubectl:latest
