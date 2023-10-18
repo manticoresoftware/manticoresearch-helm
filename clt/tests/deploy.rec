@@ -1,4 +1,7 @@
 ––– input –––
+ls /tmp
+––– output –––
+––– input –––
 export KUBECONFIG=/root/.kube/config
 ––– output –––
 ––– input –––

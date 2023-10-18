@@ -15,12 +15,7 @@ jobs:
           kubectl get pods -A
           helm version
           cat $KUBECONFIG
-#  clt:
-#    name: Run CLT tests
-#    runs-on: ubuntu-22.04
-#    steps:
-#      - uses: manticoresoftware/clt@0.1.5
-#        with:
-#          image: ubuntu:bionic
-#          test_prefix: test/clt-tests/
-#          run_args: -e TELEMETRY=0
+      - uses: manticoresoftware/clt@0.1.5
+        with:
+          image: manticoresearch/helm-test-kit:0.0.1
+          test_prefix: clt/tests/
