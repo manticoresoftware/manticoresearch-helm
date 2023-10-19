@@ -2,7 +2,7 @@
 export KUBECONFIG=/tmp/output/kubeconfig-latest.yaml
 ––– output –––
 ––– input –––
-ls /tmp
+printenv
 ––– output –––
 ––– input –––
 kubectl get nodes
