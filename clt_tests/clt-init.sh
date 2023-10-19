@@ -26,7 +26,10 @@ K3SIP=$(docker inspect k3s -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}
 sed -i "s/127.0.0.1/${K3SIP}/g" k3s_copy.yaml
 
 # CLT record guide
-#RUN_ARGS="-v "$(pwd)/clt/local_development/k3s_copy.yaml:/tmp/output/kubeconfig-latest.yaml"" /work/clt/clt test -d -t clt/tests/deploy.rec manticoresearch/helm-test-kit:0.0.1
+# RUN_ARGS="-v "$(pwd)/clt_tests/k3s_copy.yaml:/tmp/output/kubeconfig-latest.yaml"" /work/clt/clt test -d -t clt_tests/tests/deploy.rec manticoresearch/helm-test-kit:0.0.1
 # export KUBECONFIG=/tmp/output/kubeconfig-latest.yaml
 # kubectl get nodes
+
+# export RUN_ARGS="-v "$(pwd)/clt_tests/k3s_copy.yaml:/tmp/output/kubeconfig-latest.yaml""
+# /work/clt/clt record manticoresearch/helm-test-kit:0.0.1
 

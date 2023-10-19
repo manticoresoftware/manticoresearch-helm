@@ -1,8 +1,38 @@
-––– input –––
-export KUBECONFIG=/tmp/output/kubeconfig-latest.yaml
-––– output –––
+––– block: ./init/init –––
 ––– input –––
 kubectl get nodes
 ––– output –––
 NAME           STATUS   ROLES                  AGE#!/\s+/!#VERSION
 610fbafbcbdd   Ready    control-plane,master   #!/[0-9]+/!#m   v1.25.14+k3s1
+––– input –––
+helm install my-helm ./charts/manticoresearch
+––– output –––
+WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /tmp/output/kubeconfig-latest.yaml
+WARNING: Kubernetes configuration file is world-readable. This is insecure. Location: /tmp/output/kubeconfig-latest.yaml
+NAME: my-helm
+LAST DEPLOYED: Thu Oct #!/[0-9]+/!#m #!/[0-9]+/!#m:#!/[0-9]+/!#m:#!/[0-9]+/!#m #!/[0-9]+/!#m
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+1) Wait until all pods are moved to running state:
+kubectl --namespace default get po
+2) Forward worker port to your local machine:
+export WORKER_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=my-helm,app.kubernetes.io/component=worker" -o jsonpath="{.items[0].metadata.name}")
+kubectl --namespace default port-forward $WORKER_NAME 7306:9306
+3) Connect to the worker:
+mysql -h0 -P7306
+4) Create your first table:
+CREATE TABLE idx(title text);
+5) Add table to cluster:
+ALTER CLUSTER manticore_cluster ADD idx;
+6) Add some data to your table:
+INSERT INTO manticore_cluster:idx (title) VALUES ('dog is brown'), ('mouse is small');
+7) Forward worker port to your local machine:
+export BALANCER_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=my-helm,name=my-helm-manticoresearch-balancer" -o jsonpath="{.items[0].metadata.name}")
+kubectl --namespace default port-forward $BALANCER_NAME 6306:9306
+8) Search through the balancer:
+mysql -h0 -P6306 -e "SELECT * FROM idx WHERE match('dog')"
+9) Scale the cluster:
+kubectl scale statefulsets manticore-manticoresearch-worker -n default --replicas=5
