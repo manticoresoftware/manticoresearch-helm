@@ -9,7 +9,7 @@ jobs:
         with:
           version: 'latest'
       - run: |
-          kubectl get nodes
+          echo "Wait until k3s up"
           sleep 20
       - uses: manticoresoftware/clt@main
         with:
