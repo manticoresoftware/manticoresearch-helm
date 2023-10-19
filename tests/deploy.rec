@@ -5,9 +5,6 @@ export KUBECONFIG=/tmp/output/kubeconfig-latest.yaml
 ls /tmp
 ––– output –––
 ––– input –––
-printenv
-––– output –––
-––– input –––
 kubectl get nodes
 ––– output –––
 NAME           STATUS   ROLES                  AGE#!/\s+/!#VERSION

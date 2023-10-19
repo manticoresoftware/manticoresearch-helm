@@ -11,11 +11,8 @@ jobs:
       - run: |
           kubectl get nodes
           sleep 20
-      - run: |
-          echo "next step run"
-          ls -la ${{ steps.k3s.outputs.kubeconfig }}
       - uses: manticoresoftware/clt@main
         with:
           image: manticoresearch/helm-test-kit:0.0.1
           test_prefix: tests/
-          run_args: -e TELEMETRY=0
+          run_args: -e TELEMETRY=0 -v ${{ steps.k3s.outputs.kubeconfig }}:${{ steps.k3s.outputs.kubeconfig }}
