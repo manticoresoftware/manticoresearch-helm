@@ -15,4 +15,4 @@ jobs:
         with:
           image: manticoresearch/helm-test-kit:0.0.1
           test_prefix: tests/
-          run_args: -e TELEMETRY=0 -v ${{ steps.k3s.outputs.kubeconfig }}:${{ steps.k3s.outputs.kubeconfig }}
+          run_args: -e TELEMETRY=0 --net=host -v ${{ steps.k3s.outputs.kubeconfig }}:${{ steps.k3s.outputs.kubeconfig }}
