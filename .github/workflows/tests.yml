@@ -14,5 +14,5 @@ jobs:
       - uses: djklim87/clt@main
         with:
           image: manticoresearch/helm-test-kit:0.0.1
-          test_prefix: ./clt/tests/
+          test_prefix: tests/
           run_args: -e TELEMETRY=0
