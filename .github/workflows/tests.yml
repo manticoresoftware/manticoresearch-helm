@@ -11,7 +11,7 @@ jobs:
       - run: |
           kubectl get nodes
           sleep 20
-      - uses: manticoresoftware/clt@0.1.5
+      - uses: sanikolaev/clt@main
         with:
           image: manticoresearch/helm-test-kit:0.0.1
           test_prefix: ./clt/tests/
