@@ -14,5 +14,5 @@ jobs:
       - uses: manticoresoftware/clt@main
         with:
           image: manticoresearch/helm-test-kit:0.0.1
-          test_prefix: tests/
+          test_prefix: clt_tests/tests/
           run_args: -e TELEMETRY=0 --net=host -v ${{ steps.k3s.outputs.kubeconfig }}:${{ steps.k3s.outputs.kubeconfig }}
