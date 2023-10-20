@@ -11,8 +11,11 @@ jobs:
       - run: |
           echo "Wait until k3s up"
           sleep 20
-          ls ../..
-          pwd
+      - name: Checkout
+        uses: actions/checkout@v4
+      - run: |
+          ls
+          ls ${{ steps.k3s.outputs.kubeconfig }}
       - uses: manticoresoftware/clt@main
         with:
           image: manticoresearch/helm-test-kit:0.0.1
