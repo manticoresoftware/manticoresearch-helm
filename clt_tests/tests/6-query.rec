@@ -1,0 +1,7 @@
+––– block: ./init/init –––
+––– input –––
+export BALANCER_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=my-helm,name=my-helm-manticoresearch-balancer" -o jsonpath="{.items[0].metadata.name}"); kubectl exec -it $BALANCER_NAME -- mysql -h0 -P9306 -e "SELECT * FROM idx WHERE match('dog')\G"
+––– output –––
+*************************** 1. row ***************************
+id: #!/[0-9]+/!#
+title: dog is brown

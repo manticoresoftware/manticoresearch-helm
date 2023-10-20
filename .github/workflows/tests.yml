@@ -11,6 +11,7 @@ jobs:
       - run: |
           echo "Wait until k3s up"
           sleep 20
+          ls
       - uses: manticoresoftware/clt@main
         with:
           image: manticoresearch/helm-test-kit:0.0.1
