@@ -14,6 +14,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - run: |
+          pwd
           ls
           ls ${{ steps.k3s.outputs.kubeconfig }}
       - uses: manticoresoftware/clt@main
