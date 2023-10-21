@@ -1,8 +1,5 @@
 ––– block: ./init/init –––
 ––– input –––
-ls
-––– output –––
-––– input –––
 kubectl get nodes
 ––– output –––
 NAME           STATUS   ROLES                  AGE#!/\s+/!#VERSION
