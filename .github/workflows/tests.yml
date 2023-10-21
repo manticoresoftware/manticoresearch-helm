@@ -21,4 +21,4 @@ jobs:
         with:
           image: manticoresearch/helm-test-kit:0.0.1
           test_prefix: clt_tests/tests/
-          run_args: -e TELEMETRY=0 --net=host -v ${{ steps.k3s.outputs.kubeconfig }}:${{ steps.k3s.outputs.kubeconfig }} -v $(pwd)/charts/:charts/
+          run_args: -e TELEMETRY=0 --net=host -v ${{ steps.k3s.outputs.kubeconfig }}:${{ steps.k3s.outputs.kubeconfig }} -v $(pwd)/charts/:/.clt/charts/
