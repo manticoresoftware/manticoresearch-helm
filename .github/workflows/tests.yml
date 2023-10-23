@@ -13,11 +13,7 @@ jobs:
           sleep 20
       - name: Checkout
         uses: actions/checkout@v4
-      - run: |
-          pwd
-          ls
-          ls ${{ steps.k3s.outputs.kubeconfig }}
-      - uses: manticoresoftware/clt@main
+      - uses: manticoresoftware/clt@0.1.7
         with:
           image: manticoresearch/helm-test-kit:0.0.1
           test_prefix: clt_tests/tests/
