@@ -1,6 +1,6 @@
 ––– block: ./init/init –––
 ––– input –––
-echo "Wait until new index will replicated to balancer"; sleep 10
+echo "Wait until new index will replicated to balancer"; sleep 15
 ––– output –––
 Wait until new index will replicated to balancer
 ––– input –––
