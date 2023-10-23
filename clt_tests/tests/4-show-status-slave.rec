@@ -1,0 +1,216 @@
+––– block: ./init/init –––
+––– input –––
+kubectl exec -it my-helm-manticoresearch-worker-1 -- mysql -h0 -P9306 -e "show status\G" | grep -A1 "Counter: cluster"
+––– output –––
+Counter: cluster_name
+Value: manticore_cluster
+--
+Counter: cluster_manticore_cluster_state_uuid
+Value: #!/[a-z0-9-]+/!#
+--
+Counter: cluster_manticore_cluster_conf_id
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_status
+Value: primary
+--
+Counter: cluster_manticore_cluster_size
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_local_index
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_node_state
+Value: synced
+--
+Counter: cluster_manticore_cluster_nodes_set
+Value: %{IPADDR}:9312,%{IPADDR}:9312,%{IPADDR}:9312
+--
+Counter: cluster_manticore_cluster_nodes_view
+Value: %{IPADDR}:9312,%{IPADDR}:9315:replication,%{IPADDR}:9312,%{IPADDR}:9315:replication,%{IPADDR}:9312,%{IPADDR}:9315:replication
+--
+Counter: cluster_manticore_cluster_indexes_count
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_indexes
+Value:
+--
+Counter: cluster_manticore_cluster_local_state_uuid
+Value: #!/[a-z0-9-]+/!#
+--
+Counter: cluster_manticore_cluster_protocol_version
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_last_applied
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_last_committed
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_replicated
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_replicated_bytes
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_repl_keys
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_repl_keys_bytes
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_repl_data_bytes
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_repl_other_bytes
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_received
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_received_bytes
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_local_commits
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_local_cert_failures
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_local_replays
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_local_send_queue
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_local_send_queue_max
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_local_send_queue_min
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_local_send_queue_avg
+Value: #!/[0-9]+/!#.#!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_local_recv_queue
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_local_recv_queue_max
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_local_recv_queue_min
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_local_recv_queue_avg
+Value: #!/[0-9]+/!#.#!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_local_cached_downto
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_flow_control_paused_ns
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_flow_control_paused
+Value: #!/[0-9]+/!#.#!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_flow_control_sent
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_flow_control_recv
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_flow_control_interval
+Value: [ #!/[0-9]+/!#, #!/[0-9]+/!# ]
+--
+Counter: cluster_manticore_cluster_flow_control_interval_low
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_flow_control_interval_high
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_flow_control_status
+Value: OFF
+--
+Counter: cluster_manticore_cluster_cert_deps_distance
+Value: 0.000000
+--
+Counter: cluster_manticore_cluster_apply_oooe
+Value: 0.000000
+--
+Counter: cluster_manticore_cluster_apply_oool
+Value: 0.000000
+--
+Counter: cluster_manticore_cluster_apply_window
+Value: 0.000000
+--
+Counter: cluster_manticore_cluster_commit_oooe
+Value: 0.000000
+--
+Counter: cluster_manticore_cluster_commit_oool
+Value: 0.000000
+--
+Counter: cluster_manticore_cluster_commit_window
+Value: 0.000000
+--
+Counter: cluster_manticore_cluster_local_state
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_local_state_comment
+Value: Synced
+--
+Counter: cluster_manticore_cluster_cert_index_size
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_cert_bucket_count
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_gcache_pool_size
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_causal_reads
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_cert_interval
+Value: 0.000000
+--
+Counter: cluster_manticore_cluster_open_transactions
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_open_connections
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_ist_receive_status
+Value:
+--
+Counter: cluster_manticore_cluster_ist_receive_seqno_start
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_ist_receive_seqno_current
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_ist_receive_seqno_end
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_incoming_addresses
+Value: %{IPADDR}:9312,%{IPADDR}:9315:replication,%{IPADDR}:9312,%{IPADDR}:9315:replication,%{IPADDR}:9312,%{IPADDR}:9315:replication
+--
+Counter: cluster_manticore_cluster_cluster_weight
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_desync_count
+Value: #!/[0-9]+/!#
+--
+Counter: cluster_manticore_cluster_evs_delayed
+Value:
+--
+Counter: cluster_manticore_cluster_evs_evict_list
+Value:
+--
+Counter: cluster_manticore_cluster_evs_repl_latency
+Value: #!/[0-9/]+/!#
+--
+Counter: cluster_manticore_cluster_evs_state
+Value: OPERATIONAL
+--
+Counter: cluster_manticore_cluster_gcomm_uuid
+Value: #!/[a-z0-9-]+/!#

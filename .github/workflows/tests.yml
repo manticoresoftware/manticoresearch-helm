@@ -1,0 +1,20 @@
+name: k3s Testing
+on: push
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: debianmaster/actions-k3s@master
+        id: k3s
+        with:
+          version: 'latest'
+      - run: |
+          echo "Wait until k3s up"
+          sleep 20
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: manticoresoftware/clt@0.1.7
+        with:
+          image: manticoresearch/helm-test-kit:0.0.1
+          test_prefix: clt_tests/tests/
+          run_args: -e TELEMETRY=0 --net=host -v ${{ steps.k3s.outputs.kubeconfig }}:${{ steps.k3s.outputs.kubeconfig }} -v $(pwd)/charts/:/.clt/charts/

@@ -3,3 +3,4 @@ sources/manticore-balancer/vendor
 sources/manticore-worker/vendor
 sources/manticore-worker/composer.lock
 sources/manticore-balancer/composer.lock
+.patterns

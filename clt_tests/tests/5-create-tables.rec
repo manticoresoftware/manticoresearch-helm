@@ -1,0 +1,13 @@
+––– block: ./init/init –––
+––– input –––
+kubectl exec -it my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "CREATE TABLE idx(title text)"; echo $?
+––– output –––
+0
+––– input –––
+kubectl exec -it my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "ALTER CLUSTER manticore_cluster ADD idx"; echo $?
+––– output –––
+0
+––– input –––
+kubectl exec -it my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "INSERT INTO manticore_cluster:idx (title) VALUES ('dog is brown'), ('mouse is small');"; echo $?
+––– output –––
+0
