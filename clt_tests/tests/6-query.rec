@@ -1,6 +1,6 @@
 ––– block: ./init/init –––
 ––– input –––
-echo "Wait until new index will replicated to balancer"; sleep 5
+echo "Wait until new index will replicated to balancer"; sleep 30
 ––– output –––
 Wait until new index will replicated to balancer
 ––– input –––
@@ -11,12 +11,6 @@ Ok
 echo $BALANCER_NAME
 ––– output –––
 my-helm-manticoresearch-balancer-#!/[0-9a-z]+/!#-#!/[0-9a-z]+/!#
-––– input –––
-kubectl get po -o yaml
-––– output –––
-––– input –––
-kubectl logs $BALANCER_NAME
-––– output –––
 ––– input –––
 kubectl exec $BALANCER_NAME -- mysql -h0 -P9306 -e "SHOW TABLES\G"
 ––– output –––
