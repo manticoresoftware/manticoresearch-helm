@@ -3,3 +3,6 @@
 timeout 180 bash -c 'while [[ ! $(kubectl get po  | grep "Running" | wc -l) -eq 4 ]]; do sleep 1; done' && echo "OK" || echo "Failed waiting until pods was deployed"
 ––– output –––
 OK
+––– input –––
+sleep 5
+––– output –––
