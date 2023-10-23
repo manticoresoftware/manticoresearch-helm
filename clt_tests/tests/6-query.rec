@@ -1,7 +1,8 @@
 ––– block: ./init/init –––
 ––– input –––
-sleep 5
+echo "Wait until new index will replicated to balancer"; sleep 5
 ––– output –––
+Wait until new index will replicated to balancer
 ––– input –––
 export BALANCER_NAME=$(kubectl get pods -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=my-helm,name=my-helm-manticoresearch-balancer" -o jsonpath="{.items[0].metadata.name}") && echo "Ok"
 ––– output –––
@@ -10,9 +11,6 @@ Ok
 echo $BALANCER_NAME
 ––– output –––
 my-helm-manticoresearch-balancer-#!/[0-9a-z]+/!#-#!/[0-9a-z]+/!#
-––– input –––
-kubectl exec $BALANCER_NAME -- cat /etc/manticoresearch/manticore.conf
-––– output –––
 ––– input –––
 kubectl exec $BALANCER_NAME -- mysql -h0 -P9306 -e "SHOW TABLES\G"
 ––– output –––
