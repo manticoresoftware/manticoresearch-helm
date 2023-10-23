@@ -4,14 +4,12 @@
 use Core\Cache\Cache;
 use Core\K8s\ApiClient;
 use Core\K8s\Resources;
+use Core\Logger\Logger;
 use Core\Manticore\ManticoreConnector;
 use Core\Mutex\Locker;
-use Analog\Analog;
-use Analog\Handler\EchoConsole;
 use Core\Notifications\NotificationStub;
 
 require 'vendor/autoload.php';
-Analog::handler( EchoConsole::init() );
 
 
 $workerPort      = null;
@@ -36,7 +34,7 @@ foreach ( $variables as $variable => $desc ) {
 	$$variable = getenv( $desc['env'] );
 
 	if ( $$variable === false ) {
-		Analog::log( $desc['env'] . " is not defined\n" );
+		Logger::info( $desc['env'] . " is not defined\n" );
 		exit( 1 );
 	}
 
@@ -48,7 +46,7 @@ foreach ( $variables as $variable => $desc ) {
 }
 
 if (!in_array($indexHAStrategy, ['random', 'nodeads','noerrors','roundrobin'])){
-	Analog::log( "INDEX_HA_STRATEGY can be only {random|nodeads|noerrors|roundrobin}\n" );
+	Logger::info( "INDEX_HA_STRATEGY can be only {random|nodeads|noerrors|roundrobin}\n" );
 	exit( 1 );
 }
 
@@ -68,7 +66,7 @@ $locker->checkLock();
 $resources = new Resources( new ApiClient(), $labels, new NotificationStub() );
 
 if ( $resources->getActivePodsCount() === 0 ) {
-	Analog::log( "No workers found" );
+	Logger::info( "No workers found" );
 	$locker->unlock();
 }
 $oldestWorker = $resources->getOldestActivePodName();
@@ -87,12 +85,12 @@ if ( $tables !== [] ) {
 	$hash         = sha1( implode( '.', $tables ) . implode( $podsIps ) );
 
 	if ( $previousHash !== $hash ) {
-		Analog::log( "Starting config recompiling" );
+		Logger::info( "Starting config recompiling" );
 		saveConfig( $tables, $podsIps, $balancerPort, $configMapPath, $indexHAStrategy );
 		$cache->store( Cache::INDEX_HASH, $hash );
 	}
 } else {
-	Analog::log( "No tables found" );
+	Logger::info( "No tables found" );
 	$locker->unlock();
 }
 

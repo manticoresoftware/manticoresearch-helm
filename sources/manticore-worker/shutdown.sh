@@ -1,7 +1,7 @@
 #!/bin/sh
 
 echo "Start manticore worker graceful shutdown"
-searchd --stopwait
+supervisorctl stop searchd
 
 KUBE_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
 CONTENT=$(curl -sSk -H "Authorization: Bearer $KUBE_TOKEN" \

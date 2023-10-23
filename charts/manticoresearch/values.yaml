@@ -77,6 +77,7 @@ worker:
   extraPackages: true
   quorumCheckInterval: 15
   autoAddTablesInCluster: true
+  logLevel: INFO
   image:
     repository: manticoresearch/helm-worker
 #    tag: 3.6.0.0
@@ -120,8 +121,9 @@ worker:
         listen = 9306:mysql41
         listen = 9308:http
         listen = 9301:mysql_vip
-        listen = $ip:9312
-        listen = $ip:9315-9415:replication
+        listen = $hostname:9312
+        listen = $hostname:9315-9415:replication
+        node_address = $hostname
         binlog_path = /var/lib/manticore
         log = /dev/stdout
         query_log = /dev/stdout
