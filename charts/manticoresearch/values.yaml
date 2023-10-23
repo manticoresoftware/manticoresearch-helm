@@ -44,7 +44,7 @@ balancer:
         query_log = /dev/stdout
         query_log_format = sphinxql
         pid_file = /var/run/manticore/searchd.pid
-        binlog_path = /var/lib/manticore/data
+        binlog_path = /var/lib/manticore
         shutdown_timeout = 25s
         auto_optimize = 0
       }
