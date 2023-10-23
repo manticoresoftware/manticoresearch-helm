@@ -192,7 +192,7 @@ Counter: cluster_manticore_cluster_ist_receive_seqno_end
 Value: #!/[0-9]+/!#
 --
 Counter: cluster_manticore_cluster_incoming_addresses
-Value: %{IPADDR}:9312,%{IPADDR}:9315:replication,%{IPADDR}:9312,%{IPADDR}:9315:replication,%{IPADDR}:9312,%{IPADDR}:9315:replication
+Value: my-helm-manticoresearch-worker-0.my-helm-manticoresearch-worker-svc.default.svc.cluster.local:9312,my-helm-manticoresearch-worker-0.my-helm-manticoresearch-worker-svc.default.svc.cluster.local:9315:replication,my-helm-manticoresearch-worker-1.my-helm-manticoresearch-worker-svc.default.svc.cluster.local:9312,my-helm-manticoresearch-worker-1.my-helm-manticoresearch-worker-svc.default.svc.cluster.local:9315:replication
 --
 Counter: cluster_manticore_cluster_cluster_weight
 Value: #!/[0-9]+/!#
