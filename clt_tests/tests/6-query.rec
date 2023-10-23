@@ -1,5 +1,8 @@
 ––– block: ./init/init –––
 ––– input –––
+sleep 5
+––– output –––
+––– input –––
 export BALANCER_NAME=$(kubectl get pods -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=my-helm,name=my-helm-manticoresearch-balancer" -o jsonpath="{.items[0].metadata.name}") && echo "Ok"
 ––– output –––
 Ok
