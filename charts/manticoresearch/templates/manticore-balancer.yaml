@@ -35,6 +35,9 @@ spec:
       {{- end }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.balancer.priorityClassName }}
+      priorityClassName: {{ .Values.balancer.priorityClassName }}
+      {{- end }}
       containers:
       - name: balancer
         securityContext:

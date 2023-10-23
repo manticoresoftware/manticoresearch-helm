@@ -11,6 +11,7 @@ global:
 
 balancer:
   replicaCount: 1
+  # priorityClassName: ""
   runInterval: 5
   extraPackages: true
   image:
@@ -43,7 +44,7 @@ balancer:
         query_log = /dev/stdout
         query_log_format = sphinxql
         pid_file = /var/run/manticore/searchd.pid
-        binlog_path = /var/lib/manticore
+        binlog_path = /var/lib/manticore/data
         shutdown_timeout = 25s
         auto_optimize = 0
       }
@@ -64,6 +65,7 @@ balancer:
 
 worker:
   replicaCount: 3
+  # priorityClassName: ""
   clusterName: manticore
   ## In the `multi-master` mode it doesn't matter to which node you write and from what node you read. This is a simpler and more efficient approach, but in case of an emergency cluster shutdown when all the nodes are down at the same time you have to recover the cluster  manually.
 
