@@ -12,7 +12,7 @@ echo $BALANCER_NAME
 ––– output –––
 my-helm-manticoresearch-balancer-#!/[0-9a-z]+/!#-#!/[0-9a-z]+/!#
 ––– input –––
-kubectl get po -o json
+kubectl get po -o yaml
 ––– output –––
 ––– input –––
 kubectl logs $BALANCER_NAME
