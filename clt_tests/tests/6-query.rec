@@ -8,7 +8,7 @@ echo $BALANCER_NAME
 ––– output –––
 my-helm-manticoresearch-balancer-#!/[0-9a-z]+/!#-#!/[0-9a-z]+/!#
 ––– input –––
-kubectl exec $BALANCER_NAME -- mysql -h0 -P9306 -e "SHOW STATUS\G"
+kubectl exec $BALANCER_NAME -- cat /etc/manticoresearch/manticore.conf
 ––– output –––
 ––– input –––
 kubectl exec $BALANCER_NAME -- mysql -h0 -P9306 -e "SHOW TABLES\G"
