@@ -12,6 +12,9 @@ echo $BALANCER_NAME
 ––– output –––
 my-helm-manticoresearch-balancer-#!/[0-9a-z]+/!#-#!/[0-9a-z]+/!#
 ––– input –––
+kubectl logs $BALANCER_NAME
+––– output –––
+––– input –––
 kubectl exec $BALANCER_NAME -- mysql -h0 -P9306 -e "SHOW TABLES\G"
 ––– output –––
 *************************** 1. row ***************************
