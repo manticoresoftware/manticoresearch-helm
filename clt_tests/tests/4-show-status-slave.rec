@@ -24,10 +24,10 @@ Counter: cluster_manticore_cluster_node_state
 Value: synced
 --
 Counter: cluster_manticore_cluster_nodes_set
-Value: %{IPADDR}:9312,%{IPADDR}:9312,%{IPADDR}:9312
+Value: my-helm-manticoresearch-worker-0.my-helm-manticoresearch-worker-svc.default.svc.cluster.local:9312,my-helm-manticoresearch-worker-1.my-helm-manticoresearch-worker-svc.default.svc.cluster.local:9312
 --
 Counter: cluster_manticore_cluster_nodes_view
-Value: %{IPADDR}:9312,%{IPADDR}:9315:replication,%{IPADDR}:9312,%{IPADDR}:9315:replication,%{IPADDR}:9312,%{IPADDR}:9315:replication
+Value: my-helm-manticoresearch-worker-0.my-helm-manticoresearch-worker-svc.default.svc.cluster.local:9312,my-helm-manticoresearch-worker-0.my-helm-manticoresearch-worker-svc.default.svc.cluster.local:9315:replication,my-helm-manticoresearch-worker-1.my-helm-manticoresearch-worker-svc.default.svc.cluster.local:9312,my-helm-manticoresearch-worker-1.my-helm-manticoresearch-worker-svc.default.svc.cluster.local:9315:replication
 --
 Counter: cluster_manticore_cluster_indexes_count
 Value: #!/[0-9]+/!#
