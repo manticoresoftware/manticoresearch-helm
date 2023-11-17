@@ -94,6 +94,13 @@ if ($count <= $min) {
     Logger::info("One pod");
     $manticoreJson->startManticore();
     $manticore = new ManticoreConnector('localhost', $qlPort, $clusterName, -1);
+
+    $settings = $manticore->showSettings();
+    if (!isset($settings['searchd.data_dir'])){
+        Logger::error("Data dir option wasn't passed in searchd conf. Replication disabled");
+        exit(1);
+    }
+
     $manticore->setMaxAttempts(180);
 
     Logger::info("Wait until $hostname came alive");
@@ -115,6 +122,13 @@ if ($count <= $min) {
     $manticoreJson->startManticore();
 
     $manticore = new ManticoreConnector('localhost', $qlPort, null, -1);
+
+    $settings = $manticore->showSettings();
+    if (!isset($settings['searchd.data_dir'])){
+        Logger::error("Data dir option wasn't passed in searchd conf. Replication disabled");
+        exit(1);
+    }
+
     $manticore->setCustomClusterName($clusterName);
     $manticore->setMaxAttempts(180);
 
@@ -152,6 +166,13 @@ if ($count <= $min) {
     $manticoreJson->startManticore();
 
     $manticore = new ManticoreConnector('localhost', $qlPort, null, -1);
+
+    $settings = $manticore->showSettings();
+    if (!isset($settings['searchd.data_dir'])){
+        Logger::error("Data dir option wasn't passed in searchd conf. Replication disabled");
+        exit(1);
+    }
+
     $manticore->setCustomClusterName($clusterName);
     $manticore->setMaxAttempts(180);
 
