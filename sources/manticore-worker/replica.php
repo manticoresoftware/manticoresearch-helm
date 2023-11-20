@@ -13,6 +13,8 @@ require 'vendor/autoload.php';
 const REPLICATION_MODE_MULTI_MASTER = 'multi-master';
 const REPLICATION_MODE_MASTER_SLAVE = 'master-slave';
 
+const ERROR_NO_DATA_DIR_PASSED = 'Option data_dir was not passed in worker.config.content Replication disabled';
+
 
 $qlPort = null;
 $binaryPort = null;
@@ -97,7 +99,8 @@ if ($count <= $min) {
 
     $settings = $manticore->showSettings();
     if (!isset($settings['searchd.data_dir'])){
-        Logger::error("Data dir option wasn't passed in searchd conf. Replication disabled");
+        Logger::error(ERROR_NO_DATA_DIR_PASSED);
+        $manticoreJson->stopManticore();
         exit(1);
     }
 
@@ -125,7 +128,8 @@ if ($count <= $min) {
 
     $settings = $manticore->showSettings();
     if (!isset($settings['searchd.data_dir'])){
-        Logger::error("Data dir option wasn't passed in searchd conf. Replication disabled");
+        Logger::error(ERROR_NO_DATA_DIR_PASSED);
+        $manticoreJson->stopManticore();
         exit(1);
     }
 
@@ -169,7 +173,8 @@ if ($count <= $min) {
 
     $settings = $manticore->showSettings();
     if (!isset($settings['searchd.data_dir'])){
-        Logger::error("Data dir option wasn't passed in searchd conf. Replication disabled");
+        Logger::error(ERROR_NO_DATA_DIR_PASSED);
+        $manticoreJson->stopManticore();
         exit(1);
     }
 
