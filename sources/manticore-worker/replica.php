@@ -13,7 +13,7 @@ require 'vendor/autoload.php';
 const REPLICATION_MODE_MULTI_MASTER = 'multi-master';
 const REPLICATION_MODE_MASTER_SLAVE = 'master-slave';
 
-const ERROR_NO_DATA_DIR_PASSED = 'Option data_dir was not passed in worker.config.content Replication disabled';
+const ERROR_NO_DATA_DIR_PASSED = 'Option data_dir was not passed in worker.config.content. Replication disabled';
 
 
 $qlPort = null;
