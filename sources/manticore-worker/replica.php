@@ -13,6 +13,8 @@ require 'vendor/autoload.php';
 const REPLICATION_MODE_MULTI_MASTER = 'multi-master';
 const REPLICATION_MODE_MASTER_SLAVE = 'master-slave';
 
+const ERROR_NO_DATA_DIR_PASSED = 'Option data_dir was not passed in worker.config.content. Replication disabled';
+
 
 $qlPort = null;
 $binaryPort = null;
@@ -94,6 +96,14 @@ if ($count <= $min) {
     Logger::info("One pod");
     $manticoreJson->startManticore();
     $manticore = new ManticoreConnector('localhost', $qlPort, $clusterName, -1);
+
+    $settings = $manticore->showSettings();
+    if (!isset($settings['searchd.data_dir'])){
+        Logger::error(ERROR_NO_DATA_DIR_PASSED);
+        $manticoreJson->stopManticore();
+        exit(1);
+    }
+
     $manticore->setMaxAttempts(180);
 
     Logger::info("Wait until $hostname came alive");
@@ -115,6 +125,14 @@ if ($count <= $min) {
     $manticoreJson->startManticore();
 
     $manticore = new ManticoreConnector('localhost', $qlPort, null, -1);
+
+    $settings = $manticore->showSettings();
+    if (!isset($settings['searchd.data_dir'])){
+        Logger::error(ERROR_NO_DATA_DIR_PASSED);
+        $manticoreJson->stopManticore();
+        exit(1);
+    }
+
     $manticore->setCustomClusterName($clusterName);
     $manticore->setMaxAttempts(180);
 
@@ -152,6 +170,14 @@ if ($count <= $min) {
     $manticoreJson->startManticore();
 
     $manticore = new ManticoreConnector('localhost', $qlPort, null, -1);
+
+    $settings = $manticore->showSettings();
+    if (!isset($settings['searchd.data_dir'])){
+        Logger::error(ERROR_NO_DATA_DIR_PASSED);
+        $manticoreJson->stopManticore();
+        exit(1);
+    }
+
     $manticore->setCustomClusterName($clusterName);
     $manticore->setMaxAttempts(180);
 
