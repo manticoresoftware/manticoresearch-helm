@@ -92,6 +92,10 @@ spec:
           - name: config-volume
             mountPath: {{ .Values.balancer.config.path }}
             subPath: manticore.conf
+          {{- range .Values.balancer.volumeMounts }}
+          - name: {{ .name }}
+            mountPath: {{ .mountPath }}
+          {{- end }}
         resources:
           {{- toYaml .Values.balancer.resources | nindent 10 }}
       {{- if or .Values.exporter.enabled .Values.serviceMonitor.enabled }}

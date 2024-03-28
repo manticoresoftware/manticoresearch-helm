@@ -104,6 +104,10 @@ spec:
           - name: config-volume
             mountPath: {{ .Values.worker.config.path }}
             subPath: manticore.conf
+          {{- range .Values.worker.volumeMounts }}
+          - name: {{ .name }}
+            mountPath: {{ .mountPath }}
+          {{- end }}
         resources:
           {{- toYaml .Values.worker.resources | nindent 10 }}
       {{- if or .Values.exporter.enabled .Values.serviceMonitor.enabled }}
