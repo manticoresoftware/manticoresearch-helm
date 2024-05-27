@@ -40,7 +40,6 @@ balancer:
         listen = /var/run/mysqld/mysqld.sock:mysql
         listen = 9306:mysql
         listen = 9308:http
-        log = /dev/stdout
         query_log = /dev/stdout
         query_log_format = sphinxql
         pid_file = /var/run/manticore/searchd.pid
@@ -125,7 +124,6 @@ worker:
         listen = $hostname:9315-9415:replication
         node_address = $hostname
         binlog_path = /var/lib/manticore
-        log = /dev/stdout
         query_log = /dev/stdout
         query_log_format = sphinxql
         pid_file = /var/run/manticore/searchd.pid
