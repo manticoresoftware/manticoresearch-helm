@@ -1,4 +1,8 @@
 ––– block: ./init/init –––
 ––– input –––
-kubectl get deployments my-helm-manticoresearch-balancer -o=jsonpath='{$.spec.template.spec.containers[:1].image}'
+kubectl get deployment my-helm-manticoresearch-balancer -o=jsonpath='{$.spec.template.spec.containers[:1].image}'; echo $?
+––– output –––
+
+––– input –––
+cat ./charts/manticoresearch/Chart.yaml
 ––– output –––
