@@ -5,6 +5,9 @@ kubectl get nodes
 NAME           STATUS   ROLES                  AGE#!/\s+/!#VERSION
 610fbafbcbdd   Ready    control-plane,master   #!/[0-9]+/!#m   v1.25.14+k3s1
 ––– input –––
+sed -i 's/version: [0-9]\+\.[0-9]\+\.[0-9]\+/version: 0.0.0-unstable/' ./charts/manticoresearch/Chart.yaml
+––– output –––
+––– input –––
 helm install my-helm ./charts/manticoresearch
 ––– output –––
 WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /tmp/output/kubeconfig-latest.yaml
