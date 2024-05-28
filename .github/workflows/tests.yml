@@ -23,21 +23,21 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-#      - name: Build and push balancer
-#        uses: docker/build-push-action@v4
-#        with:
-#          context: ./sources/manticore-balancer
-#          platforms: linux/amd64,linux/arm64
-#          push: true
-#          tags: manticoresearch/helm-balancer:0.0.0-unstable
-#
-#      - name: Build and push worker
-#        uses: docker/build-push-action@v4
-#        with:
-#          context: ./sources/manticore-worker
-#          platforms: linux/amd64,linux/arm64
-#          push: true
-#          tags: manticoresearch/helm-worker:0.0.0-unstable
+      - name: Build and push balancer
+        uses: docker/build-push-action@v4
+        with:
+          context: ./sources/manticore-balancer
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: manticoresearch/helm-balancer:0.0.0-unstable
+
+      - name: Build and push worker
+        uses: docker/build-push-action@v4
+        with:
+          context: ./sources/manticore-worker
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: manticoresearch/helm-worker:0.0.0-unstable
 
       - uses: manticoresoftware/clt@0.1.7
         with:
