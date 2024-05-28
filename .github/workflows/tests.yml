@@ -27,7 +27,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./sources/manticore-balancer
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: manticoresearch/helm-balancer:0.0.0-unstable
 
@@ -35,7 +35,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./sources/manticore-worker
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           tags: manticoresearch/helm-worker:0.0.0-unstable
 
       - uses: manticoresoftware/clt@0.1.7
