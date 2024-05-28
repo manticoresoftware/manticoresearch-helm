@@ -104,6 +104,13 @@ spec:
           - name: config-volume
             mountPath: {{ .Values.worker.config.path }}
             subPath: manticore.conf
+          {{- range .Values.worker.volumeMounts }}
+          - name: {{ .name }}
+            mountPath: {{ .mountPath }}
+            {{- if .subPath }}
+            subPath: {{ .subPath }}
+            {{- end}}
+          {{- end }}
         resources:
           {{- toYaml .Values.worker.resources | nindent 10 }}
       {{- if or .Values.exporter.enabled .Values.serviceMonitor.enabled }}
@@ -132,6 +139,11 @@ spec:
         - name: config-volume
           configMap:
             name: {{ include "manticoresearch.fullname" . }}-worker-config
+        {{- range .Values.worker.volumes }}
+        - name: {{ .name }}
+          configMap:
+            name: {{ .configMap.name }}
+        {{- end }}
       {{- with .Values.worker.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
