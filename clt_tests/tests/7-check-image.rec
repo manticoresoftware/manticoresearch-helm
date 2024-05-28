@@ -1,0 +1,4 @@
+––– block: ./init/init –––
+––– input –––
+kubectl get deployments my-helm-manticoresearch-balancer -o=jsonpath='{$.spec.template.spec.containers[:1].image}'
+––– output –––
