@@ -36,6 +36,7 @@ jobs:
         with:
           context: ./sources/manticore-worker
           platforms: linux/amd64,linux/arm64
+          push: true
           tags: manticoresearch/helm-worker:0.0.0-unstable
 
       - uses: manticoresoftware/clt@0.1.7

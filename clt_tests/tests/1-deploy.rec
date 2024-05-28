@@ -5,10 +5,10 @@ kubectl get nodes
 NAME           STATUS   ROLES                  AGE#!/\s+/!#VERSION
 610fbafbcbdd   Ready    control-plane,master   #!/[0-9]+/!#m   v1.25.14+k3s1
 ––– input –––
-sed -i 's/version: [0-9]\+\.[0-9]\+\.[0-9]\+/version: 0.0.0-unstable/' ./charts/manticoresearch/Chart.yaml
+sed -i 's/^version: [0-9]\+\.[0-9]\+\.[0-9]\+/version: 0.0.0-unstable/' ./charts/manticoresearch/Chart.yaml
 ––– output –––
 ––– input –––
-sed -i 's/appVersion: [0-9]\+\.[0-9]\+\.[0-9]\+.[0-9]\+/appVersion: 0.0.0-unstable/' ./charts/manticoresearch/Chart.yaml
+sed -i 's/^appVersion: [0-9]\+\.[0-9]\+\.[0-9]\+.[0-9]\+/appVersion: 0.0.0-unstable/' ./charts/manticoresearch/Chart.yaml
 ––– output –––
 ––– input –––
 cat ./charts/manticoresearch/Chart.yaml
