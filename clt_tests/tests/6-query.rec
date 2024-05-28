@@ -23,3 +23,6 @@ kubectl exec $BALANCER_NAME -- mysql -h0 -P9306 -e "SELECT * FROM idx WHERE matc
 *************************** 1. row ***************************
 id: #!/[0-9]+/!#
 title: dog is brown
+––– input –––
+kubectl -n manticore-helm get deployments my-helm-manticoresearch-balancer -o=jsonpath='{$.spec.template.spec.containers[:1].image}'
+––– output –––
