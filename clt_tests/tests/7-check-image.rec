@@ -1,5 +1,6 @@
 ––– block: ./init/init –––
 ––– input –––
-kubectl get deployment my-helm-manticoresearch-balancer -o=jsonpath='{$.spec.template.spec.containers[:1].image}'
+kubectl get deployment my-helm-manticoresearch-balancer -o=jsonpath='{$.spec.template.spec.containers[:1].image}'; echo -n $?
 ––– output –––
 manticoresearch/helm-balancer:0.0.0-unstable
+0
