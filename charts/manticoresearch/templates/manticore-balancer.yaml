@@ -94,7 +94,7 @@ spec:
             subPath: manticore.conf
           {{- range .Values.balancer.volumeMounts }}
           - name: {{ .name }}
-            mountPath: {{ .mountPath }}
+            mountPath: /imports/{{ .mountPath }}
             {{- if .subPath }}
             subPath: {{ .subPath }}
             {{- end}}

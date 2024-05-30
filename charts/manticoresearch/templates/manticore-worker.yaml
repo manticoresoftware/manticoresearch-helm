@@ -106,7 +106,7 @@ spec:
             subPath: manticore.conf
           {{- range .Values.worker.volumeMounts }}
           - name: {{ .name }}
-            mountPath: {{ .mountPath }}
+            mountPath: /imports/{{ .mountPath }}
             {{- if .subPath }}
             subPath: {{ .subPath }}
             {{- end}}
