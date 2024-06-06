@@ -207,7 +207,7 @@ Counter: cluster_manticore_cluster_evs_evict_list
 Value:
 --
 Counter: cluster_manticore_cluster_evs_repl_latency
-Value: #!/[0-9/]+/!#
+Value: #!/[0-9a-z-.\/]+/!#
 --
 Counter: cluster_manticore_cluster_evs_state
 Value: OPERATIONAL

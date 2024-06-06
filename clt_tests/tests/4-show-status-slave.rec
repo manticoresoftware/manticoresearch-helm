@@ -24,7 +24,7 @@ Counter: cluster_manticore_cluster_node_state
 Value: synced
 --
 Counter: cluster_manticore_cluster_nodes_set
-Value: my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-svc.default.svc.cluster.local:9312,my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-svc.default.svc.cluster.local:9312,my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-svc:9312
+Value: my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-svc.default.svc.cluster.local:9312,my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-svc.default.svc.cluster.local:9312
 --
 Counter: cluster_manticore_cluster_nodes_view
 Value: my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-svc.default.svc.cluster.local:9312,my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-svc.default.svc.cluster.local:9315:replication,my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-svc.default.svc.cluster.local:9312,my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-svc.default.svc.cluster.local:9315:replication
@@ -207,7 +207,7 @@ Counter: cluster_manticore_cluster_evs_evict_list
 Value:
 --
 Counter: cluster_manticore_cluster_evs_repl_latency
-Value: #!/[0-9/]+/!#
+Value: #!/[0-9a-z-.\/]+/!#
 --
 Counter: cluster_manticore_cluster_evs_state
 Value: OPERATIONAL
