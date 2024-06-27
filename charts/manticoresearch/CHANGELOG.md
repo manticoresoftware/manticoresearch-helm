@@ -1,4 +1,3 @@
-### 6.3.0
+### 6.3.2
 
-* Update manticore to 6.3.0
-* Remove `log=/dev/stdout` from default configs  
+* Update manticore to 6.3.2
