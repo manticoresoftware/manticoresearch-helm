@@ -1,4 +1,4 @@
-FROM manticoresearch/manticore:6.3.2
+FROM manticoresearch/manticore:6.3.4
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && apt --fix-broken install -y && \
 apt-get update && apt -y install software-properties-common && add-apt-repository -y ppa:ondrej/php && apt-get update && \
@@ -16,4 +16,3 @@ chown -R www-data /var/www/localhost/ /etc/manticoresearch/manticore.conf /dev/s
 WORKDIR /var/www/localhost/
 
 CMD ["./starter.sh"]
-

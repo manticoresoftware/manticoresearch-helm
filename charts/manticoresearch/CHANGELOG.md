@@ -1,3 +1,3 @@
-### 6.3.2
+### 6.3.4
 
-* Update manticore to 6.3.2
+* Update Manticore Search to 6.3.4
