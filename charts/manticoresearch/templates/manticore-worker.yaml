@@ -86,17 +86,25 @@ spec:
           - name: QUORUM_RUN_INTERVAL
             value: {{ .Values.worker.quorumCheckInterval | quote }}
           {{- end }}
-        livenessProbe:
+        readinessProbe:
+          {{- if .Values.worker.readinessProbe.enabled }}
+          {{- include "manticore-helm.render" (dict "value" (omit .Values.worker.readinessProbe "enabled") "context" $) | nindent 8 }}
           tcpSocket:
             port: {{ .Values.worker.service.ql.port }}
-          initialDelaySeconds: 5
-          periodSeconds: 3
+          {{- end }}
+        livenessProbe:
+          {{- if .Values.worker.livenessProbe.enabled }}
+          {{- include "manticore-helm.render" (dict "value" (omit .Values.worker.livenessProbe "enabled") "context" $) | nindent 8 }}
+          tcpSocket:
+            port: {{ .Values.worker.service.ql.port }}
+          {{- end }}
         {{- if semverCompare ">=1.20-0" $.Capabilities.KubeVersion.GitVersion }}
         startupProbe:
+          {{- if .Values.worker.startupProbe.enabled }}
+          {{- include "manticore-helm.render" (dict "value" (omit .Values.worker.startupProbe "enabled") "context" $) | nindent 8 }}
           tcpSocket:
             port: {{ .Values.worker.service.ql.port }}
-          failureThreshold: 30
-          periodSeconds: 10
+          {{- end }}
         {{- end }}
         volumeMounts:
           - name: data

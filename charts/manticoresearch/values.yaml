@@ -61,6 +61,27 @@ balancer:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  livenessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 5
+    periodSeconds: 3
+    successThreshold: 1
+    timeoutSeconds: 1
+  readinessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 5
+    periodSeconds: 3
+    successThreshold: 1
+    timeoutSeconds: 1
+  startupProbe:
+    enabled: true
+    failureThreshold: 30
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
 
 worker:
   replicaCount: 3
@@ -136,6 +157,27 @@ worker:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  livenessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 5
+    periodSeconds: 3
+    successThreshold: 1
+    timeoutSeconds: 1
+  readinessProbe:
+    enabled: false
+    failureThreshold: 3
+    initialDelaySeconds: 5
+    periodSeconds: 3
+    successThreshold: 1
+    timeoutSeconds: 1
+  startupProbe:
+    enabled: true
+    failureThreshold: 30
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
 
 exporter:
   enabled: false

@@ -91,3 +91,12 @@ but Helm 2.9 and 2.10 does not support it, so we need to implement this if-else 
     {{- end -}}
 {{- end -}}
 {{- end -}}
+
+
+{{/*
+Substitute key for values to template
+*/}}
+{{- define "manticore-helm.render" -}}
+{{- $value := .value | toYaml | trim }}
+{{ $value | indent 2 }}
+{{- end -}}
