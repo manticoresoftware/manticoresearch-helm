@@ -1,3 +1,3 @@
-### 6.3.6
+### 6.3.6.0
 
-* Update manticore to 6.3.6
+* Expose probes to values.yaml
