@@ -102,11 +102,8 @@ spec:
         startupProbe:
           {{- if .Values.worker.startupProbe.enabled }}
           {{- include "manticore-helm.render" (dict "value" (omit .Values.worker.startupProbe "enabled") "context" $) | nindent 8 }}
-          exec:
-            command:
-              - /bin/bash
-              - -c
-              - if /usr/bin/mysql -e "show status like '%cluster_node_state'" | grep -q synced ; then exit 0; else exit 1; fi
+          tcpSocket:
+            port: {{ .Values.worker.service.ql.port }}
           {{- end }}
         {{- end }}
         volumeMounts:
