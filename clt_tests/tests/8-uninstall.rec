@@ -1,0 +1,17 @@
+––– block: ./init/init –––
+––– input –––
+helm uninstall my-helm
+––– output –––
+
+––– input –––
+kubectl get po
+––– output –––
+––– input –––
+kubectl get svc
+––– output –––
+––– input –––
+kubectl get configmaps
+––– output –––
+––– input –––
+kubectl get pvc
+––– output –––
