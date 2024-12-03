@@ -4,8 +4,7 @@ kubectl --namespace {{ .Release.Namespace }} get po
 
 2) Forward worker port to your local machine:
 
-export WORKER_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "manticoresearch.name" . }},app.kubernetes.io/instance={{ .Release.Name }},app.kubernetes.io/component=worker" -o jsonpath="{.items[0].metadata.name}")
-kubectl --namespace {{ .Release.Namespace }} port-forward $WORKER_NAME 7306:{{ .Values.worker.service.ql.port }}
+kubectl --namespace {{ .Release.Namespace }} port-forward service/{{ include "manticoresearch.fullname" . }}-worker-svc 7306:{{ .Values.worker.service.ql.port }}
 
 3) Connect to the worker:
 
@@ -25,8 +24,7 @@ INSERT INTO {{ .Values.worker.clusterName }}_cluster:idx (title) VALUES ('dog is
 
 7) Forward worker port to your local machine:
 
-export BALANCER_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "manticoresearch.name" . }},app.kubernetes.io/instance={{ .Release.Name }},name={{ include "manticoresearch.fullname" . }}-balancer" -o jsonpath="{.items[0].metadata.name}")
-kubectl --namespace {{ .Release.Namespace }} port-forward $BALANCER_NAME 6306:{{ .Values.balancer.service.ql.port }}
+kubectl --namespace {{ .Release.Namespace }} port-forward service/{{ include "manticoresearch.fullname" . }}-balancer-svc 6306:{{ .Values.balancer.service.ql.port }}
 
 8) Search through the balancer:
 

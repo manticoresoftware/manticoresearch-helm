@@ -12,7 +12,7 @@ spec:
     matchLabels:
       app.kubernetes.io/component: worker
       {{- include "manticoresearch.selectorLabels" . | nindent 6 }}
-  serviceName: {{ include "manticoresearch.fullname" . }}-worker-svc
+  serviceName: {{ include "manticoresearch.fullname" . }}-worker-replication-svc
   template:
     metadata:
       {{- if or .Values.exporter.enabled .Values.podAnnotations }}
@@ -71,7 +71,7 @@ spec:
           - name: INSTANCE_LABEL
             value: {{ .Release.Name }}
           - name: WORKER_SERVICE
-            value: {{ include "manticoresearch.fullname" . }}-worker-svc
+            value: {{ include "manticoresearch.fullname" . }}-worker-replication-svc
           - name: NAMESPACE
             valueFrom:
               fieldRef:
@@ -89,8 +89,12 @@ spec:
         readinessProbe:
           {{- if .Values.worker.readinessProbe.enabled }}
           {{- include "manticore-helm.render" (dict "value" (omit .Values.worker.readinessProbe "enabled") "context" $) | nindent 8 }}
-          tcpSocket:
-            port: {{ .Values.worker.service.ql.port }}
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - |
+                if /usr/bin/mysql -e "show status;" | grep cluster_node_state | grep -q synced ; then exit 0; else exit 1; fi
           {{- end }}
         livenessProbe:
           {{- if .Values.worker.livenessProbe.enabled }}
@@ -102,8 +106,12 @@ spec:
         startupProbe:
           {{- if .Values.worker.startupProbe.enabled }}
           {{- include "manticore-helm.render" (dict "value" (omit .Values.worker.startupProbe "enabled") "context" $) | nindent 8 }}
-          tcpSocket:
-            port: {{ .Values.worker.service.ql.port }}
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - |
+                if /usr/bin/mysql -e "show status;" | grep cluster_node_state | grep -q synced ; then exit 0; else exit 1; fi
           {{- end }}
         {{- end }}
         volumeMounts:
