@@ -8,6 +8,7 @@ $variables = [
     'workerService' => ['env' => 'WORKER_SERVICE', 'type' => 'string'],
     'replicationMode' => ['env' => 'REPLICATION_MODE', 'type' => 'string'],
     'notAddTablesAutomatically' => ['env' => 'AUTO_ADD_TABLES_IN_CLUSTER', 'type' => 'bool'],
+    'isBalancerEnabled' => ['env' => 'IS_BALANCER_ENABLED', 'type' => 'bool'],
     'logLevel' => ['env' => 'LOG_LEVEL', 'type' => 'level'],
 ];
 

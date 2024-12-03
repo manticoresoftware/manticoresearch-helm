@@ -22,6 +22,7 @@ ALTER CLUSTER {{ .Values.worker.clusterName }}_cluster ADD idx;
 
 INSERT INTO {{ .Values.worker.clusterName }}_cluster:idx (title) VALUES ('dog is brown'), ('mouse is small');
 
+{{- if .Values.balancer.enabled }}
 7) Forward worker port to your local machine:
 
 kubectl --namespace {{ .Release.Namespace }} port-forward service/{{ include "manticoresearch.fullname" . }}-balancer-svc 6306:{{ .Values.balancer.service.ql.port }}
@@ -32,4 +33,12 @@ mysql -h0 -P6306 -e "SELECT * FROM idx WHERE match('dog')"
 
 9) Scale the cluster:
 
+{{- else }}
+7) Search through the worker:
+
+mysql -h0 -P7306 -e "SELECT * FROM idx WHERE match('dog')"
+
+8) Scale the cluster:
+
+{{- end }}
 kubectl scale statefulsets manticore-manticoresearch-worker -n {{ .Release.Namespace }} --replicas=5

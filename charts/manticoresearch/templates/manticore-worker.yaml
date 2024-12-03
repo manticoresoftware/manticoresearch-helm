@@ -56,6 +56,8 @@ spec:
           {{- end }}
           - name: AUTO_ADD_TABLES_IN_CLUSTER
             value: {{ .Values.worker.autoAddTablesInCluster | quote }}
+          - name: IS_BALANCER_ENABLED
+            value: {{ .Values.balancer.enabled | quote }}
           - name: CONFIGMAP_PATH
             value: {{ .Values.worker.config.path }}
           - name: MANTICORE_PORT
