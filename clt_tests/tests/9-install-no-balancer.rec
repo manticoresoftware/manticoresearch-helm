@@ -1,6 +1,6 @@
 ––– block: ./init/init –––
 ––– input –––
-helm install my-helm -v 'balancer.enabled=false' ./charts/manticoresearch
+helm install my-helm --set balancer.enabled=false ./charts/manticoresearch
 ––– output –––
 ––– output –––
 WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /tmp/output/kubeconfig-latest.yaml
