@@ -26,6 +26,7 @@ $notAddTablesAutomatically = null;
 $replicationMode = null;
 $labels = null;
 $logLevel = null;
+$isBalancerEnabled = true;
 include("env_reader.php");
 
 Logger::setHandler(new StreamHandler('php://stdout', $logLevel));
@@ -157,7 +158,9 @@ if ($count <= $min) {
         }
         if (empty($joinHost)) {
             Logger::info("No host to join");
-            notifyBalancers($api, $labels);
+            if ($isBalancerEnabled){
+                notifyBalancers($api, $labels);
+            }
             exit(1);
         }
 
@@ -194,7 +197,9 @@ if ($count <= $min) {
 
     if (empty($joinHost)) {
         Logger::info("No host to join");
-        notifyBalancers($api, $labels);
+        if ($isBalancerEnabled){
+            notifyBalancers($api, $labels);
+        }
         exit(1);
     }
 
@@ -214,5 +219,7 @@ if ($count <= $min) {
     $manticore->joinCluster($joinHost.'.'.$workerService);
 }
 
-notifyBalancers($api, $labels);
+if ($isBalancerEnabled){
+    notifyBalancers($api, $labels);
+}
 ?>

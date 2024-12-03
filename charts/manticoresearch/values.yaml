@@ -10,6 +10,7 @@ global:
   manticoresearch: {}
 
 balancer:
+  enabled: true
   replicaCount: 1
   # priorityClassName: ""
   runInterval: 5

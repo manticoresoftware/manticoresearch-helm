@@ -1,3 +1,4 @@
+{{- if .Values.balancer.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -70,7 +71,7 @@ spec:
           - name: WORKER_PORT
             value: {{ .Values.worker.service.ql.port | quote }}
           - name: WORKER_SERVICE
-            value: {{ include "manticoresearch.fullname" . }}-worker-svc
+            value: {{ include "manticoresearch.fullname" . }}-worker-replication-svc
         readinessProbe:
           {{- if .Values.balancer.readinessProbe.enabled }}
           {{- include "manticore-helm.render" (dict "value" (omit .Values.balancer.readinessProbe "enabled") "context" $) | nindent 8 }}
@@ -135,3 +136,4 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- end }}

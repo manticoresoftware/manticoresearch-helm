@@ -1,3 +1,5 @@
-### 6.3.6.1
+### 6.3.6.2
 
-* Expose probes to values.yaml
+* Disable balancer from values.yaml
+* Check cluster_node_state on startup and in Readiness Probes
+* Improve tests

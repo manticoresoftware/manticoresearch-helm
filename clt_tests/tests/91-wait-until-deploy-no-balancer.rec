@@ -1,0 +1,11 @@
+––– block: ./init/init –––
+––– input –––
+timeout 180 bash -c 'while [[ ! $(kubectl get po 2>&1 | grep "Running" | wc -l) -eq 3 ]]; do sleep 1; done' && echo "OK" || echo "Failed waiting until pods was deployed"
+––– output –––
+OK
+––– input –––
+kubectl get po | grep worker | cut -d " " -f1
+––– output –––
+my-helm-manticoresearch-worker-0
+my-helm-manticoresearch-worker-1
+my-helm-manticoresearch-worker-2
