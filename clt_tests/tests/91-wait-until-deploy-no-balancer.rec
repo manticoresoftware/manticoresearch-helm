@@ -4,6 +4,8 @@ timeout 180 bash -c 'while [[ ! $(kubectl get po  | grep "Running" | wc -l) -eq 
 ––– output –––
 OK
 ––– input –––
-kubectl get po -o jsonpath="{.items[*].metadata.name}"
+kubectl get po | grep worker | cut -d " " -f1
 ––– output –––
-my-helm-manticoresearch-worker-0 my-helm-manticoresearch-worker-1 my-helm-manticoresearch-worker-2root@d2c478c91e21
+my-helm-manticoresearch-worker-0
+my-helm-manticoresearch-worker-1
+my-helm-manticoresearch-worker-2
