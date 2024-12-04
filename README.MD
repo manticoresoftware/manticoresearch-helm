@@ -1,190 +1,213 @@
 # Manticore Search Helm Chart
 
-Version: 6.3.6.2
+**Version:** 6.3.6.2
 
-The helm chart is to be used to run Manticore Search in Kubernetes. It enables high availability by providing out-of-the-box replication and higher read throughput by automatic load balancing.
+The Manticore Search Helm Chart is designed to deploy and manage Manticore Search in Kubernetes. It ensures high availability with out-of-the-box replication and improves read throughput through automatic load balancing.
 
-### What this helm chart does
-* Deploys a StatefulSet with one or multiple Manticore Search pods (aka workers) that constitute a replication cluster.
-* Rolls out a Deployment with one or multiple (you can configure it in `values.yaml`) Manticore Search balancer instance.
-* Deploys needed services.
-* Provides Prometheus exporter for the running instances of Manticore Search.
-
-### What you can do with the helm chart
-* You can create a table on any worker pod, add it to the cluster and it will be replicated to all the other pods.
-* You can scale the workers StatefulSet up and a new worker will be set up automatically to become a new replica in the cluster.
-* You can scale the workers StatefulSet down and the cluster will forget about the node.
-* If a worker is back up after a downtime it will rejoin the cluster and will be synced up to the active workers.
-* When you make a search request to the balancer it will route it to one of the workers.
-* [Data compaction](https://manual.manticoresearch.com/Securing_and_compacting_an_index/Compacting_an_index#Compacting-an-index) is done automatically.
+---
 
 
-# Installation
+## Features
 
-## Installation from Helm repo
+### What This Helm Chart Does
+- Deploys a StatefulSet with one or multiple Manticore Search pods (workers) to form a replication cluster.
+- Rolls out a Deployment with one or multiple Manticore Search load balancer instances (configurable in `values.yaml`).
+- Deploys essential Kubernetes services.
+- Provides a Prometheus exporter for monitoring running Manticore Search instances.
+
+### Capabilities
+- **Cluster Replication:** Create a table on any worker pod, add it to the cluster, and it replicates to all other pods.
+- **Scaling:** Scale the workers' StatefulSet up or down, automatically adding or removing replicas in the cluster.
+- **Resilience:** Workers that recover from downtime automatically sync with the active workers in the cluster.
+- **Load Balancing:** Search requests made to the balancer are routed to one of the workers.
+- **Automatic Data Compaction:** [Index compaction](https://manual.manticoresearch.com/Securing_and_compacting_an_index/Compacting_an_index#Compacting-an-index) is handled automatically.
+
+---
+
+## Installation
+
+### Installation from Helm Repository
 ```bash
 helm repo add manticoresearch https://helm.manticoresearch.com
-# update values.yaml if needed, see below
+# Update values.yaml if needed
 helm install manticore -n manticore --create-namespace manticoresearch/manticoresearch
 ```
 
-## Installation from GitHub (dev version)
+### Installation from GitHub (Development Version)
 ```bash
 git clone https://github.com/manticoresoftware/manticoresearch-helm
 cd manticoresearch-helm/charts/manticoresearch/
-# update values.yaml if needed, see below
+# Update values.yaml if needed
 helm install manticore -n manticore --create-namespace .
 ```
-
-If you want to install a release version use `git checkout` <release tag> or download an archive from https://github.com/manticoresoftware/manticoresearch-helm/releases .
-
-# Quick start guide:
-
-1) Export namespace name to variable for your convenience:
-   
+For a specific release version, use:
 ```bash
-export NAMESPACE=manticore
+git checkout <release-tag>
 ```
+or download an archive from [GitHub releases](https://github.com/manticoresoftware/manticoresearch-helm/releases).
 
-### Wait until it starts
-Wait until all pods are moved to running state:
+---
 
-```bash
-kubectl --namespace $NAMESPACE get po
-```
+## Quick Start Guide
 
-### Forward worker's port
-Forward worker's port to your local machine:
-```bash
-export WORKER_NAME=$(kubectl get pods --namespace $NAMESPACE \
--l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=manticore,app.kubernetes.io/component=worker" \
--o jsonpath="{.items[0].metadata.name}")
-```
+1. **Export Namespace and Chart Name for Convenience**
+   ```bash
+   export NAMESPACE=manticore
+   export CHART_NAME=helm
+   ```
 
-| SQL | HTTP | 
-|---|---|
-|`kubectl --namespace $NAMESPACE port-forward $WORKER_NAME 7306:9306` | `kubectl --namespace $NAMESPACE port-forward $WORKER_NAME 7308:9308` | 
+2. **Wait for All Pods to Start**
+   ```bash
+   kubectl --namespace $NAMESPACE get po
+   ```
 
-### Connect to the worker
+3. **Forward Ports**
 
-| SQL | HTTP | 
-|---|---|
-|`mysql -h0 -P7306`| No connection required since HTTP is a stateless protocol |
+    If you need to expose an HTTP port, you should use **9308** instead of **9306**.
 
-### Create your first table:
+    - **Worker Ports:**
+      ```bash
+      kubectl --namespace $NAMESPACE port-forward service/${CHART_NAME}-manticoresearch-worker-svc 7306:9306
+      ```
+    - **Load Balancer Ports:**
+      ```bash
+      kubectl --namespace $NAMESPACE port-forward service/${CHART_NAME}-manticoresearch-balancer-svc 6306:9306
+      ```
+      
 
-| SQL | HTTP | 
-|---|---|
-|`CREATE TABLE idx(title text);`|`curl -X "POST" localhost:7308/sql -d "mode=raw&query=create table idx(title text)"`|
+4. **Connect to the Worker**
+    - **SQL:**
+      ```bash
+      mysql -h0 -P7306
+      ```
+    - **HTTP:** HTTP is stateless, so no persistent connection setup is required.
 
-### Add table to cluster:
+5. **Create Your First Table**
+    - **SQL:**
+      ```sql
+      CREATE TABLE idx(title text);
+      ```
+    - **HTTP:**
+      ```bash
+      curl -X "POST" localhost:7308/sql -d "mode=raw&query=create table idx(title text)"
+      ```
 
-| SQL | HTTP | 
-|---|---|
-|`ALTER CLUSTER manticore_cluster ADD idx;`|`curl -X "POST" localhost:7308/sql -d "mode=raw&query=alter cluster manticore_cluster add idx"`|
+6. **Add the Table to the Cluster**
+    - **SQL:**
+      ```sql
+      ALTER CLUSTER manticore_cluster ADD idx;
+      ```
+    - **HTTP:**
+      ```bash
+      curl -X "POST" localhost:7308/sql -d "mode=raw&query=alter cluster manticore_cluster add idx"
+      ```
 
-### Add some data to your table:
+7. **Insert Data into the Table**
+    - **SQL:**
+      ```sql
+      INSERT INTO manticore_cluster:idx (title) VALUES ('dog is brown'), ('mouse is small');
+      ```
+    - **HTTP:**
+      ```bash
+      curl -X "POST" -H "Content-Type: application/x-ndjson" localhost:7308/bulk -d '
+      {"insert": {"cluster":"manticore_cluster", "index" : "idx", "doc": { "title" : "dog is brown" } } }
+      {"insert": {"cluster":"manticore_cluster", "index" : "idx", "doc": { "title" : "mouse is small" } } }'
+      ```
 
-**SQL**
-```sql
-INSERT INTO manticore_cluster:idx (title) VALUES ('dog is brown'), ('mouse is small');
-```
+8. **Search Through the Balancer**
+    - **SQL:**
+      ```bash
+      mysql -h0 -P6306 -e "SELECT * FROM idx WHERE match('dog')"
+      ```
+    - **HTTP:**
+      ```bash
+      curl -X "POST" localhost:6308/search -d '{"index" : "idx", "query": { "match": { "_all": "dog" } } }'
+      ```
 
-**HTTP**
-```bash
-curl -X "POST" -H "Content-Type: application/x-ndjson" localhost:7308/bulk -d '
+9. **Scale the Cluster**
+   ```bash
+   kubectl scale statefulsets manticore-manticoresearch-worker -n manticore --replicas=5
+   ```
 
-{"insert": {"cluster":"manticore_cluster", "index" : "idx", "doc": { "title" : "dog is brown" } } }
-{"insert": {"cluster":"manticore_cluster", "index" : "idx", "doc": { "title" : "mouse is small" } } }'
-```
+---
 
-### Forward load balancer's port to your local machine:
+## Q&A
 
-```bash
-export NAMESPACE=manticore
-export BALANCER_NAME=$(kubectl get pods --namespace $NAMESPACE \
--l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=manticore,name=manticore-manticoresearch-balancer" \
--o jsonpath="{.items[0].metadata.name}")
-```
+### Where is the Data Stored?
+Data is stored in PersistentVolumeClaims (PVCs). Each worker pod has its own volume. By default, the PVC size is 1Gi (configurable via `worker.volume.size`).
 
-| SQL | HTTP | 
-|---|---|
-|`kubectl --namespace $NAMESPACE port-forward $BALANCER_NAME 6306:9306`|`kubectl --namespace $NAMESPACE port-forward $BALANCER_NAME 6308:9308`|
-
-### Search through the balancer:
-
-| SQL | HTTP | 
-|---|---|
-|`mysql -h0 -P6306 -e "SELECT * FROM idx WHERE match('dog')"`|`curl -X "POST" localhost:6308/search -d '{"index" : "idx", "query": { "match": { "_all": "dog" } } }'`|
-
-### Scale the cluster:
-
-```
-kubectl scale statefulsets manticore-manticoresearch-worker -n manticore --replicas=5
-```
-
-## Q&A:
-#### Where is the data actually stored?
-In volumes. One volume per worker. The PVC is by default 1 gigabyte (see variable `worker.volume.size`)
-
-#### How is high availability achieved?
-* synchronous master-master replication
-* data remains in volume even after the worker is stopped/deleted
-
-#### If a worker pod goes down, is its data lost?
-The volume associated with the work doesn't get deleted.
+### How is High Availability Achieved?
+- **Replication:** Synchronous master-master replication ensures data durability.
+- **Data Persistence:** Worker volumes retain data even if pods are deleted.
 
 #### What happens when a worker pod goes back up?
 It reuses the data existing before it went down. Then it tries to join the cluster and if the data is fresh enough it will catch up by applying recent changes occurred in the cluster, otherwise it will do full sync like if it was a completely new worker. If it can't find the cluster at all it will try to join the oldest node or node 0 (see below about replication modes).
 
-#### How do I delete data?
-Clean up the volumes manually or delete the whole namespace.
+### How Do I Delete Data?
+You can truncate or delete tables, manually clean volumes, or delete the entire namespace.
 
-#### What happens when a new worker pod comes up?
-* The Manticore Search worker pod starts running searchd as the main process
-* A side process running in the pod checks for active siblings
-* If it finds some, it joins to the oldest one
+### What Happens When a New Worker Pod is Added?
+- The new pod starts and runs a side process to check for active nodes.
+- It joins the oldest node or the cluster's primary worker.
+- The pod waits until it fully syncs before becoming operational.
 
 #### What happens if I uninstall the helm chart?
 The volumes will still retain the data and if you install the chart again to the same namespace you'll be able to access it.
 
-### How does the balancer work?
-Each 5 seconds (see `balancer.runInterval`) the balancer:
-* Checks tables on the 1st active worker.
-* If it differs from its current state it catches up by reloading itself with a new tables configuration.
+## How Does the Balancer Work?
 
-When a worker starts or stops it also sends a signal to the balancer, so it doesn't have to wait 5 seconds.
+The balancer allows you to [achieve high availability](https://manual.manticoresearch.com/dev/Creating_a_cluster/Remote_nodes/Load_balancing#Load-balancing) in your replication cluster using `index_ha_strategy: nodeads`.
 
-To increase high availability (HA) read operations, you can increment the balancer replica count. For this reason, you have the `balancer.replicaCount` parameter in `values.json`.
+If `balancer.enabled` is set to `true` (default), the balancer performs the following actions every 5 seconds (configurable via `balancer.runInterval`):
+- Checks the tables on the first active worker.
+- If the configuration differs from its current state, the balancer reloads itself with the updated tables configuration.
 
-### How does auto OPTIMIZE work?
-To enable automatic index compaction you need to update `values.yaml` and set `optimize.enabled = true`. `optimize.interval` controls how often to attempt disk chunks merging.
+When a worker starts or stops, it sends a signal to the balancer, so the balancer doesn’t need to wait for the 5-second interval.
 
-Automatic index compaction follows this algorithm:
-1) Only one compaction session (OPTIMIZE) at once is allowed, so we check if previous OPTIMIZE finished or never started.
-2) If all is ok we get info about pods labeled as `component=worker + instance` and attempt OPTIMIZE on each one by one.
-3) We pick the index which makes sense to compact next.
-4) We get number of CPU cores to calculate the optimial chunks count to leave after the compaction:
-  a) either from the pod's limits
-  b) of it's not set - from the host
-5) And run OPTIMIZE with `cutoff=<cpuCores * values.optimize.coefficient>`
+To increase high availability for read operations, you can increase the number of balancer replicas using the `balancer.replicaCount` parameter in `values.yaml`.
+
+## How Does Auto OPTIMIZE Work?
+
+To enable automatic index compaction, update `values.yaml` and set `optimize.enabled = true`. The `optimize.interval` parameter controls how often disk chunk merging attempts occur.
+
+The auto OPTIMIZE process follows this algorithm:
+1. Only one compaction session (OPTIMIZE) is allowed at a time. It checks if the previous OPTIMIZE session has finished or never started.
+2. If all conditions are met, it retrieves information about pods labeled as `component=worker + instance` and performs OPTIMIZE on each pod sequentially.
+3. Selects the index that benefits the most from compaction.
+4. Determines the number of CPU cores available to calculate the optimal chunk count to retain after compaction:
+   - Uses pod’s CPU limits if set.
+   - Defaults to host CPU cores if limits are not set.
+5. Executes OPTIMIZE with `cutoff=<cpuCores * values.optimize.coefficient>`.
 
 ### How does replication work?
 The replication script affects only worker pods. Each worker does the following every time it starts:
 ![Replication workflow](replication.jpg)
 
-### What's the difference between the replication modes?
+### What's the Difference Between the Replication Modes?
 
-Manticore Search Helm chart can work in one of the two replication modes: master-to-master and master-to-slave. The modes control behaviour of a worker pod which is being added to a cluster or an existing worker which restarts and for some reason can't connect to the cluster.
+The Manticore Search Helm chart supports two replication modes: **master-to-master** and **master-to-slave**. These modes determine how a worker pod behaves when it joins a cluster or reconnects after being disconnected.
 
-#### Master to master replication mode
-In this mode a worker pod connects to the oldest node. Write queries are to be made via service and are load balanced among all the workers, i.e. **writes are highly-available**. In case of a crash the oldest worker will become a base worker for others. This mode is recommended in most cases, but in case of a full shutdown and `quorumRecovery` enabled it may cause data loss if there were writes to the cluster while the workers were being stopped. Imagine, worker 0 stops, but we keep writing to worker 1, then it stops as well, then worer 2 stops too, then all of them come back up starting from worker 0 and if we then connect to the oldest worker (0) on workers 1 and 2 we'll lose the writes landed on worker 1.
+#### Master-to-Master Replication Mode
 
-#### Master to slave replication mode
-In this mode all writes are to be made to worker 0. All other workers connect to it on start if they lose the cluster info. In case worker 0 is down no writes are accepted any more, i.e. **there's no highly available writes**, but since we know that worker 0 is the most advanced we can be sure that we won't lose any data during failover. 
+In this mode, a worker pod connects to the oldest node in the cluster. Write queries are routed through the service and load-balanced across all workers, providing **high availability for writes**.
 
-### What is `quorumRecovery`?
-If a cluster loses more than a half of nodes it means it's lost the quorum and writes are blocked until it's recovered. If you set `quorumRecovery: true` Manticore will try to recover the quorum automatically by reinitializing the cluster from the oldest worker or worker 0 depending on the replication mode:
+- **Advantages:** This mode is recommended for most use cases as it ensures that writes are distributed among all active nodes.
+- **Potential Risk:** In scenarios involving a complete cluster shutdown and with `quorumRecovery` enabled, data loss can occur if writes are made to different workers during downtime. For example, if worker 0 stops but writes continue to worker 1, and then worker 1 stops while writes are directed to worker 2, restarting the cluster from worker 0 may result in the loss of the writes made to workers 1 and 2.
+
+#### Master-to-Slave Replication Mode
+
+In this mode, all writes are directed to worker 0. Other workers connect to worker 0 if they lose cluster information.
+
+- **Advantages:** This mode guarantees data consistency since worker 0 always holds the most up-to-date data.
+- **Limitations:** **Writes are not highly available.** If worker 0 goes down, no writes can be processed until it is restored
+
+Note: This mode is not available if the Manticore Load Balancer (LB) is disabled.
+
+### What Is `quorumRecovery`?
+
+`quorumRecovery` addresses scenarios where a cluster loses a majority of its nodes, leading to a loss of quorum and blocking writes.
+
+- When `quorumRecovery: true` is set, Manticore automatically attempts to recover the quorum by reinitializing the cluster from the oldest worker or worker 0, depending on the replication mode.
 
 #### Master to master quorum recovery
 ![Master to Master quorum recovery scheme](m2m_quorum.jpg)
@@ -192,33 +215,47 @@ If a cluster loses more than a half of nodes it means it's lost the quorum and w
 #### Master to slave quorum recovery
 ![Master to slave quorum recovery scheme](m2s_quorum.jpg)
 
-## Making queries to the cluster
+## Making Queries to the Cluster
+
+By default, read and write operations are separated to achieve additive high availability (HA) using the built-in ManticoreSearch [Load Balancing](https://manual.manticoresearch.com/dev/Creating_a_cluster/Remote_nodes/Load_balancing#Load-balancing).
+
+If this behavior is unnecessary or having separate entry points for reads and writes is inconvenient, you can disable it by setting `balancer.enabled` to `false` in `values.yaml`. In this case, a single entry point will handle all requests:
+- MySQL protocol: `{your-chart-name}-manticoresearch-worker-svc.manticore.svc.cluster.local:9306`
+- HTTP: `{your-chart-name}-manticoresearch-worker-svc.manticore.svc.cluster.local:9308`
+
+Below is an explanation of how to interact with the cluster when **ManticoreSearch Load Balancer (LB)** is enabled:
+
 ### Writes
-Write queries (INSERT/UPDATE/DELETE/REPLACE/TRUNCATE/ALTER) are supposed to be made to the worker pods (either of them). From inside k8s you can connect to:
-##### How to connect:
-* via mysql - `manticore-manticoresearch-worker-svc.manticore.svc.cluster.local:9306`
-* via http - `manticore-manticoresearch-worker-svc.manticore.svc.cluster.local:9308`
+
+Write queries (`INSERT`, `UPDATE`, `DELETE`, `REPLACE`, `TRUNCATE`, `ALTER`) should be sent directly to the worker pods. These queries can be made to any worker pod.
+
+#### How to Connect:
+- **MySQL:** `{your-chart-name}-manticoresearch-worker-svc.manticore.svc.cluster.local:9306`
+- **HTTP:** `{your-chart-name}-manticoresearch-worker-svc.manticore.svc.cluster.local:9308`
 
 ### Reads
-Read queries are supposed to be made to the balancer pod. It won't fail if you run a SELECT on a worker pod, but it won't be routed to the most appropriate worker in this case.
 
-##### How to connect:
-* via mysql - `manticore-manticoresearch-balancer-svc.manticore.svc.cluster.local:9306`
-* via http - `manticore-manticoresearch-balancer-svc.manticore.svc.cluster.local:9308`
+Read queries should be routed through the balancer deployment for optimal distribution across worker pods. While running a `SELECT` query directly on a worker pod is possible, it will not leverage load balancing or routing to the most appropriate worker.
 
-where:
-* `manticore-` - the chart name you specified in `helm install`
-* `manticoresearch-worker-svc.` - worker's service name
-* `manticore.` - namespace where the helm chart is installed
-* `svc.cluster.local` - means you are connecting to a service
+#### How to Connect:
+- **MySQL:** `{your-chart-name}-manticoresearch-balancer-svc.manticore.svc.cluster.local:9306`
+- **HTTP:** `{your-chart-name}-manticoresearch-balancer-svc.manticore.svc.cluster.local:9308`
 
-Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/).
+### Explanation of Connection Parameters:
 
+- **`{your-chart-name}`**: The chart name specified during `helm install`.
+- **`manticoresearch-worker-svc.`**: The worker service name.
+- **`manticore.`**: The namespace where the Helm chart is installed.
+- **`svc.cluster.local`**: The default domain for Kubernetes services.
 
-# Variables
+For more details, refer to the [Kubernetes documentation](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/).
+---
+
+## Variables
 
 | Variable | Description                                                                                                                | Default                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 |---|----------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| balancer.enabled | Enable/disable the load balancer | true |
 | balancer.replicaCount | Default balancers count (number of replicas)                                                                               | 1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | balancer.runInterval | How often to check for schema changes on workers, seconds                                                                  | 5                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | balancer.config.content | Balancer config (only section `searchd`)                                                                                   | searchd<br>      {<br>       listen = /var/run/mysqld/mysqld.sock:mysql<br>        listen = 9306:mysql<br>        listen = 9308:http<br>        log = /dev/stdout<br>        query_log = /dev/stdout<br>        query_log_format = sphinxql<br>        pid_file = /var/run/manticore/searchd.pid<br>        binlog_path = /var/lib/manticore/data<br>      }                                                                                                                                                                                                                        |
@@ -230,9 +267,9 @@ Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/ser
 | worker.config.content | Worker config (only section `searchd`). <br>**Important**: you must always pass `$hostname` to the config for proper functioning | searchd<br>      {<br>        listen = /var/run/mysqld/mysqld.sock:mysql<br>        listen = 9306:mysql<br>        listen = 9308:http<br>        listen = 9301:mysql_vip<br>        listen = $hostname:9312<br>        listen = $hostname:9315-9415:replication<br>        node_address = $hostname<br>        binlog_path = /var/lib/manticore<br>        log = /dev/stdout<br>        query_log = /dev/stdout<br>        query_log_format = sphinxql<br>        pid_file = /var/run/manticore/searchd.pid<br>        data_dir = /var/lib/manticore<br>        shutdown_timeout = 25s<br>        auto_optimize = 0<br>      } |
 | exporter.enabled | Enable Prometheus exporter pod                                                                                             | false                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 
-#### More Variables
-
+### Additional Variables
 <details>
+<summary>Click to expand</summary>
 
 | Variable                              | Description                                                                                         | Default                                                                                            |
 |---------------------------------------|-----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
@@ -286,7 +323,12 @@ Read more details in [k8s documentation](https://kubernetes.io/docs/concepts/ser
 
 </details>
 
-# Uninstall
+---
 
-* `helm uninstall manticore -n manticore`
-* Delete PVCs manually or the whole namespace.
+## Uninstallation
+To uninstall the Helm chart:
+```bash
+helm uninstall manticore -n manticore
+```
+Delete PVCs manually or delete the entire namespace to remove persistent data.
+
