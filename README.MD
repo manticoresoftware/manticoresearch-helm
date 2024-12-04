@@ -140,7 +140,7 @@ Data is stored in PersistentVolumeClaims (PVCs). Each worker pod has its own vol
 - **Replication:** Synchronous master-master replication ensures data durability.
 - **Data Persistence:** Worker volumes retain data even if pods are deleted.
 
-#### What happens when a worker pod goes back up?
+### What happens when a worker pod goes back up?
 It reuses the data existing before it went down. Then it tries to join the cluster and if the data is fresh enough it will catch up by applying recent changes occurred in the cluster, otherwise it will do full sync like if it was a completely new worker. If it can't find the cluster at all it will try to join the oldest node or node 0 (see below about replication modes).
 
 ### How Do I Delete Data?
@@ -151,22 +151,38 @@ You can truncate or delete tables, manually clean volumes, or delete the entire 
 - It joins the oldest node or the cluster's primary worker.
 - The pod waits until it fully syncs before becoming operational.
 
-#### What happens if I uninstall the helm chart?
+### What happens if I uninstall the helm chart?
 The volumes will still retain the data and if you install the chart again to the same namespace you'll be able to access it.
 
-## How Does the Balancer Work?
+### What Is the Balancer and How Does It Work?
 
-The balancer allows you to [achieve high availability](https://manual.manticoresearch.com/dev/Creating_a_cluster/Remote_nodes/Load_balancing#Load-balancing) in your replication cluster using `index_ha_strategy: nodeads`.
+The balancer in ManticoreSearch is a key component for managing high availability (HA) in a replication cluster. It ensures that read operations are distributed efficiently across available worker pods, while write operations bypass the balancer and are sent directly to the worker pods.
 
-If `balancer.enabled` is set to `true` (default), the balancer performs the following actions every 5 seconds (configurable via `balancer.runInterval`):
-- Checks the tables on the first active worker.
-- If the configuration differs from its current state, the balancer reloads itself with the updated tables configuration.
+#### Key Functions of the Balancer:
+- **Read Operations:** The balancer intelligently routes read queries (`SELECT`) to the most appropriate workers based on their status and availability. This ensures load is distributed evenly across active workers, enhancing cluster efficiency and reliability.
+- **Write Operations:** Writes (`INSERT`, `UPDATE`, etc.) should be manually sent directly to the worker pods, bypassing the balancer.
 
-When a worker starts or stops, it sends a signal to the balancer, so the balancer doesn’t need to wait for the 5-second interval.
+#### How the Balancer Works:
+1. **Dynamic Synchronization:**
+   - If `balancer.enabled` is set to `true` (default), the balancer checks the table configuration on the first active worker every 5 seconds (configurable via the `balancer.runInterval` parameter).
+   - If the configuration differs from its current state, the balancer reloads itself to align with the updated tables.
 
-To increase high availability for read operations, you can increase the number of balancer replicas using the `balancer.replicaCount` parameter in `values.yaml`.
+2. **Event-Driven Updates:**
+   - When a worker starts or stops, it sends a signal to the balancer, prompting immediate synchronization without waiting for the interval.
 
-## How Does Auto OPTIMIZE Work?
+3. **High Availability Strategy:**
+   - The balancer achieves HA by using `index_ha_strategy: nodeads`, ensuring queries are routed only to healthy nodes.
+
+4. **Replica Redundancy:**
+   - To further improve HA for read operations, you can increase the number of balancer replicas by adjusting the `balancer.replicaCount` parameter in `values.yaml`.
+
+#### Configuration Options:
+- **Custom Behavior:** You can customize the balancer’s behavior using its HA strategy (`index_ha_strategy`).
+- **Enhanced Performance:** Scaling the number of balancer replicas improves the cluster’s ability to handle read requests.
+
+For more details, refer to the [Load Balancing documentation](https://manual.manticoresearch.com/dev/Creating_a_cluster/Remote_nodes/Load_balancing#Load-balancing).
+
+### How Does Auto OPTIMIZE Work?
 
 To enable automatic index compaction, update `values.yaml` and set `optimize.enabled = true`. The `optimize.interval` parameter controls how often disk chunk merging attempts occur.
 
