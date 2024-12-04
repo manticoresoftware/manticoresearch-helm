@@ -1,5 +1,3 @@
-### 6.3.6.2
+### 6.3.8.0
 
-* Disable balancer from values.yaml
-* Check cluster_node_state on startup and in Readiness Probes
-* Improve tests
+* Updated Manticore Search to version `6.3.8`
