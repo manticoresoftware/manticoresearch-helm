@@ -1,6 +1,6 @@
 # Manticore Search Helm Chart
 
-**Version:** 6.3.6.2
+**Version:** 6.3.8.0
 
 The Manticore Search Helm Chart is designed to deploy and manage Manticore Search in Kubernetes. It ensures high availability with out-of-the-box replication and improves read throughput through automatic load balancing.
 
@@ -21,7 +21,7 @@ The Manticore Search Helm Chart is designed to deploy and manage Manticore Searc
 - **Resilience:** Workers that recover from downtime automatically sync with the active workers in the cluster.
 - **Load Balancing:** Search requests made to the balancer are routed to one of the workers.
 - **Automatic Data Compaction:** [Index compaction](https://manual.manticoresearch.com/Securing_and_compacting_an_index/Compacting_an_index#Compacting-an-index) is handled automatically.
-
+- **Direct Read/Write Access:** Perform read and write operations directly on any worker pod using Kubernetes’ built-in load balancing capabilities, bypassing the need for the balancer.
 ---
 
 ## Installation
@@ -63,7 +63,9 @@ or download an archive from [GitHub releases](https://github.com/manticoresoftwa
 
 3. **Forward Ports**
 
-    If you need to expose an HTTP port, you should use **9308** instead of **9306**.
+   If you need to expose an HTTP port, you should use **9308** instead of **9306**.
+
+   Ports for SQL/HTTP protocols are configurable via searchd settings. see [Searchd Configuration.](https://manual.manticoresearch.com/dev/Server_settings/Searchd#listen)
 
     - **Worker Ports:**
       ```bash
@@ -80,7 +82,7 @@ or download an archive from [GitHub releases](https://github.com/manticoresoftwa
       ```bash
       mysql -h0 -P7306
       ```
-    - **HTTP:** HTTP is stateless, so no persistent connection setup is required.
+    - **HTTP:** If you plan to use HTTP, you can skip this step.
 
 5. **Create Your First Table**
     - **SQL:**
@@ -89,7 +91,7 @@ or download an archive from [GitHub releases](https://github.com/manticoresoftwa
       ```
     - **HTTP:**
       ```bash
-      curl -X "POST" localhost:7308/sql -d "mode=raw&query=create table idx(title text)"
+      curl 0:7038/cli -d "create table idx(title text)"
       ```
 
 6. **Add the Table to the Cluster**
@@ -99,7 +101,7 @@ or download an archive from [GitHub releases](https://github.com/manticoresoftwa
       ```
     - **HTTP:**
       ```bash
-      curl -X "POST" localhost:7308/sql -d "mode=raw&query=alter cluster manticore_cluster add idx"
+      curl 0:7038/cli -d "alter cluster manticore_cluster add idx"
       ```
 
 7. **Insert Data into the Table**
@@ -109,7 +111,7 @@ or download an archive from [GitHub releases](https://github.com/manticoresoftwa
       ```
     - **HTTP:**
       ```bash
-      curl -X "POST" -H "Content-Type: application/x-ndjson" localhost:7308/bulk -d '
+      curl -H "Content-Type: application/x-ndjson" localhost:7308/bulk -d '
       {"insert": {"cluster":"manticore_cluster", "index" : "idx", "doc": { "title" : "dog is brown" } } }
       {"insert": {"cluster":"manticore_cluster", "index" : "idx", "doc": { "title" : "mouse is small" } } }'
       ```
@@ -139,6 +141,7 @@ Data is stored in PersistentVolumeClaims (PVCs). Each worker pod has its own vol
 ### How is High Availability Achieved?
 - **Replication:** Synchronous master-master replication ensures data durability.
 - **Data Persistence:** Worker volumes retain data even if pods are deleted.
+- **Advanced Recovery Logic:** High availability is further supported by advanced recovery mechanisms, enabling data restoration through [Backup and Restore](https://manual.manticoresearch.com/dev/Securing_and_compacting_a_table/Backup_and_restore#Backup-and-Restore ).
 
 ### What happens when a worker pod goes back up?
 It reuses the data existing before it went down. Then it tries to join the cluster and if the data is fresh enough it will catch up by applying recent changes occurred in the cluster, otherwise it will do full sync like if it was a completely new worker. If it can't find the cluster at all it will try to join the oldest node or node 0 (see below about replication modes).
@@ -156,7 +159,13 @@ The volumes will still retain the data and if you install the chart again to the
 
 ### What Is the Balancer and How Does It Work?
 
-The balancer in ManticoreSearch is a key component for managing high availability (HA) in a replication cluster. It ensures that read operations are distributed efficiently across available worker pods, while write operations bypass the balancer and are sent directly to the worker pods.
+The balancer in Manticore Search is an optional component for managing high availability (HA) in a replication cluster. It distributes read operations efficiently across available worker pods, while write operations bypass the balancer and are sent directly to the worker pods.
+
+**Pros:**
+* Enhances HA by efficiently balancing read requests.
+
+**Cons:**
+* Increases usage complexity, as it requires different entry points for read and write operations.
 
 #### Key Functions of the Balancer:
 - **Read Operations:** The balancer intelligently routes read queries (`SELECT`) to the most appropriate workers based on their status and availability. This ensures load is distributed evenly across active workers, enhancing cluster efficiency and reliability.
