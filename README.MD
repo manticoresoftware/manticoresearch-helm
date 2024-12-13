@@ -243,7 +243,7 @@ Note: This mode is not available if the Manticore Load Balancer (LB) is disabled
 
 ## Making Queries to the Cluster
 
-By default, read and write operations are separated to achieve additive high availability (HA) using the built-in ManticoreSearch [Load Balancing](https://manual.manticoresearch.com/dev/Creating_a_cluster/Remote_nodes/Load_balancing#Load-balancing).
+By default, read and write operations are separated to achieve additive high availability (HA) using the built-in Manticore Search [Load Balancing](https://manual.manticoresearch.com/dev/Creating_a_cluster/Remote_nodes/Load_balancing#Load-balancing).
 
 If this behavior is unnecessary or having separate entry points for reads and writes is inconvenient, you can disable it by setting `balancer.enabled` to `false` in `values.yaml`. In this case, a single entry point will handle all requests:
 - MySQL protocol: `{your-chart-name}-manticoresearch-worker-svc.manticore.svc.cluster.local:9306`
