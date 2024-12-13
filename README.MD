@@ -227,7 +227,7 @@ In this mode, all writes are directed to worker 0. Other workers connect to work
 - **Advantages:** This mode guarantees data consistency since worker 0 always holds the most up-to-date data.
 - **Limitations:** **Writes are not highly available.** If worker 0 goes down, no writes can be processed until it is restored
 
-Note: This mode is not available if the Manticore Load Balancer (LB) is disabled.
+Note: This mode is not available if the Manticore Load Balancer is disabled.
 
 ### What Is `quorumRecovery`?
 
