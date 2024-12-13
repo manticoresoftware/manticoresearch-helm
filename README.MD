@@ -21,7 +21,7 @@ The Manticore Search Helm Chart is designed to deploy and manage Manticore Searc
 - **Resilience:** Workers that recover from downtime automatically sync with the active workers in the cluster.
 - **Load Balancing:** Search requests made to the balancer are routed to one of the workers.
 - **Automatic Data Compaction:** [Index compaction](https://manual.manticoresearch.com/Securing_and_compacting_an_index/Compacting_an_index#Compacting-an-index) is handled automatically.
-- **Direct Read/Write Access:** Perform read and write operations directly on any worker pod using Kubernetes’ built-in load balancing capabilities, bypassing the need for the balancer.
+- **Direct Read/Write Access:** Can perform reading and writing operations directly on any worker pod using Kubernetes' built-in load balancing capabilities, bypassing the need for the balancer provided by the helm chart.
 ---
 
 ## Installation
