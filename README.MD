@@ -249,7 +249,7 @@ If this behavior is unnecessary or having separate entry points for reads and wr
 - MySQL protocol: `{your-chart-name}-manticoresearch-worker-svc.manticore.svc.cluster.local:9306`
 - HTTP: `{your-chart-name}-manticoresearch-worker-svc.manticore.svc.cluster.local:9308`
 
-Below is an explanation of how to interact with the cluster when **ManticoreSearch Load Balancer (LB)** is enabled:
+Below is an explanation of how to interact with the cluster when **Manticore Search Load Balancer** is enabled:
 
 ### Writes
 
