@@ -189,7 +189,8 @@ The balancer in Manticore Search is an optional component for managing high avai
 - **Custom Behavior:** You can customize the balancer’s behavior using its HA strategy (`index_ha_strategy`).
 - **Enhanced Performance:** Scaling the number of balancer replicas improves the cluster’s ability to handle read requests.
 
-For more details, refer to the [Load Balancing documentation](https://manual.manticoresearch.com/dev/Creating_a_cluster/Remote_nodes/Load_balancing#Load-balancing).
+
+  For more details, refer to the [Load Balancing documentation](https://manual.manticoresearch.com/dev/Creating_a_cluster/Remote_nodes/Load_balancing#Load-balancing).
 
 ### How Does Auto OPTIMIZE Work?
 
