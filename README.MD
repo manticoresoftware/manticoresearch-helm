@@ -192,18 +192,24 @@ The balancer in Manticore Search is an optional component for managing high avai
 
   For more details, refer to the [Load Balancing documentation](https://manual.manticoresearch.com/dev/Creating_a_cluster/Remote_nodes/Load_balancing#Load-balancing).
 
-### How Does Auto OPTIMIZE Work?
+### How does Automatic Table Compaction work?
 
-To enable automatic index compaction, update `values.yaml` and set `optimize.enabled = true`. The `optimize.interval` parameter controls how often disk chunk merging attempts occur.
+The Helm chart for Manticore Search provides two types of automatic table compaction:  
+1. **Built-in auto compaction**: Enabled by default in Manticore Search itself.  
+2. **Helm chart-provided auto compaction**: Can be enabled and configured separately as described below.
 
-The auto OPTIMIZE process follows this algorithm:
-1. Only one compaction session (OPTIMIZE) is allowed at a time. It checks if the previous OPTIMIZE session has finished or never started.
-2. If all conditions are met, it retrieves information about pods labeled as `component=worker + instance` and performs OPTIMIZE on each pod sequentially.
-3. Selects the index that benefits the most from compaction.
-4. Determines the number of CPU cores available to calculate the optimal chunk count to retain after compaction:
-   - Uses pod’s CPU limits if set.
-   - Defaults to host CPU cores if limits are not set.
-5. Executes OPTIMIZE with `cutoff=<cpuCores * values.optimize.coefficient>`.
+To enable the Helm chart-provided auto compaction, update `values.yaml` and set `optimize.enabled = true`. The frequency of disk chunk merging attempts is controlled by the `optimize.interval` parameter.
+
+The Helm chart-provided auto compaction works as follows:
+1. Ensures that only one compaction session runs at a time by checking whether the previous session has completed or has not started.
+2. If all conditions are met, retrieves information about pods labeled with `component=worker + instance` and performs compaction on each pod sequentially.
+3. Selects the table that will benefit the most from compaction.
+4. Calculates the optimal chunk count to retain after compaction based on available CPU cores:
+   - Uses the pod’s CPU limits if specified.
+   - Defaults to the host’s total CPU cores if limits are not set.
+5. Executes compaction with `cutoff=<cpuCores * values.optimize.coefficient>`.
+
+By distinguishing between the default Manticore Search auto compaction and the one provided by the Helm chart, you can choose and configure the option that best fits your needs.
 
 ### How does replication work?
 The replication script affects only worker pods. Each worker does the following every time it starts:
