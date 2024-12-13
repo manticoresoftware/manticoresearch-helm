@@ -174,7 +174,7 @@ The balancer in Manticore Search is an optional component for managing high avai
 #### How the Balancer Works:
 1. **Dynamic Synchronization:**
    - If `balancer.enabled` is set to `true` (default), the balancer checks the table configuration on the first active worker every 5 seconds (configurable via the `balancer.runInterval` parameter).
-   - If the configuration differs from its current state, the balancer reloads itself to align with the updated tables.
+   - If the configuration changes, the balancer reloads to align with the updated list of tables and available workers.
 
 2. **Event-Driven Updates:**
    - When a worker starts or stops, it sends a signal to the balancer, prompting immediate synchronization without waiting for the interval.
