@@ -1,3 +1,3 @@
-### 6.3.8.0
+### 6.3.8.1
 
-* Updated Manticore Search to version `6.3.8`
+* Add functionality to restart pods when the ConfigMap is changed
