@@ -65,8 +65,8 @@ spec:
           {{- end }}
           - name: CONFIGMAP_PATH
             value: {{ .Values.balancer.config.path | quote }}
-          - name: INDEX_HA_STRATEGY
-            value: {{ .Values.balancer.config.index_ha_strategy | quote }}
+          - name: TABLE_HA_STRATEGY
+            value: {{ .Values.balancer.config.table_ha_strategy | quote }}
           - name: BALANCER_PORT
             value: {{ .Values.balancer.service.ql.port | quote }}
           - name: WORKER_PORT

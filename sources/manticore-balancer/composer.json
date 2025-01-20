@@ -11,7 +11,7 @@
     ],
     "require": {
         "guzzlehttp/guzzle": "^7.3",
-        "manticoresoftware/manticoresearch-auto-replication": "1.2.2"
+        "manticoresoftware/manticoresearch-auto-replication": "dev-feat/rename-indexes-to-tables"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest"

@@ -82,7 +82,7 @@ function prepareNodes($nodes): array
 }
 
 $checkedWorkers = $cache->get(Cache::CHECKED_WORKERS);
-$checkedIndexes = $cache->get(Cache::CHECKED_INDEXES);
+$checkedTables = $cache->get(Cache::CHECKED_TABLES);
 
 foreach ($manticoreStatefulsets['items'] as $pod) {
     if ($pod['status']['phase'] === 'Running') {
@@ -113,37 +113,37 @@ foreach ($manticoreStatefulsets['items'] as $pod) {
         }
 
         $manticore = new ManticoreConnector($pod['status']['podIP'], $workerPort, $clusterName, -1);
-        $indexes   = $manticore->getTables(false, ['rt']);
+        $tables   = $manticore->getTables(false, ['rt']);
 
-        foreach ($indexes as $index) {
-            if (isset($checkedIndexes[$index])) {
+        foreach ($tables as $table) {
+            if (isset($checkedTables[$table])) {
                 continue;
             }
-            $checkedIndexes[$index] = 1;
+            $checkedTables[$table] = 1;
 
-            $chunks = $manticore->getChunksCount($index, false);
+            $chunks = $manticore->getChunksCount($table, false);
 
             if ($chunks > $cpuLimit * $chunksCoefficient) {
                 Logger::info(
-                    "Starting optimizing $index ".$pod['metadata']['name']."  ($chunks > $cpuLimit * ".$chunksCoefficient.") ".
+                    "Starting optimizing $table ".$pod['metadata']['name']."  ($chunks > $cpuLimit * ".$chunksCoefficient.") ".
                     (($chunks > $cpuLimit * $chunksCoefficient) ? 'true' : 'false')
                 );
 
-                $manticore->optimize($index, $cpuLimit * $chunksCoefficient);
+                $manticore->optimize($table, $cpuLimit * $chunksCoefficient);
                 $locker->setOptimizeLock($pod['status']['podIP']);
                 $cache->store(Cache::CHECKED_WORKERS, $checkedWorkers);
-                $cache->store(Cache::CHECKED_INDEXES, $checkedIndexes);
+                $cache->store(Cache::CHECKED_TABLES, $checkedTables);
 
                 Logger::info("OPTIMIZE started successfully. Stopping watching");
                 $locker->unlock(0);
             }
         }
-        $checkedIndexes                           = [];
+        $checkedTables                           = [];
         $checkedWorkers[$pod['metadata']['name']] = 1;
     }
 }
 
-$cache->store(Cache::CHECKED_INDEXES, []);
+$cache->store(Cache::CHECKED_TABLES, []);
 $cache->store(Cache::CHECKED_WORKERS, []);
 
 $locker->unlock(0);

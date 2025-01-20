@@ -18,7 +18,7 @@ $clusterName     = null;
 $instance        = null;
 $configMapPath   = null;
 $workerService   = null;
-$indexHAStrategy = null;
+$tableHAStrategy = null;
 
 $variables = [
 	'workerPort'      => [ 'env' => 'WORKER_PORT', 'type' => 'int' ],
@@ -27,7 +27,7 @@ $variables = [
 	'instance'        => [ 'env' => 'INSTANCE_LABEL', 'type' => 'string' ],
 	'configMapPath'   => [ 'env' => 'CONFIGMAP_PATH', 'type' => 'string' ],
 	'workerService'   => [ 'env' => 'WORKER_SERVICE', 'type' => 'string' ],
-	'indexHAStrategy' => [ 'env' => 'INDEX_HA_STRATEGY', 'type' => 'string' ],
+	'tableHAStrategy' => [ 'env' => 'TABLE_HA_STRATEGY', 'type' => 'string' ],
 ];
 
 foreach ( $variables as $variable => $desc ) {
@@ -45,8 +45,8 @@ foreach ( $variables as $variable => $desc ) {
 	}
 }
 
-if (!in_array($indexHAStrategy, ['random', 'nodeads','noerrors','roundrobin'])){
-	Logger::info( "INDEX_HA_STRATEGY can be only {random|nodeads|noerrors|roundrobin}\n" );
+if (!in_array($tableHAStrategy, ['random', 'nodeads','noerrors','roundrobin'])){
+	Logger::info( "TABLE_HA_STRATEGY can be only {random|nodeads|noerrors|roundrobin}\n" );
 	exit( 1 );
 }
 
@@ -81,13 +81,13 @@ $podsIps   = $resources->getPodIpAllConditions();
 
 
 if ( $tables !== [] ) {
-	$previousHash = $cache->get( Cache::INDEX_HASH );
+	$previousHash = $cache->get( Cache::TABLE_HASH );
 	$hash         = sha1( implode( '.', $tables ) . implode( $podsIps ) );
 
 	if ( $previousHash !== $hash ) {
 		Logger::info( "Starting config recompiling" );
-		saveConfig( $tables, $podsIps, $balancerPort, $configMapPath, $indexHAStrategy );
-		$cache->store( Cache::INDEX_HASH, $hash );
+		saveConfig( $tables, $podsIps, $balancerPort, $configMapPath, $tableHAStrategy );
+		$cache->store( Cache::TABLE_HASH, $hash );
 	}
 } else {
 	Logger::info( "No tables found" );
@@ -95,14 +95,14 @@ if ( $tables !== [] ) {
 }
 
 
-function saveConfig( $indexes, $nodes, $port, $configMapPath, $indexHAStrategy ) {
+function saveConfig( $tables, $nodes, $port, $configMapPath, $tableHAStrategy ) {
 	$searchdConfig = file_get_contents( $configMapPath );
 	$prependConfig = '';
-	foreach ( $indexes as $index ) {
-		$prependConfig .= "\n\nindex " . $index . "\n" .
+	foreach ( $tables as $table ) {
+		$prependConfig .= "\n\nindex " . $table . "\n" .
 		                  "{\n" .
 		                  "\ttype = distributed\n" .
-		                  "\tha_strategy = " . $indexHAStrategy . "\n" .
+		                  "\tha_strategy = " . $tableHAStrategy . "\n" .
 		                  "\tagent = " . implode( "|", $nodes ) . "\n" .
 		                  "}\n\n";
 	}
@@ -114,7 +114,7 @@ function saveConfig( $indexes, $nodes, $port, $configMapPath, $indexHAStrategy )
 		$prependConfig . $searchdConfig
 	);
 
-	( new ManticoreConnector( 'localhost', $port, null, - 1 ) )->reloadIndexes();
+	( new ManticoreConnector( 'localhost', $port, null, - 1 ) )->reloadTables();
 }
 
 
