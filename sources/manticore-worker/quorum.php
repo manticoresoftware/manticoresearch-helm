@@ -18,7 +18,7 @@ $clusterName = null;
 $balancerUrl = null;
 $instance = null;
 $workerService = null;
-$notAddTablesAutomatically = null;
+$autoAddTablesIntoCluster = null;
 $replicationMode = null;
 $labels = null;
 
