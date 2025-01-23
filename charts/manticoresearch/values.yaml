@@ -34,7 +34,7 @@ balancer:
       targetPort: 9312
   config:
     path: /mnt/configmap.conf
-    index_ha_strategy: nodeads
+    table_ha_strategy: nodeads
     content: |
       searchd
       {

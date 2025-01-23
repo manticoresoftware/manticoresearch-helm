@@ -22,7 +22,7 @@ $clusterName = null;
 $balancerUrl = null;
 $instance = null;
 $workerService = null;
-$notAddTablesAutomatically = null;
+$autoAddTablesIntoCluster = null;
 $replicationMode = null;
 $labels = null;
 $logLevel = null;
@@ -116,7 +116,7 @@ if ($count <= $min) {
         $manticore->createCluster();
         Logger::info('Cluster created');
     }
-    if ($notAddTablesAutomatically) {
+    if ($autoAddTablesIntoCluster) {
         $manticore->addNotInClusterTablesIntoCluster();
     }
 } elseif ($manticoreJson->getConf() !== [] && $manticoreJson->hasCluster()) {
@@ -142,7 +142,7 @@ if ($count <= $min) {
 
     if ($manticore->checkClusterName()) {
         Logger::info('Cluster exist');
-        if ($notAddTablesAutomatically) {
+        if ($autoAddTablesIntoCluster) {
             $manticore->addNotInClusterTablesIntoCluster();
         }
     } else {
