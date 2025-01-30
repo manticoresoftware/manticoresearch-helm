@@ -1,6 +1,6 @@
 # Manticore Search Helm Chart
 
-**Version:** 6.3.8.1
+**Version:** 7.0.0.0
 
 The Manticore Search Helm Chart is designed to deploy and manage Manticore Search in Kubernetes. It ensures high availability with out-of-the-box replication and improves read throughput through automatic load balancing.
 
@@ -112,8 +112,8 @@ or download an archive from [GitHub releases](https://github.com/manticoresoftwa
     - **HTTP:**
       ```bash
       curl -H "Content-Type: application/x-ndjson" localhost:7308/bulk -d '
-      {"insert": {"cluster":"manticore_cluster", "index" : "idx", "doc": { "title" : "dog is brown" } } }
-      {"insert": {"cluster":"manticore_cluster", "index" : "idx", "doc": { "title" : "mouse is small" } } }'
+      {"insert": {"cluster":"manticore_cluster", "table" : "idx", "doc": { "title" : "dog is brown" } } }
+      {"insert": {"cluster":"manticore_cluster", "table" : "idx", "doc": { "title" : "mouse is small" } } }'
       ```
 
 8. **Search Through the Balancer**
@@ -123,7 +123,7 @@ or download an archive from [GitHub releases](https://github.com/manticoresoftwa
       ```
     - **HTTP:**
       ```bash
-      curl -X "POST" localhost:6308/search -d '{"index" : "idx", "query": { "match": { "_all": "dog" } } }'
+      curl -X "POST" localhost:6308/search -d '{"table" : "idx", "query": { "match": { "_all": "dog" } } }'
       ```
 
 9. **Scale the Cluster**
@@ -180,13 +180,13 @@ The balancer in Manticore Search is an optional component for managing high avai
    - When a worker starts or stops, it sends a signal to the balancer, prompting immediate synchronization without waiting for the interval.
 
 3. **High Availability Strategy:**
-   - The balancer achieves HA by using `index_ha_strategy: nodeads`, ensuring queries are routed only to healthy nodes.
+   - The balancer achieves HA by using `table_ha_strategy: nodeads`, ensuring queries are routed only to healthy nodes.
 
 4. **Replica Redundancy:**
    - To further improve HA for read operations, you can increase the number of balancer replicas by adjusting the `balancer.replicaCount` parameter in `values.yaml`.
 
 #### Configuration Options:
-- **Custom Behavior:** You can customize the balancer’s behavior using its HA strategy (`index_ha_strategy`).
+- **Custom Behavior:** You can customize the balancer’s behavior using its HA strategy (`table_ha_strategy`).
 - **Enhanced Performance:** Scaling the number of balancer replicas improves the cluster’s ability to handle read requests.
 
 
@@ -303,55 +303,55 @@ For more details, refer to the [Kubernetes documentation](https://kubernetes.io/
 <details>
 <summary>Click to expand</summary>
 
-| Variable                              | Description                                                                                         | Default                                                                                            |
-|---------------------------------------|-----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
-| balancer.extraPackages                | Should it install the extra packages like Manticore Columnar Library for support of the columnar storage and secondary indexes, Manticore Buddy for support for specific commands etc         | true                                                                                               |
-| balancer.image.repository             | Balancer docker image repository                                                                    | Docker hub                                                                                         |
-| balancer.image.tag                    | Balancer image version                                                                              | Same as chart version                                                                              |
-| balancer.image.pullPolicy             | Balancer docker image update policy                                                                 | IfNotPresent                                                                                       |
-| balancer.service.ql.port              | Balancer service SQL port (for searchd)                                                             | 9306                                                                                               |
-| balancer.service.ql.targetPort        | Balancer service SQL targetPort (for searchd)                                                       | 9306                                                                                               |
-| balancer.service.http.port            | Balancer service HTTP port (for searchd)                                                            | 9306                                                                                               |
-| balancer.service.http.targetPort      | Balancer service HTTP targetPort (for searchd)                                                      | 9306                                                                                               |
-| balancer.service.observer.port        | Balancer service port (for observer)                                                                | 8080                                                                                               |
-| balancer.service.observer.targetPort  | Balancer service targetPort (for observer)                                                          | 8080                                                                                               |
-| balancer.service.binary.port          | Balancer service binary port (for searchd)                                                          | 9312                                                                                               |
-| balancer.service.binary.targetPort    | Balancer service binary targetPort (for searchd)                                                    | 9312                                                                                               |
-| balancer.config.path                  | Path to balancer config                                                                             | /mnt/configmap.conf                                                                                |
-| balancer.config.index_ha_strategy     | Distributed indexes HA strategy                                                                     | nodeads                                                                                            |
-| balancer.resources                    | Allows to set resources for balancer like mem or cpu requests and limits (see k8s docs for details) | {}                                                                                                 |
-| worker.image.repository               | Worker docker image repository                                                                      | Docker hub                                                                                         |
-| worker.image.tag                      | Worker image version                                                                                | Same as chart version                                                                              |
-| worker.image.pullPolicy               | Worker docker image update policy                                                                   | IfNotPresent                                                                                       |
-| worker.quorumRecovery                 | Worker quorum auto recovery                                                                         | false                                                                                              |
-| worker.quorumCheckInterval            | Check quorum ever so often (seconds)                                                                | 15                                                                                                 |
-| worker.autoAddTablesInCluster         | Automatically adds all tables into cluster                                                          | 15                                                                                                 |
-| worker.service.ql.port                | Worker service SQL port                                                                             | 9306                                                                                               |
-| worker.service.ql.targetPort          | Worker service SQL targetPort                                                                       | 9306                                                                                               |
-| worker.service.http.port              | Worker service HTTP port                                                                            | 9306                                                                                               |
-| worker.service.http.targetPort        | Worker service HTTP targetPort                                                                      | 9306                                                                                               |
-| worker.config.path                    | Path to worker config                                                                               | /mnt/configmap.conf                                                                                |
-| worker.resources                      | Allows to set resources for worker like mem or cpu requests and limits (see k8s docs for details)   | {}                                                                                                 |
-| nameOverride                          | Allows to override chart name                                                                       | ""                                                                                                 |
-| fullNameOverride                      | Allows to override full chart name                                                                  | ""                                                                                                 |
-| serviceAccount.annotations            | Allows to add service account annotations                                                           | ""                                                                                                 |
-| serviceAccount.name                   | Service account name                                                                                | "manticore-sa"                                                                                     |
-| podAnnotations                        | Allows to set pods annotations for worker and balancer                                              | {}                                                                                                 |
-| podSecurityContext                    | Allows to set pod security contexts                                                                 | {}                                                                                                 |
-| securityContext                       | Allows to set security contexts (see k8s docs for details)                                          | {}                                                                                                 |
-| nodeSelector                          | Allows to set node selector for worker and balancer                                                 | {}                                                                                                 |
-| tolerations                           | Allows to set tolerations (see k8s docs for details)                                                | {}                                                                                                 |
-| affinity                              | Allows to set affinity (see k8s docs for details)                                                   | {}                                                                                                 |
-| exporter.image.repository             | Prometheus exporter docker image repository                                                         | Docker hub                                                                                         |
-| exporter.image.tag                    | Prometheus exporter image version                                                                   | Same as chart version                                                                              |
-| exporter.image.pullPolicy             | Prometheus exporter image update policy (see k8s docs for details)                                  | IfNotPresent                                                                                       |
-| exporter.image.annotations            | Prometheus exporter annotations (Need for correct resolving)                                        | prometheus.io/path: /metrics<br>    prometheus.io/port: "8081"<br>    prometheus.io/scrape: "true" |
-| exporter.resources                    | Allows to set resources for exporter like mem or cpu requests and limits (see k8s docs for details) | {}                                                                                                 |
-| optimize.enabled                      | Switch on auto optimize script                                                                      | true                                                                                               |
-| optimize.interval                     | Interval in seconds for running optimize script                                                     | 30                                                                                                 |
-| serviceMonitor.enabled                | Enables service monitor resource for exporting runtime metrics to Prometheus                        | false                                                                                              |
-| serviceMonitor.interval               | Set how frequently Prometheus should scrape                        | 30s                                                                                                |
-| serviceMonitor.scrapeTimeout          | Set timeout for scrape                        | 10s                                                                                                |
+| Variable                             | Description                                                                                         | Default                                                                                            |
+|--------------------------------------|-----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
+| balancer.extraPackages               | Should it install the extra packages like Manticore Columnar Library for support of the columnar storage and secondary indexes, Manticore Buddy for support for specific commands etc         | true                                                                                               |
+| balancer.image.repository            | Balancer docker image repository                                                                    | Docker hub                                                                                         |
+| balancer.image.tag                   | Balancer image version                                                                              | Same as chart version                                                                              |
+| balancer.image.pullPolicy            | Balancer docker image update policy                                                                 | IfNotPresent                                                                                       |
+| balancer.service.ql.port             | Balancer service SQL port (for searchd)                                                             | 9306                                                                                               |
+| balancer.service.ql.targetPort       | Balancer service SQL targetPort (for searchd)                                                       | 9306                                                                                               |
+| balancer.service.http.port           | Balancer service HTTP port (for searchd)                                                            | 9306                                                                                               |
+| balancer.service.http.targetPort     | Balancer service HTTP targetPort (for searchd)                                                      | 9306                                                                                               |
+| balancer.service.observer.port       | Balancer service port (for observer)                                                                | 8080                                                                                               |
+| balancer.service.observer.targetPort | Balancer service targetPort (for observer)                                                          | 8080                                                                                               |
+| balancer.service.binary.port         | Balancer service binary port (for searchd)                                                          | 9312                                                                                               |
+| balancer.service.binary.targetPort   | Balancer service binary targetPort (for searchd)                                                    | 9312                                                                                               |
+| balancer.config.path                 | Path to balancer config                                                                             | /mnt/configmap.conf                                                                                |
+| balancer.config.table_ha_strategy    | Distributed indexes HA strategy                                                                     | nodeads                                                                                            |
+| balancer.resources                   | Allows to set resources for balancer like mem or cpu requests and limits (see k8s docs for details) | {}                                                                                                 |
+| worker.image.repository              | Worker docker image repository                                                                      | Docker hub                                                                                         |
+| worker.image.tag                     | Worker image version                                                                                | Same as chart version                                                                              |
+| worker.image.pullPolicy              | Worker docker image update policy                                                                   | IfNotPresent                                                                                       |
+| worker.quorumRecovery                | Worker quorum auto recovery                                                                         | false                                                                                              |
+| worker.quorumCheckInterval           | Check quorum ever so often (seconds)                                                                | 15                                                                                                 |
+| worker.autoAddTablesInCluster        | Automatically adds all tables into cluster                                                          | 15                                                                                                 |
+| worker.service.ql.port               | Worker service SQL port                                                                             | 9306                                                                                               |
+| worker.service.ql.targetPort         | Worker service SQL targetPort                                                                       | 9306                                                                                               |
+| worker.service.http.port             | Worker service HTTP port                                                                            | 9306                                                                                               |
+| worker.service.http.targetPort       | Worker service HTTP targetPort                                                                      | 9306                                                                                               |
+| worker.config.path                   | Path to worker config                                                                               | /mnt/configmap.conf                                                                                |
+| worker.resources                     | Allows to set resources for worker like mem or cpu requests and limits (see k8s docs for details)   | {}                                                                                                 |
+| nameOverride                         | Allows to override chart name                                                                       | ""                                                                                                 |
+| fullNameOverride                     | Allows to override full chart name                                                                  | ""                                                                                                 |
+| serviceAccount.annotations           | Allows to add service account annotations                                                           | ""                                                                                                 |
+| serviceAccount.name                  | Service account name                                                                                | "manticore-sa"                                                                                     |
+| podAnnotations                       | Allows to set pods annotations for worker and balancer                                              | {}                                                                                                 |
+| podSecurityContext                   | Allows to set pod security contexts                                                                 | {}                                                                                                 |
+| securityContext                      | Allows to set security contexts (see k8s docs for details)                                          | {}                                                                                                 |
+| nodeSelector                         | Allows to set node selector for worker and balancer                                                 | {}                                                                                                 |
+| tolerations                          | Allows to set tolerations (see k8s docs for details)                                                | {}                                                                                                 |
+| affinity                             | Allows to set affinity (see k8s docs for details)                                                   | {}                                                                                                 |
+| exporter.image.repository            | Prometheus exporter docker image repository                                                         | Docker hub                                                                                         |
+| exporter.image.tag                   | Prometheus exporter image version                                                                   | Same as chart version                                                                              |
+| exporter.image.pullPolicy            | Prometheus exporter image update policy (see k8s docs for details)                                  | IfNotPresent                                                                                       |
+| exporter.image.annotations           | Prometheus exporter annotations (Need for correct resolving)                                        | prometheus.io/path: /metrics<br>    prometheus.io/port: "8081"<br>    prometheus.io/scrape: "true" |
+| exporter.resources                   | Allows to set resources for exporter like mem or cpu requests and limits (see k8s docs for details) | {}                                                                                                 |
+| optimize.enabled                     | Switch on auto optimize script                                                                      | true                                                                                               |
+| optimize.interval                    | Interval in seconds for running optimize script                                                     | 30                                                                                                 |
+| serviceMonitor.enabled               | Enables service monitor resource for exporting runtime metrics to Prometheus                        | false                                                                                              |
+| serviceMonitor.interval              | Set how frequently Prometheus should scrape                        | 30s                                                                                                |
+| serviceMonitor.scrapeTimeout         | Set timeout for scrape                        | 10s                                                                                                |
 
 </details>
 
