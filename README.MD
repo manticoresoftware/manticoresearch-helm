@@ -136,7 +136,7 @@ or download an archive from [GitHub releases](https://github.com/manticoresoftwa
 ## Q&A
 
 ### Where is the Data Stored?
-Data is stored in PersistentVolumeClaims (PVCs). Each worker pod has its own volume. By default, the PVC size is 1Gi (configurable via `worker.volume.size`).
+Data is stored in PersistentVolumeClaims (PVCs). Each worker pod has its own volume. By default, the PVC size is 1Gi (configurable via `worker.persistence.size`).
 
 ### How is High Availability Achieved?
 - **Replication:** Synchronous master-master replication ensures data durability.

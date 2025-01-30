@@ -115,7 +115,7 @@ worker:
       targetPort: 9312
   persistence:
     enabled: true
-    ## redis data Persistent Volume Storage Class
+    ## Worker data Persistent Volume Storage Class
     ## If defined, storageClassName: <storageClass>
     ## If set to "-", storageClassName: "", which disables dynamic provisioning
     ## If undefined (the default) or set to null, no storageClassName spec is
@@ -130,9 +130,6 @@ worker:
     ## https://kubernetes.io/docs/concepts/storage/persistent-volumes/#selector
     matchLabels: {}
     matchExpressions: {}
-#  volume:
-#    size: 1Gi
-#    storageClassName: false
   config:
     path: /mnt/manticore.conf
     content: |
