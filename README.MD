@@ -252,8 +252,8 @@ Note: This mode is not available if the Manticore Load Balancer is disabled.
 By default, read and write operations are separated to achieve additive high availability (HA) using the built-in Manticore Search [Load Balancing](https://manual.manticoresearch.com/dev/Creating_a_cluster/Remote_nodes/Load_balancing#Load-balancing).
 
 If this behavior is unnecessary or having separate entry points for reads and writes is inconvenient, you can disable it by setting `balancer.enabled` to `false` in `values.yaml`. In this case, a single entry point will handle all requests:
-- MySQL protocol: `{your-chart-name}-manticoresearch-worker-svc.manticore.svc.cluster.local:9306`
-- HTTP: `{your-chart-name}-manticoresearch-worker-svc.manticore.svc.cluster.local:9308`
+- MySQL protocol: `{your-chart-name}-manticoresearch-worker-svc.manticore:9306`
+- HTTP: `{your-chart-name}-manticoresearch-worker-svc.manticore:9308`
 
 Below is an explanation of how to interact with the cluster when **Manticore Search Load Balancer** is enabled:
 
@@ -262,23 +262,22 @@ Below is an explanation of how to interact with the cluster when **Manticore Sea
 Write queries (`INSERT`, `UPDATE`, `DELETE`, `REPLACE`, `TRUNCATE`, `ALTER`) should be sent directly to the worker pods. These queries can be made to any worker pod.
 
 #### How to Connect:
-- **MySQL:** `{your-chart-name}-manticoresearch-worker-svc.manticore.svc.cluster.local:9306`
-- **HTTP:** `{your-chart-name}-manticoresearch-worker-svc.manticore.svc.cluster.local:9308`
+- **MySQL:** `{your-chart-name}-manticoresearch-worker-svc.manticore:9306`
+- **HTTP:** `{your-chart-name}-manticoresearch-worker-svc.manticore:9308`
 
 ### Reads
 
 Read queries should be routed through the balancer deployment for optimal distribution across worker pods. While running a `SELECT` query directly on a worker pod is possible, it will not leverage load balancing or routing to the most appropriate worker.
 
 #### How to Connect:
-- **MySQL:** `{your-chart-name}-manticoresearch-balancer-svc.manticore.svc.cluster.local:9306`
-- **HTTP:** `{your-chart-name}-manticoresearch-balancer-svc.manticore.svc.cluster.local:9308`
+- **MySQL:** `{your-chart-name}-manticoresearch-balancer-svc.manticore:9306`
+- **HTTP:** `{your-chart-name}-manticoresearch-balancer-svc.manticore:9308`
 
 ### Explanation of Connection Parameters:
 
 - **`{your-chart-name}`**: The chart name specified during `helm install`.
 - **`manticoresearch-worker-svc.`**: The worker service name.
 - **`manticore.`**: The namespace where the Helm chart is installed.
-- **`svc.cluster.local`**: The default domain for Kubernetes services.
 
 For more details, refer to the [Kubernetes documentation](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/).
 ---
