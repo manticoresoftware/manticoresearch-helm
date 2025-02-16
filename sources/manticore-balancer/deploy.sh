@@ -8,5 +8,12 @@
 
 BUILD_TAG=$(cat ../../charts/manticoresearch/Chart.yaml | grep appVersion | cut -d" " -f2)
 echo $BUILD_TAG
-docker build --no-cache --platform linux/amd64 -t manticoresearch/helm-balancer:$BUILD_TAG . && \
-docker push manticoresearch/helm-balancer:$BUILD_TAG
+
+docker buildx create --name mybuilder --use
+docker buildx inspect mybuilder --bootstrap
+
+docker buildx build \
+--platform linux/amd64 \
+--no-cache \
+--push \
+-t manticoresearch/helm-balancer:$BUILD_TAG .
