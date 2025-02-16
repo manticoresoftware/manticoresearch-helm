@@ -1,3 +1,3 @@
-### 7.0.0.1
+### 7.0.1.0
 
-* Decrease hostname length
+* Update Manticore Search version to dev-7.0.1-75ba86d
