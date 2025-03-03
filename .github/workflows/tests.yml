@@ -36,6 +36,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: manticoresearch/helm-balancer:0.0.0-unstable
+          no-cache: true
 
       - name: Build and push worker
         uses: docker/build-push-action@v4
@@ -44,6 +45,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: manticoresearch/helm-worker:0.0.0-unstable
+          no-cache: true
 
       - uses: manticoresoftware/clt@0.2.1
         with:
