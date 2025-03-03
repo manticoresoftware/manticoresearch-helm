@@ -53,10 +53,6 @@ spec:
             value: {{ .Values.worker.clusterName }}
           - name: INSTANCE_LABEL
             value: {{ .Release.Name }}
-          {{- if .Values.balancer.extraPackages }}
-          - name: EXTRA
-            value: "1"
-          {{- end }}
           {{- if .Values.optimize.enabled }}
           - name: OPTIMIZE_RUN_INTERVAL
             value: {{ .Values.optimize.interval | quote }}

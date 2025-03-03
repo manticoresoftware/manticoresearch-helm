@@ -79,10 +79,6 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
-          {{- if .Values.worker.extraPackages }}
-          - name: EXTRA
-            value: "1"
-          {{- end }}
           {{- if .Values.worker.quorumRecovery }}
           - name: QUORUM_RECOVERY
             value: "true"

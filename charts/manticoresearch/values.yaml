@@ -14,7 +14,6 @@ balancer:
   replicaCount: 1
   # priorityClassName: ""
   runInterval: 5
-  extraPackages: true
   image:
     repository: manticoresearch/helm-balancer
 #    tag: 3.6.0.0
@@ -95,7 +94,6 @@ worker:
   ## Allows automatic restore of a replication cluster if it is broken due to no quorum. Recommended with the master-slave `replicationMode`. May be dangerous in terms of data loss in the master-master `replicationMode`.
   quorumRecovery: false
   ## interval in seconds to run cluster status check
-  extraPackages: true
   quorumCheckInterval: 15
   autoAddTablesInCluster: true
   logLevel: INFO
