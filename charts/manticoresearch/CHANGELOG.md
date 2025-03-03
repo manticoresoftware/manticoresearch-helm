@@ -1,3 +1,3 @@
-### 7.0.0.1
+### 7.4.6
 
-* Decrease hostname length
+* Release Manticore Search 7.4.6
