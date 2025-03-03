@@ -30,6 +30,9 @@ jobs:
           echo "chartVersion=$(cat ./charts/manticoresearch/Chart.yaml | grep appVersion | cut -d' ' -f2)" >> $GITHUB_ENV
           echo "isNeedToBuild=$( git tag | grep $(cat charts/manticoresearch/Chart.yaml | grep version: | cut -d' ' -f2))" >> $GITHUB_ENV
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
