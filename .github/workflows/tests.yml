@@ -48,7 +48,7 @@ jobs:
           push: true
           tags: manticoresearch/helm-worker:0.0.0-unstable
 
-      - uses: manticoresoftware/clt@0.2.1
+      - uses: manticoresoftware/clt@0.6.3
         with:
           image: manticoresearch/helm-test-kit:0.0.1
           test_prefix: clt_tests/tests/
