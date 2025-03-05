@@ -8,7 +8,7 @@ kubectl get nodes
 sed -i 's/^version: [0-9]\+\.[0-9]\+\.[0-9]\+/version: 0.0.0-unstable/' ./charts/manticoresearch/Chart.yaml
 ––– output –––
 ––– input –––
-sed -i 's/^appVersion: [0-9]\+\.[0-9]\+\.[0-9]\+.[0-9]\+/appVersion: 0.0.0-unstable/' ./charts/manticoresearch/Chart.yaml
+sed -i 's/^appVersion: [0-9]\+\.[0-9]\+.[0-9]\+/appVersion: 0.0.0-unstable/' ./charts/manticoresearch/Chart.yaml
 ––– output –––
 ––– input –––
 cat ./charts/manticoresearch/Chart.yaml
