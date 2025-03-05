@@ -1,6 +1,6 @@
 # Manticore Search Helm Chart
 
-**Version:** 7.0.0.1
+**Version:** 7.4.6
 
 The Manticore Search Helm Chart is designed to deploy and manage Manticore Search in Kubernetes. It ensures high availability with out-of-the-box replication and improves read throughput through automatic load balancing.
 
@@ -304,7 +304,6 @@ For more details, refer to the [Kubernetes documentation](https://kubernetes.io/
 
 | Variable                             | Description                                                                                         | Default                                                                                            |
 |--------------------------------------|-----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
-| balancer.extraPackages               | Should it install the extra packages like Manticore Columnar Library for support of the columnar storage and secondary indexes, Manticore Buddy for support for specific commands etc         | true                                                                                               |
 | balancer.image.repository            | Balancer docker image repository                                                                    | Docker hub                                                                                         |
 | balancer.image.tag                   | Balancer image version                                                                              | Same as chart version                                                                              |
 | balancer.image.pullPolicy            | Balancer docker image update policy                                                                 | IfNotPresent                                                                                       |
