@@ -1,6 +1,6 @@
 ––– block: ./init/init –––
 ––– input –––
-kubectl exec -it my-helm-manticoresearch-worker-1 -- mysql -h0 -P9306 -e "show status\G" | grep -A1 "Counter: cluster"
+kubectl exec -it my-helm-manticoresearch-worker-1 -- mysql -h0 -P9306 -e "show status\G" | grep -A1 "Counter: cluster";
 ––– output –––
 Counter: cluster_name
 Value: manticore_cluster

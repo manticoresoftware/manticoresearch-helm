@@ -1,17 +1,17 @@
 ––– block: ./init/init –––
 ––– input –––
-kubectl get nodes
+kubectl get nodes;
 ––– output –––
 #!/NAME\s+STATUS\s+ROLES\s+AGE\s+VERSION/!#
 #!/[0-9a-z]{12}\s+Ready\s+control-plane,master\s+[0-9]+[s|m]\s+v[0-9\.]+\+k3s1/!#
 ––– input –––
-sed -i 's/^version: [0-9]\+\.[0-9]\+\.[0-9]\+/version: 0.0.0-unstable/' ./charts/manticoresearch/Chart.yaml
+sed -i 's/^version: [0-9]\+\.[0-9]\+\.[0-9]\+/version: 0.0.0-unstable/' ./charts/manticoresearch/Chart.yaml;
 ––– output –––
 ––– input –––
-sed -i 's/^appVersion: [0-9]\+\.[0-9]\+.[0-9]\+/appVersion: 0.0.0-unstable/' ./charts/manticoresearch/Chart.yaml
+sed -i 's/^appVersion: [0-9]\+\.[0-9]\+.[0-9]\+/appVersion: 0.0.0-unstable/' ./charts/manticoresearch/Chart.yaml;
 ––– output –––
 ––– input –––
-cat ./charts/manticoresearch/Chart.yaml
+cat ./charts/manticoresearch/Chart.yaml;
 ––– output –––
 apiVersion: v2
 name: manticoresearch
@@ -34,10 +34,8 @@ version: 0.0.0-unstable
 # follow Semantic Versioning. They should reflect the version the application is using.
 appVersion: 0.0.0-unstable
 ––– input –––
-helm install my-helm ./charts/manticoresearch
+helm install my-helm ./charts/manticoresearch;
 ––– output –––
-WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /tmp/output/kubeconfig-latest.yaml
-WARNING: Kubernetes configuration file is world-readable. This is insecure. Location: /tmp/output/kubeconfig-latest.yaml
 NAME: my-helm
 LAST DEPLOYED: #!/[a-zA-Z]{3}\s+[a-zA-Z]{3}\s+[0-9]+\s+[0-9]+:[0-9]+:[0-9]+\s+[0-9]+/!#
 NAMESPACE: default
