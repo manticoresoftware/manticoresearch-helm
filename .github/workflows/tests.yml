@@ -4,19 +4,12 @@ on:
     branches: [ master ]
 
 jobs:
-  tests:
+  build:
     concurrency:
-      group: "tests"
+      group: "build-${{ github.event.number }}"
       cancel-in-progress: true
     runs-on: ubuntu-latest
     steps:
-      - uses: debianmaster/actions-k3s@master
-        id: k3s
-        with:
-          version: 'latest'
-      - run: |
-          echo "Wait until k3s up"
-          sleep 20
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -47,6 +40,25 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: manticoresearch/helm-worker:0.0.0-unstable
+
+  tests:
+    needs: build
+    concurrency:
+      group: "tests-${{ github.event.number }}"
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: debianmaster/actions-k3s@master
+        id: k3s
+        with:
+          version: 'latest'
+
+      - run: |
+          echo "Wait until k3s up"
+          sleep 20
+
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - uses: manticoresoftware/clt@0.6.3
         with:
