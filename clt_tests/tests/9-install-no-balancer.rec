@@ -2,8 +2,6 @@
 ––– input –––
 helm install my-helm --set balancer.enabled=false ./charts/manticoresearch
 ––– output –––
-WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /tmp/output/kubeconfig-latest.yaml
-WARNING: Kubernetes configuration file is world-readable. This is insecure. Location: /tmp/output/kubeconfig-latest.yaml
 NAME: my-helm
 LAST DEPLOYED: #!/[a-zA-Z]{3}\s+[a-zA-Z]{3}\s+[0-9]+\s+[0-9]+:[0-9]+:[0-9]+\s+[0-9]+/!#
 NAMESPACE: default
