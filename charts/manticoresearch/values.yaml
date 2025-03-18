@@ -45,7 +45,6 @@ balancer:
         pid_file = /var/run/manticore/searchd.pid
         binlog_path = /var/lib/manticore
         shutdown_timeout = 25s
-        auto_optimize = 0
       }
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
@@ -146,7 +145,6 @@ worker:
         pid_file = /var/run/manticore/searchd.pid
         data_dir = /var/lib/manticore
         shutdown_timeout = 25s
-        auto_optimize = 0
       }
   resources: {}
   # See comment on balancer.resources
@@ -199,7 +197,7 @@ serviceMonitor:
   scrapeTimeout: 10s
 
 optimize:
-  enabled: true
+  enabled: false
   interval: "30"
   coefficient: "2"
 
