@@ -1,3 +1,3 @@
-### 7.4.6
+### 9.2.14
 
-* Release Manticore Search 7.4.6
+* Release Manticore Search 9.2.14
