@@ -145,6 +145,7 @@ worker:
         pid_file = /var/run/manticore/searchd.pid
         data_dir = /var/lib/manticore
         shutdown_timeout = 25s
+        server_id = $server_id
       }
   resources: {}
   # See comment on balancer.resources
