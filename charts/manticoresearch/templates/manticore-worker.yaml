@@ -67,6 +67,8 @@ spec:
             value: {{ .Values.worker.service.binary.port | quote }}
           - name: CLUSTER_NAME
             value: {{ .Values.worker.clusterName }}
+          - name: CLUSTER_DOMAIN_SUFFIX
+            value: {{ .Values.global.clusterDomainSuffix }}
           - name: REPLICATION_MODE
             value: {{ .Values.worker.replicationMode }}
           - name: LOG_LEVEL
