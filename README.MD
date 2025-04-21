@@ -280,8 +280,30 @@ Read queries should be routed through the balancer deployment for optimal distri
 - **`manticore.`**: The namespace where the Helm chart is installed.
 
 For more details, refer to the [Kubernetes documentation](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/).
+
 ---
 
+## Versioning
+
+We follow a custom versioning scheme to align with **Helm best practices** and **Manticore Search releases**.
+
+If we need to publish a new chart release **without updating the underlying Manticore Search version**, we append a date-based suffix to the existing version:
+
+```
+X.Y.Z → X.Y.Z-yyyymmdd
+```
+
+This allows us to:
+* Keep the **Manticore Search version (X.Y.Z)** in sync with what’s actually used
+* Track **Helm chart-level changes** independently (e.g., improvements in templates, values, logic, etc.)
+
+For example, if the chart uses Manticore Search 9.2.14, and we improve the chart logic on April 22, 2025, the new chart version would be:
+
+``` 
+9.2.14-20250422
+```
+
+---
 ## Variables
 
 | Variable | Description                                                                                                                | Default                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
