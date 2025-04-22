@@ -8,6 +8,7 @@ global:
 #     - myRegistryKeySecretName
 #   storageClass: myStorageClass
   manticoresearch: {}
+  clusterDomainSuffix: cluster.local
 
 balancer:
   enabled: true

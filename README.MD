@@ -1,6 +1,6 @@
 # Manticore Search Helm Chart
 
-**Version:** 9.2.14
+**Version:** 9.2.14-20250422
 
 The Manticore Search Helm Chart is designed to deploy and manage Manticore Search in Kubernetes. It ensures high availability with out-of-the-box replication and improves read throughput through automatic load balancing.
 
@@ -372,6 +372,7 @@ For example, if the chart uses Manticore Search 9.2.14, and we improve the chart
 | serviceMonitor.enabled               | Enables service monitor resource for exporting runtime metrics to Prometheus                        | false                                                                                              |
 | serviceMonitor.interval              | Set how frequently Prometheus should scrape                        | 30s                                                                                                |
 | serviceMonitor.scrapeTimeout         | Set timeout for scrape                        | 10s                                                                                                |
+| global.clusterDomainSuffix           | DNS suffix for cluster, to allow for configuration stripping of cluster suffix                      | cluster.local                                                                                      |
 
 </details>
 
