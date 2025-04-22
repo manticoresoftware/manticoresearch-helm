@@ -1,3 +1,11 @@
+### 9.2.14-20250422
+
+* Add global value for DNS suffix
+  * This allows for modifying the behaviour of the configuration script, which
+    removes cluster DNS suffix from Manticoresearch node addresses
+  * Specifically, setting global.clusterDomainSuffix in values.yaml allows you to
+    override the default (svc.cluster.local) to specify the suffix to strip away
+
 ### 9.2.14
 
 * 🚀 Release Manticore Search 9.2.14
