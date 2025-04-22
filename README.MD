@@ -350,6 +350,7 @@ For more details, refer to the [Kubernetes documentation](https://kubernetes.io/
 | serviceMonitor.enabled               | Enables service monitor resource for exporting runtime metrics to Prometheus                        | false                                                                                              |
 | serviceMonitor.interval              | Set how frequently Prometheus should scrape                        | 30s                                                                                                |
 | serviceMonitor.scrapeTimeout         | Set timeout for scrape                        | 10s                                                                                                |
+| global.clusterDomainSuffix           | DNS suffix for cluster, to allow for configuration stripping of cluster suffix                      | cluster.local                                                                                      |
 
 </details>
 
