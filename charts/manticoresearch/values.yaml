@@ -177,13 +177,9 @@ worker:
 
 exporter:
   enabled: false
-  image:
-    repository: manticoresearch/prometheus-exporter
-    pullPolicy: IfNotPresent
-    tag: 5.0.2.5
   annotations:
     prometheus.io/path: /metrics
-    prometheus.io/port: "8081"
+    prometheus.io/port: "9308"
     prometheus.io/scrape: "true"
   resources: {}
   # See comment on balancer.resources
