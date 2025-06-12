@@ -52,6 +52,8 @@ jobs:
           tags: manticoresearch/helm-balancer:0.0.0-unstable
           cache-from: type=registry,ref=manticoresearch/helm-balancer:cache
           cache-to: type=inline
+          build-args: |
+            GITHUB_TOKEN=${{ github.token }}
 
   build-worker:
     concurrency:
@@ -92,7 +94,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push worker
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         if: steps.changed-files.outputs.test-only != 'true'
         with:
           context: ./sources/manticore-worker
@@ -101,6 +103,8 @@ jobs:
           tags: manticoresearch/helm-worker:0.0.0-unstable
           cache-from: type=registry,ref=manticoresearch/helm-worker:cache
           cache-to: type=inline
+          build-args: |
+            GITHUB_TOKEN=${{ github.token }}
 
   tests:
     needs: [build-balancer, build-worker]
