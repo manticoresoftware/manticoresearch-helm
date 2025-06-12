@@ -11,7 +11,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 
 RUN chown -R manticore:manticore /var/log/manticore/ /var/lib/manticore/ /var/run/manticore /etc/manticoresearch/ /usr/share/manticore/ /dev/stdout
 
-RUN cd /etc/manticoresearch/ && composer update
+RUN cd /etc/manticoresearch/ && composer update --ignore-platform-reqs
 
 WORKDIR /etc/manticoresearch/
 
