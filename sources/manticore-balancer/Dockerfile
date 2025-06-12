@@ -9,7 +9,7 @@ COPY composer.json observer.php optimize.php starter.sh observer_runner.sh optim
 COPY supervisord.conf /etc/supervisord.conf
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 
-RUN cd /var/www/localhost && composer update && \
+RUN cd /var/www/localhost && composer config --global disable-tls true && composer config --global secure-http false && composer update && \
 chown -R manticore:manticore /var/log/manticore/ /var/lib/manticore/ /var/run/manticore /etc/manticoresearch/ /usr/share/manticore/ /var/log/supervisor /dev/stdout && \
 chown -R www-data /var/www/localhost/ /etc/manticoresearch/manticore.conf /dev/stdout
 
