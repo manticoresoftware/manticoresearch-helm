@@ -31,19 +31,19 @@ jobs:
             core.setOutput('test-only', testOnly);
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v2
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v2
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push balancer
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v4
         if: steps.changed-files.outputs.test-only != 'true'
         with:
           context: ./sources/manticore-balancer
@@ -52,8 +52,6 @@ jobs:
           tags: manticoresearch/helm-balancer:0.0.0-unstable
           cache-from: type=registry,ref=manticoresearch/helm-balancer:cache
           cache-to: type=inline
-          build-args: |
-            GITHUB_TOKEN=${{ github.token }}
 
   build-worker:
     concurrency:
@@ -82,19 +80,19 @@ jobs:
             core.setOutput('test-only', testOnly);
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v2
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v2
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push worker
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v4
         if: steps.changed-files.outputs.test-only != 'true'
         with:
           context: ./sources/manticore-worker
@@ -103,8 +101,6 @@ jobs:
           tags: manticoresearch/helm-worker:0.0.0-unstable
           cache-from: type=registry,ref=manticoresearch/helm-worker:cache
           cache-to: type=inline
-          build-args: |
-            GITHUB_TOKEN=${{ github.token }}
 
   tests:
     needs: [build-balancer, build-worker]
