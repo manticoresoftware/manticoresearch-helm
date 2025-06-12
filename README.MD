@@ -29,7 +29,7 @@ The Manticore Search Helm Chart is designed to deploy and manage Manticore Searc
 ### Installation from Helm Repository
 ```bash
 helm repo add manticoresearch https://helm.manticoresearch.com
-# Update values.yaml if needed
+# Update  values.yaml if needed
 helm install manticore -n manticore --create-namespace manticoresearch/manticoresearch
 ```
 
