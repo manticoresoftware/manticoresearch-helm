@@ -1,4 +1,4 @@
-FROM manticoresearch/manticore:10.1.0
+FROM manticoresearch/manticore:10.1.0-hf
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && apt --fix-broken install -y && \
 apt-get update && apt -y install software-properties-common && add-apt-repository -y ppa:ondrej/php && apt-get update && \
@@ -9,7 +9,7 @@ COPY composer.json observer.php optimize.php starter.sh observer_runner.sh optim
 COPY supervisord.conf /etc/supervisord.conf
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 
-RUN cd /var/www/localhost && composer update --ignore-platform-reqs && \
+RUN cd /var/www/localhost && composer update && \
 chown -R manticore:manticore /var/log/manticore/ /var/lib/manticore/ /var/run/manticore /etc/manticoresearch/ /usr/share/manticore/ /var/log/supervisor /dev/stdout && \
 chown -R www-data /var/www/localhost/ /etc/manticoresearch/manticore.conf /dev/stdout
 
