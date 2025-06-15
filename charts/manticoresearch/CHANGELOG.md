@@ -1,3 +1,4 @@
-### 9.3.2
+### 10.1.0
 
-* 🚀 Release Manticore Search 9.3.2
+* **Breaking change:** Switch to built-in Manticore Prometheus Exporter
+* 🚀 Release Manticore Search 10.1.0

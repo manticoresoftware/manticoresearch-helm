@@ -1,4 +1,4 @@
-FROM manticoresearch/manticore:9.3.2
+FROM manticoresearch/manticore:10.1.0-hf
 
 RUN apt-get --fix-broken install -y && echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
 apt-get update && apt-get -y install software-properties-common && add-apt-repository -y ppa:ondrej/php && apt-get update && \
@@ -11,7 +11,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 
 RUN chown -R manticore:manticore /var/log/manticore/ /var/lib/manticore/ /var/run/manticore /etc/manticoresearch/ /usr/share/manticore/ /dev/stdout
 
-RUN cd /etc/manticoresearch/ && composer update
+RUN cd /etc/manticoresearch/ && composer config --global secure-http false && composer config --global disable-tls true && composer update
 
 WORKDIR /etc/manticoresearch/
 

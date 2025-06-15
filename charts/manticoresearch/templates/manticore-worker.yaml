@@ -123,28 +123,6 @@ spec:
             subPath: manticore.conf
         resources:
           {{- toYaml .Values.worker.resources | nindent 10 }}
-      {{- if or .Values.exporter.enabled .Values.serviceMonitor.enabled }}
-      - name: exporter
-        securityContext:
-          {{- toYaml .Values.securityContext | nindent 12 }}
-        image: "{{ .Values.exporter.image.repository }}:{{ .Values.exporter.image.tag | default .Chart.AppVersion }}"
-        imagePullPolicy: {{ .Values.exporter.image.pullPolicy }}
-        env:
-          - name: MANTICORE_HOST
-            valueFrom:
-              fieldRef:
-                fieldPath: status.podIP
-          - name: MANTICORE_PORT
-            value: "{{ .Values.worker.service.ql.targetPort }}"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: {{ index .Values.exporter.annotations "prometheus.io/port" }}
-          initialDelaySeconds: 3
-          periodSeconds: 3
-        resources:
-          {{- toYaml .Values.exporter.resources | nindent 10 }}
-      {{- end }}
       volumes:
         - name: config-volume
           configMap:
