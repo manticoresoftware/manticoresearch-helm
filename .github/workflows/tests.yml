@@ -4,9 +4,9 @@ on:
     branches: [ master ]
 
 jobs:
-  build-balancer-amd64:
+  build-balancer:
     concurrency:
-      group: "build-balancer-amd64-${{ github.event.number }}"
+      group: "build-balancer-${{ github.event.number }}"
       cancel-in-progress: true
     runs-on: [ubuntu-latest]
     timeout-minutes: 30
@@ -39,68 +39,21 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push balancer (amd64)
+      - name: Build and push balancer
         uses: docker/build-push-action@v6
         if: steps.changed-files.outputs.test-only != 'true'
         with:
           context: ./sources/manticore-balancer
           platforms: linux/amd64
           push: true
-          tags: manticoresearch/helm-balancer:0.0.0-unstable-amd64
-          cache-from: type=registry,ref=manticoresearch/helm-balancer:cache-amd64
+          tags: manticoresearch/helm-balancer:0.0.0-unstable
+          cache-from: type=registry,ref=manticoresearch/helm-balancer:cache
           cache-to: type=inline
-          provenance: false  # Disable provenance to avoid extra manifests
+          provenance: false
 
-  build-balancer-arm64:
+  build-worker:
     concurrency:
-      group: "build-balancer-arm64-${{ github.event.number }}"
-      cancel-in-progress: true
-    runs-on: [ubuntu-24.04-arm]
-    timeout-minutes: 30
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Get changed files
-        id: changed-files
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const response = await github.rest.pulls.listFiles({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.issue.number,
-            });
-            const files = response.data.map(file => file.filename);
-            const testOnly = files.length > 0 && files.every(file => file.startsWith('clt_tests/'));
-            core.setOutput('test-only', testOnly);
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and push balancer (arm64)
-        uses: docker/build-push-action@v6
-        if: steps.changed-files.outputs.test-only != 'true'
-        with:
-          context: ./sources/manticore-balancer
-          platforms: linux/arm64
-          push: true
-          tags: manticoresearch/helm-balancer:0.0.0-unstable-arm64
-          cache-from: type=registry,ref=manticoresearch/helm-balancer:cache-arm64
-          cache-to: type=inline
-          provenance: false  # Disable provenance to avoid extra manifests
-
-  build-worker-amd64:
-    concurrency:
-      group: "build-worker-amd64-${{ github.event.number }}"
+      group: "build-worker-${{ github.event.number }}"
       cancel-in-progress: true
     runs-on: [ubuntu-latest]
     timeout-minutes: 30
@@ -133,92 +86,20 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push worker (amd64)
+      - name: Build and push worker
         uses: docker/build-push-action@v6
         if: steps.changed-files.outputs.test-only != 'true'
         with:
           context: ./sources/manticore-worker
           platforms: linux/amd64
           push: true
-          tags: manticoresearch/helm-worker:0.0.0-unstable-amd64
-          cache-from: type=registry,ref=manticoresearch/helm-worker:cache-amd64
+          tags: manticoresearch/helm-worker:0.0.0-unstable
+          cache-from: type=registry,ref=manticoresearch/helm-worker:cache
           cache-to: type=inline
-          provenance: false  # Disable provenance to avoid extra manifests
-
-  build-worker-arm64:
-    concurrency:
-      group: "build-worker-arm64-${{ github.event.number }}"
-      cancel-in-progress: true
-    runs-on: [ubuntu-24.04-arm]
-    timeout-minutes: 30
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Get changed files
-        id: changed-files
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const response = await github.rest.pulls.listFiles({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.issue.number,
-            });
-            const files = response.data.map(file => file.filename);
-            const testOnly = files.length > 0 && files.every(file => file.startsWith('clt_tests/'));
-            core.setOutput('test-only', testOnly);
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and push worker (arm64)
-        uses: docker/build-push-action@v6
-        if: steps.changed-files.outputs.test-only != 'true'
-        with:
-          context: ./sources/manticore-worker
-          platforms: linux/arm64
-          push: true
-          tags: manticoresearch/helm-worker:0.0.0-unstable-arm64
-          cache-from: type=registry,ref=manticoresearch/helm-worker:cache-arm64
-          cache-to: type=inline
-          provenance: false  # Disable provenance to avoid extra manifests
-
-  create-manifests:
-    needs: [build-balancer-amd64, build-balancer-arm64, build-worker-amd64, build-worker-arm64]
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Create and push balancer manifest
-        run: |
-          docker manifest create manticoresearch/helm-balancer:0.0.0-unstable \
-            --amend manticoresearch/helm-balancer:0.0.0-unstable-amd64 \
-            --amend manticoresearch/helm-balancer:0.0.0-unstable-arm64
-          docker manifest push --purge manticoresearch/helm-balancer:0.0.0-unstable
-
-      - name: Create and push worker manifest
-        run: |
-          docker manifest create manticoresearch/helm-worker:0.0.0-unstable \
-            --amend manticoresearch/helm-worker:0.0.0-unstable-amd64 \
-            --amend manticoresearch/helm-worker:0.0.0-unstable-arm64
-          docker manifest push --purge manticoresearch/helm-worker:0.0.0-unstable
+          provenance: false
 
   tests:
-    needs: [create-manifests]
+    needs: [build-balancer, build-worker]
     concurrency:
       group: "tests-${{ github.event.number }}"
       cancel-in-progress: true
