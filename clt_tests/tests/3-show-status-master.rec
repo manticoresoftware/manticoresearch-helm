@@ -3,214 +3,217 @@
 kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "show status\G" | grep -A1 "Counter: cluster"
 ––– output –––
 Counter: cluster_name
-Value: manticore_cluster
+  Value: manticore_cluster
 --
 Counter: cluster_manticore_cluster_state_uuid
-Value: #!/[a-z0-9-]+/!#
+  Value: #!/[a-z0-9-]+/!#
+--
+Counter: cluster_manticore_cluster_state_seqno
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_conf_id
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_status
-Value: primary
+  Value: primary
 --
 Counter: cluster_manticore_cluster_size
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_local_index
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_node_state
-Value: synced
+  Value: synced
 --
 Counter: cluster_manticore_cluster_nodes_set
-Value: my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-replication-svc.default:9312,my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-replication-svc.default:9312
+  Value: my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-replication-svc.default:9312,my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-replication-svc.default:9312
 --
 Counter: cluster_manticore_cluster_nodes_view
-Value: my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-replication-svc.default:9312,my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-replication-svc.default:9315:replication,my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-replication-svc.default:9312,my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-replication-svc.default:9315:replication
+  Value: my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-replication-svc.default:9312,my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-replication-svc.default:9315:replication,my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-replication-svc.default:9312,my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-replication-svc.default:9315:replication
 --
 Counter: cluster_manticore_cluster_indexes_count
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_indexes
-Value:
+  Value:
 --
 Counter: cluster_manticore_cluster_local_state_uuid
-Value: #!/[a-z0-9-]+/!#
+  Value: #!/[a-z0-9-]+/!#
 --
 Counter: cluster_manticore_cluster_protocol_version
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_last_applied
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_last_committed
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_replicated
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_replicated_bytes
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_repl_keys
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_repl_keys_bytes
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_repl_data_bytes
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_repl_other_bytes
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_received
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_received_bytes
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_local_commits
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_local_cert_failures
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_local_replays
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_local_send_queue
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_local_send_queue_max
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_local_send_queue_min
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_local_send_queue_avg
-Value: %{NUMBER}.%{NUMBER}
+  Value: %{NUMBER}.%{NUMBER}
 --
 Counter: cluster_manticore_cluster_local_recv_queue
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_local_recv_queue_max
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_local_recv_queue_min
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_local_recv_queue_avg
-Value: %{NUMBER}.%{NUMBER}
+  Value: %{NUMBER}.%{NUMBER}
 --
 Counter: cluster_manticore_cluster_local_cached_downto
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_flow_control_paused_ns
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_flow_control_paused
-Value: %{NUMBER}.%{NUMBER}
+  Value: %{NUMBER}.%{NUMBER}
 --
 Counter: cluster_manticore_cluster_flow_control_sent
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_flow_control_recv
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_flow_control_interval
-Value: [ %{NUMBER}, %{NUMBER} ]
+  Value: [ %{NUMBER}, %{NUMBER} ]
 --
 Counter: cluster_manticore_cluster_flow_control_interval_low
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_flow_control_interval_high
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_flow_control_status
-Value: OFF
+  Value: OFF
 --
 Counter: cluster_manticore_cluster_cert_deps_distance
-Value: 0.000000
+  Value: 0.000000
 --
 Counter: cluster_manticore_cluster_apply_oooe
-Value: 0.000000
+  Value: 0.000000
 --
 Counter: cluster_manticore_cluster_apply_oool
-Value: 0.000000
+  Value: 0.000000
 --
 Counter: cluster_manticore_cluster_apply_window
-Value: 0.000000
+  Value: 0.000000
 --
 Counter: cluster_manticore_cluster_commit_oooe
-Value: 0.000000
+  Value: 0.000000
 --
 Counter: cluster_manticore_cluster_commit_oool
-Value: 0.000000
+  Value: 0.000000
 --
 Counter: cluster_manticore_cluster_commit_window
-Value: 0.000000
+  Value: 0.000000
 --
 Counter: cluster_manticore_cluster_local_state
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_local_state_comment
-Value: Synced
+  Value: Synced
 --
 Counter: cluster_manticore_cluster_cert_index_size
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_cert_bucket_count
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_gcache_pool_size
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_causal_reads
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_cert_interval
-Value: 0.000000
+  Value: 0.000000
 --
 Counter: cluster_manticore_cluster_open_transactions
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_open_connections
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_ist_receive_status
-Value:
+  Value:
 --
 Counter: cluster_manticore_cluster_ist_receive_seqno_start
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_ist_receive_seqno_current
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_ist_receive_seqno_end
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_incoming_addresses
-Value: my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-replication-svc.default:9312,my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-replication-svc.default:9315:replication,my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-replication-svc.default:9312,my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-replication-svc.default:9315:replication
+  Value: my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-replication-svc.default:9312,my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-replication-svc.default:9315:replication,my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-replication-svc.default:9312,my-helm-manticoresearch-worker-%{NUMBER}.my-helm-manticoresearch-worker-replication-svc.default:9315:replication
 --
 Counter: cluster_manticore_cluster_cluster_weight
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_desync_count
-Value: %{NUMBER}
+  Value: %{NUMBER}
 --
 Counter: cluster_manticore_cluster_evs_delayed
-Value:
+  Value:
 --
 Counter: cluster_manticore_cluster_evs_evict_list
-Value:
+  Value:
 --
 Counter: cluster_manticore_cluster_evs_repl_latency
-Value: #!/[0-9a-z-.\/]+/!#
+  Value: #!/[0-9a-z-.\/]+/!#
 --
 Counter: cluster_manticore_cluster_evs_state
-Value: OPERATIONAL
+  Value: OPERATIONAL
 --
 Counter: cluster_manticore_cluster_gcomm_uuid
-Value: #!/[a-z0-9-]+/!#
+  Value: #!/[a-z0-9-]+/!#
