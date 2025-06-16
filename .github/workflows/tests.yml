@@ -40,7 +40,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push balancer (amd64)
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         if: steps.changed-files.outputs.test-only != 'true'
         with:
           context: ./sources/manticore-balancer
@@ -49,6 +49,7 @@ jobs:
           tags: manticoresearch/helm-balancer:0.0.0-unstable-amd64
           cache-from: type=registry,ref=manticoresearch/helm-balancer:cache-amd64
           cache-to: type=inline
+          provenance: false  # Disable provenance to avoid extra manifests
 
   build-balancer-arm64:
     concurrency:
@@ -86,7 +87,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push balancer (arm64)
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         if: steps.changed-files.outputs.test-only != 'true'
         with:
           context: ./sources/manticore-balancer
@@ -95,6 +96,7 @@ jobs:
           tags: manticoresearch/helm-balancer:0.0.0-unstable-arm64
           cache-from: type=registry,ref=manticoresearch/helm-balancer:cache-arm64
           cache-to: type=inline
+          provenance: false  # Disable provenance to avoid extra manifests
 
   build-worker-amd64:
     concurrency:
@@ -132,7 +134,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push worker (amd64)
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         if: steps.changed-files.outputs.test-only != 'true'
         with:
           context: ./sources/manticore-worker
@@ -141,6 +143,7 @@ jobs:
           tags: manticoresearch/helm-worker:0.0.0-unstable-amd64
           cache-from: type=registry,ref=manticoresearch/helm-worker:cache-amd64
           cache-to: type=inline
+          provenance: false  # Disable provenance to avoid extra manifests
 
   build-worker-arm64:
     concurrency:
@@ -178,7 +181,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push worker (arm64)
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         if: steps.changed-files.outputs.test-only != 'true'
         with:
           context: ./sources/manticore-worker
@@ -187,6 +190,7 @@ jobs:
           tags: manticoresearch/helm-worker:0.0.0-unstable-arm64
           cache-from: type=registry,ref=manticoresearch/helm-worker:cache-arm64
           cache-to: type=inline
+          provenance: false  # Disable provenance to avoid extra manifests
 
   create-manifests:
     needs: [build-balancer-amd64, build-balancer-arm64, build-worker-amd64, build-worker-arm64]
