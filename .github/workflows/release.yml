@@ -5,9 +5,9 @@ on:
       - master
 
 jobs:
-  build-balancer:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+  build-balancer-amd64:
+    runs-on: [ubuntu-latest]
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,10 +26,6 @@ jobs:
             echo "isNeedToBuild=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-        if: steps.vars.outputs.isNeedToBuild
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
         if: steps.vars.outputs.isNeedToBuild
@@ -41,20 +37,21 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push balancer
-        uses: docker/build-push-action@v4
+      - name: Build and push balancer (amd64)
+        uses: docker/build-push-action@v6
         if: steps.vars.outputs.isNeedToBuild
         with:
           context: ./sources/manticore-balancer
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           push: true
-          tags: manticoresearch/helm-balancer:${{ steps.vars.outputs.chartVersion }}
-          cache-from: type=registry,ref=manticoresearch/helm-balancer:cache
+          tags: manticoresearch/helm-balancer:${{ steps.vars.outputs.chartVersion }}-amd64
+          cache-from: type=registry,ref=manticoresearch/helm-balancer:cache-amd64
           cache-to: type=inline
+          provenance: false
 
-  build-worker:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+  build-balancer-arm64:
+    runs-on: [ubuntu-24.04-arm]
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -73,9 +70,49 @@ jobs:
             echo "isNeedToBuild=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
         if: steps.vars.outputs.isNeedToBuild
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        if: steps.vars.outputs.isNeedToBuild
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push balancer (arm64)
+        uses: docker/build-push-action@v6
+        if: steps.vars.outputs.isNeedToBuild
+        with:
+          context: ./sources/manticore-balancer
+          platforms: linux/arm64
+          push: true
+          tags: manticoresearch/helm-balancer:${{ steps.vars.outputs.chartVersion }}-arm64
+          cache-from: type=registry,ref=manticoresearch/helm-balancer:cache-arm64
+          cache-to: type=inline
+          provenance: false
+
+  build-worker-amd64:
+    runs-on: [ubuntu-latest]
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for Git tag history
+
+      - name: Write outputs
+        id: vars
+        run: |
+          chart_version=$(cat ./charts/manticoresearch/Chart.yaml | grep appVersion | cut -d' ' -f2)
+          chart_tag=$(cat ./charts/manticoresearch/Chart.yaml | grep version: | cut -d' ' -f2)
+          echo "chartVersion=$chart_version" >> $GITHUB_OUTPUT
+          if git tag --list | grep -q "^$chart_tag$"; then
+            echo "isNeedToBuild=" >> $GITHUB_OUTPUT
+          else
+            echo "isNeedToBuild=true" >> $GITHUB_OUTPUT
+          fi
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -88,19 +125,100 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push worker
-        uses: docker/build-push-action@v4
+      - name: Build and push worker (amd64)
+        uses: docker/build-push-action@v6
         if: steps.vars.outputs.isNeedToBuild
         with:
           context: ./sources/manticore-worker
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           push: true
-          tags: manticoresearch/helm-worker:${{ steps.vars.outputs.chartVersion }}
-          cache-from: type=registry,ref=manticoresearch/helm-worker:cache
+          tags: manticoresearch/helm-worker:${{ steps.vars.outputs.chartVersion }}-amd64
+          cache-from: type=registry,ref=manticoresearch/helm-worker:cache-amd64
           cache-to: type=inline
+          provenance: false
+
+  build-worker-arm64:
+    runs-on: [ubuntu-24.04-arm]
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for Git tag history
+
+      - name: Write outputs
+        id: vars
+        run: |
+          chart_version=$(cat ./charts/manticoresearch/Chart.yaml | grep appVersion | cut -d' ' -f2)
+          chart_tag=$(cat ./charts/manticoresearch/Chart.yaml | grep version: | cut -d' ' -f2)
+          echo "chartVersion=$chart_version" >> $GITHUB_OUTPUT
+          if git tag --list | grep -q "^$chart_tag$"; then
+            echo "isNeedToBuild=" >> $GITHUB_OUTPUT
+          else
+            echo "isNeedToBuild=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        if: steps.vars.outputs.isNeedToBuild
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        if: steps.vars.outputs.isNeedToBuild
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push worker (arm64)
+        uses: docker/build-push-action@v6
+        if: steps.vars.outputs.isNeedToBuild
+        with:
+          context: ./sources/manticore-worker
+          platforms: linux/arm64
+          push: true
+          tags: manticoresearch/helm-worker:${{ steps.vars.outputs.chartVersion }}-arm64
+          cache-from: type=registry,ref=manticoresearch/helm-worker:cache-arm64
+          cache-to: type=inline
+          provenance: false
+
+  create-manifests:
+    needs: [build-balancer-amd64, build-balancer-arm64, build-worker-amd64, build-worker-arm64]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for Git tag history
+
+      - name: Write outputs
+        id: vars
+        run: |
+          chart_version=$(cat ./charts/manticoresearch/Chart.yaml | grep appVersion | cut -d' ' -f2)
+          echo "chartVersion=$chart_version" >> $GITHUB_OUTPUT
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Create and push balancer manifest
+        run: |
+          docker manifest create manticoresearch/helm-balancer:${{ steps.vars.outputs.chartVersion }} \
+            --amend manticoresearch/helm-balancer:${{ steps.vars.outputs.chartVersion }}-amd64 \
+            --amend manticoresearch/helm-balancer:${{ steps.vars.outputs.chartVersion }}-arm64
+          docker manifest push --purge manticoresearch/helm-balancer:${{ steps.vars.outputs.chartVersion }}
+
+      - name: Create and push worker manifest
+        run: |
+          docker manifest create manticoresearch/helm-worker:${{ steps.vars.outputs.chartVersion }} \
+            --amend manticoresearch/helm-worker:${{ steps.vars.outputs.chartVersion }}-amd64 \
+            --amend manticoresearch/helm-worker:${{ steps.vars.outputs.chartVersion }}-arm64
+          docker manifest push --purge manticoresearch/helm-worker:${{ steps.vars.outputs.chartVersion }}
 
   release:
-    needs: [build-balancer, build-worker]
+    needs: [create-manifests]
     permissions:
       contents: write
     runs-on: ubuntu-latest
