@@ -1,6 +1,6 @@
 ––– block: ./init/init –––
 ––– input –––
-kubectl get nodes
+kubectl get nodes 2>/dev/null
 ––– output –––
 #!/NAME\s+STATUS\s+ROLES\s+AGE\s+VERSION/!#
 #!/[0-9a-z]{12}\s+Ready\s+control-plane,master\s+[0-9]+[s|m]\s+v[0-9\.]+\+k3s1/!#
@@ -34,7 +34,7 @@ version: 0.0.0-unstable
 # follow Semantic Versioning. They should reflect the version the application is using.
 appVersion: 0.0.0-unstable
 ––– input –––
-helm install my-helm ./charts/manticoresearch
+helm install my-helm ./charts/manticoresearch 2>/dev/null
 ––– output –––
 NAME: my-helm
 LAST DEPLOYED: #!/[a-zA-Z]{3}\s+[a-zA-Z]{3}\s+[0-9]+\s+[0-9]+:[0-9]+:[0-9]+\s+[0-9]+/!#
