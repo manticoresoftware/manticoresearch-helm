@@ -1,3 +1,3 @@
-### 13.2.3
+### 13.6.7
 
-* 🚀 Release Manticore Search 13.2.3
+* 🚀 Release Manticore Search 13.6.7
