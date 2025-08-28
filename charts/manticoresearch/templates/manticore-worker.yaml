@@ -75,6 +75,8 @@ spec:
             value: {{ .Values.worker.logLevel }}
           - name: INSTANCE_LABEL
             value: {{ .Release.Name }}
+          - name: TZ
+            value: {{ .Values.worker.clusterName }}
           - name: WORKER_SERVICE
             value: {{ include "manticoresearch.fullname" . }}-worker-replication-svc
           - name: NAMESPACE
