@@ -1,3 +1,3 @@
-### 13.11.1
+### 13.11.1-20250929
 
-* 🚀 Release Manticore Search 13.11.1
+* 🚀 Fix graceful shutdown in pods
