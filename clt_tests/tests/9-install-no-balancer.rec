@@ -2,7 +2,7 @@
 ––– input –––
 helm install my-helm --set balancer.enabled=false ./charts/manticoresearch
 ––– output –––
-#!/W0929\s[0-9]+:[0-9]+:[0-9]+\.+[0-9]+\s+[0-9]+\swarnings\.go:[0-9]+\]\s+spec.SessionAffinity is ignored for headless services/!#
+#!/W[0-9]+\s[0-9]+:[0-9]+:[0-9]+\.+[0-9]+\s+[0-9]+\swarnings\.go:[0-9]+\]\s+spec.SessionAffinity is ignored for headless services/!#
 NAME: my-helm
 LAST DEPLOYED: #!/[a-zA-Z]{3}\s+[a-zA-Z]{3}\s+[0-9]+\s+[0-9]+:[0-9]+:[0-9]+\s+[0-9]+/!#
 NAMESPACE: default
