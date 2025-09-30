@@ -16,4 +16,4 @@ done
 
 echo "Mount success"
 
-/usr/bin/supervisord -n -c /etc/supervisord.conf
+exec /usr/bin/supervisord -n -c /etc/supervisord.conf
