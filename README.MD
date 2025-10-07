@@ -1,6 +1,6 @@
 # Manticore Search Helm Chart
 
-**Version:** 13.11.1-20250929
+**Version:** 13.13.0
 
 The Manticore Search Helm Chart is designed to deploy and manage Manticore Search in Kubernetes. It ensures high availability with out-of-the-box replication and improves read throughput through automatic load balancing.
 
