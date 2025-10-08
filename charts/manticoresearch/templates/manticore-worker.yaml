@@ -121,12 +121,25 @@ spec:
           - name: config-volume
             mountPath: {{ .Values.worker.config.path }}
             subPath: manticore.conf
+          {{- if .Values.stopwords.enabled }}
+          - name: stopwords
+            mountPath: /usr/share/manticore/stopwords/stopwords.txt
+            subPath: stopwords.txt
+          {{- end }}
         resources:
           {{- toYaml .Values.worker.resources | nindent 10 }}
       volumes:
         - name: config-volume
           configMap:
             name: {{ include "manticoresearch.fullname" . }}-worker-config
+        {{- if .Values.stopwords.enabled }}
+        - name: stopwords
+          configMap:
+            name: {{ .Release.Name }}-stopwords
+            items:
+              - key: stopwords.txt
+                path: stopwords.txt
+        {{- end }}
       {{- with .Values.worker.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
