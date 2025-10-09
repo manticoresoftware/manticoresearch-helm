@@ -10,6 +10,15 @@ global:
   manticoresearch: {}
   clusterDomainSuffix: cluster.local
 
+stopwords:
+  enabled: false
+  content: |
+    the
+    a
+    an
+    of
+    and
+
 balancer:
   enabled: true
   replicaCount: 1
