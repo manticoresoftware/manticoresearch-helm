@@ -3,15 +3,15 @@
 # Declare variables to be passed into your templates.
 
 global:
-  #   imageRegistry: myRegistryName
-  #   imagePullSecrets:
-  #     - myRegistryKeySecretName
-  #   storageClass: myStorageClass
+#   imageRegistry: myRegistryName
+#   imagePullSecrets:
+#     - myRegistryKeySecretName
+#   storageClass: myStorageClass
   manticoresearch: {}
   clusterDomainSuffix: cluster.local
 
 stopwords:
-  enabled: true
+  enabled: false
   content: |
     the
     a
@@ -26,7 +26,7 @@ balancer:
   runInterval: 5
   image:
     repository: manticoresearch/helm-balancer
-    #    tag: 3.6.0.0
+#    tag: 3.6.0.0
     pullPolicy: IfNotPresent
   service:
     ql:
@@ -108,7 +108,7 @@ worker:
   logLevel: INFO
   image:
     repository: manticoresearch/helm-worker
-    #    tag: 3.6.0.0
+#    tag: 3.6.0.0
     pullPolicy: IfNotPresent
   service:
     ql:
