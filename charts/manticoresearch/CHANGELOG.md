@@ -1,3 +1,3 @@
-### 13.13.0
+### 13.13.0-20251013
 
-* 🚀 Release 13.13.0
+* Feat: Add stopwords support
