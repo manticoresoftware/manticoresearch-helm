@@ -121,7 +121,7 @@ spec:
           - name: config-volume
             mountPath: {{ .Values.worker.config.path }}
             subPath: manticore.conf
-          {{- if .Values.stopwords.enabled }}
+          {{- if .Values.worker.stopwords.enabled }}
           - name: stopwords
             mountPath: {{ .Values.worker.stopwords.path }}
             subPath: stopwords.txt
