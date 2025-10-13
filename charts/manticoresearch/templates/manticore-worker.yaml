@@ -121,6 +121,11 @@ spec:
           - name: config-volume
             mountPath: {{ .Values.worker.config.path }}
             subPath: manticore.conf
+          {{- if .Values.stopwords.enabled }}
+          - name: stopwords
+            mountPath: {{ .Values.worker.stopwords.path }}
+            subPath: stopwords.txt
+          {{- end }}
         resources:
           {{- toYaml .Values.worker.resources | nindent 10 }}
       volumes:

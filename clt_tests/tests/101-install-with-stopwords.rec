@@ -1,0 +1,28 @@
+––– block: ./init/init –––
+––– input –––
+helm install my-helm --set balancer.enabled=false --set worker.stopwords.enabled=true ./charts/manticoresearch
+––– output –––
+#!/W[0-9]+\s[0-9]+:[0-9]+:[0-9]+\.+[0-9]+\s+[0-9]+\swarnings\.go:[0-9]+\]\s+spec\.SessionAffinity is ignored for headless services/!#
+NAME: my-helm
+LAST DEPLOYED: #!/[a-zA-Z]{3}\s+[a-zA-Z]{3}\s+[0-9]+\s+[0-9]+:[0-9]+:[0-9]+\s+[0-9]+/!#
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+1) Wait until all pods are moved to running state:
+kubectl --namespace default get po
+2) Forward worker port to your local machine:
+kubectl --namespace default port-forward service/my-helm-manticoresearch-worker-svc 7306:9306
+3) Connect to the worker:
+mysql -h0 -P7306
+4) Create your first table:
+CREATE TABLE idx(title text);
+5) Add table to cluster:
+ALTER CLUSTER manticore_cluster ADD idx;
+6) Add some data to your table:
+INSERT INTO manticore_cluster:idx (title) VALUES ('dog is brown'), ('mouse is small');
+7) Search through the worker:
+mysql -h0 -P7306 -e "SELECT * FROM idx WHERE match('dog')"
+8) Scale the cluster:
+kubectl scale statefulsets manticore-manticoresearch-worker -n default --replicas=5

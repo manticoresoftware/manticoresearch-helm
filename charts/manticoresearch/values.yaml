@@ -148,6 +148,15 @@ worker:
         shutdown_timeout = 25s
         server_id = $server_id
       }
+  stopwords:
+    enabled: false
+    path: /usr/share/manticore/stopwords/stopwords.txt
+    content: |
+      the
+      a
+      an
+      of
+      and
   resources: {}
   # See comment on balancer.resources
   nodeSelector: {}
