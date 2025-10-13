@@ -9,7 +9,6 @@ kubectl get po | grep worker | cut -d " " -f1
 my-helm-manticoresearch-worker-0
 my-helm-manticoresearch-worker-1
 my-helm-manticoresearch-worker-2
-
 ––– input –––
 kubectl exec my-helm-manticoresearch-worker-0 -- cat /usr/share/manticore/stopwords/stopwords.txt
 ––– output –––
