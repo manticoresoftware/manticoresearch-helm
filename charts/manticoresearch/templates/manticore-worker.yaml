@@ -101,7 +101,6 @@ spec:
                 if echo "$STATUS" | grep -qE "[[:space:]]primary[[:space:]]"; then
                   exit 0
                 else
-                  echo "[$TIMESTAMP] READINESS PROBE FAILED - Status: $STATUS" >> /tmp/probe-failures.log
                   exit 1
                 fi
           {{- end }}
@@ -139,7 +138,6 @@ spec:
                 if echo "$NODE_STATE" | grep -qE "(synced|joining)" && echo "$STATUS" | grep -qE "[[:space:]]primary[[:space:]]"; then
                   exit 0
                 else
-                  echo "[$TIMESTAMP] STARTUP PROBE FAILED - Node state: $NODE_STATE | Status: $STATUS" >> /tmp/probe-failures.log
                   exit 1
                 fi
           {{- end }}
