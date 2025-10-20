@@ -95,13 +95,17 @@ spec:
               - /bin/sh
               - -c
               - |
-                if /usr/bin/mysql -e "show status;" | grep cluster_node_state | grep -q synced ; then exit 0; else exit 1; fi
+                if /usr/bin/mysql -e "show status like 'cluster_%_status';" | grep -q primary ; then exit 0; else exit 1; fi
           {{- end }}
         livenessProbe:
           {{- if .Values.worker.livenessProbe.enabled }}
           {{- include "manticore-helm.render" (dict "value" (omit .Values.worker.livenessProbe "enabled") "context" $) | nindent 8 }}
-          tcpSocket:
-            port: {{ .Values.worker.service.ql.port }}
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - |
+                if /usr/bin/mysql -e "show status like 'cluster_%_node_state';" | grep -q synced ; then exit 0; else exit 1; fi
           {{- end }}
         {{- if semverCompare ">=1.20-0" $.Capabilities.KubeVersion.GitVersion }}
         startupProbe:
@@ -112,7 +116,7 @@ spec:
               - /bin/sh
               - -c
               - |
-                if /usr/bin/mysql -e "show status;" | grep cluster_node_state | grep -q synced ; then exit 0; else exit 1; fi
+                if /usr/bin/mysql -e "show status like 'cluster_%_node_state';" | grep -q synced && /usr/bin/mysql -e "show status like 'cluster_%_status';" | grep -q primary ; then exit 0; else exit 1; fi
           {{- end }}
         {{- end }}
         volumeMounts:

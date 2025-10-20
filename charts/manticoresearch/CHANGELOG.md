@@ -1,3 +1,3 @@
-### 13.13.0-20251013
+### 13.13.0-20251020
 
-* Feat: Add stopwords support
+* Feat: improved worker probes
