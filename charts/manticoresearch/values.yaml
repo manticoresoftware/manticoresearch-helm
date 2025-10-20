@@ -170,7 +170,7 @@ worker:
     successThreshold: 1
     timeoutSeconds: 1
   readinessProbe:
-    enabled: false
+    enabled: true
     failureThreshold: 3
     initialDelaySeconds: 5
     periodSeconds: 3
