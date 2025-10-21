@@ -81,27 +81,30 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
-          {{- if .Values.worker.quorumRecovery }}
-          - name: QUORUM_RECOVERY
-            value: "true"
-          - name: QUORUM_RUN_INTERVAL
-            value: {{ .Values.worker.quorumCheckInterval | quote }}
-          {{- end }}
         readinessProbe:
           {{- if .Values.worker.readinessProbe.enabled }}
           {{- include "manticore-helm.render" (dict "value" (omit .Values.worker.readinessProbe "enabled") "context" $) | nindent 8 }}
+          tcpSocket:
+            port: {{ .Values.worker.service.ql.port }}
+          {{- end }}
+        livenessProbe:
+          {{- if .Values.worker.livenessProbe.enabled }}
+          {{- include "manticore-helm.render" (dict "value" (omit .Values.worker.livenessProbe "enabled") "context" $) | nindent 8 }}
           exec:
             command:
               - /bin/sh
               - -c
               - |
-                if /usr/bin/mysql -e "show status;" | grep cluster_node_state | grep -q synced ; then exit 0; else exit 1; fi
-          {{- end }}
-        livenessProbe:
-          {{- if .Values.worker.livenessProbe.enabled }}
-          {{- include "manticore-helm.render" (dict "value" (omit .Values.worker.livenessProbe "enabled") "context" $) | nindent 8 }}
-          tcpSocket:
-            port: {{ .Values.worker.service.ql.port }}
+                NODE_STATE=$(/usr/bin/mysql -e "show status like 'cluster_%_node_state';" 2>&1)
+                STATUS=$(/usr/bin/mysql -e "show status like 'cluster_%_status';" 2>&1)
+                TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+                echo "Node state: $NODE_STATE" >&2
+                echo "Cluster status: $STATUS" >&2
+                if echo "$NODE_STATE" | grep -qE "(synced|donor)" && echo "$STATUS" | grep -qE "[[:space:]]primary[[:space:]]"; then
+                  exit 0
+                else
+                  exit 1
+                fi
           {{- end }}
         {{- if semverCompare ">=1.20-0" $.Capabilities.KubeVersion.GitVersion }}
         startupProbe:
@@ -112,7 +115,16 @@ spec:
               - /bin/sh
               - -c
               - |
-                if /usr/bin/mysql -e "show status;" | grep cluster_node_state | grep -q synced ; then exit 0; else exit 1; fi
+                NODE_STATE=$(/usr/bin/mysql -e "show status like 'cluster_%_node_state';" 2>&1)
+                STATUS=$(/usr/bin/mysql -e "show status like 'cluster_%_status';" 2>&1)
+                TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+                echo "Node state: $NODE_STATE" >&2
+                echo "Cluster status: $STATUS" >&2
+                if echo "$NODE_STATE" | grep -qE "(synced|joining)" && echo "$STATUS" | grep -qE "[[:space:]]primary[[:space:]]"; then
+                  exit 0
+                else
+                  exit 1
+                fi
           {{- end }}
         {{- end }}
         volumeMounts:

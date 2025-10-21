@@ -91,10 +91,6 @@ worker:
 
   ## The `master-slave` mode expects that you write only to node 0, so it's guaranteed to always have the most actual data. Then in case the cluster is fully shut down and then back up all other nodes will connect to the node 0.
   replicationMode: multi-master
-  ## Allows automatic restore of a replication cluster if it is broken due to no quorum. Recommended with the master-slave `replicationMode`. May be dangerous in terms of data loss in the master-master `replicationMode`.
-  quorumRecovery: false
-  ## interval in seconds to run cluster status check
-  quorumCheckInterval: 15
   autoAddTablesInCluster: true
   logLevel: INFO
   image:
@@ -170,7 +166,7 @@ worker:
     successThreshold: 1
     timeoutSeconds: 1
   readinessProbe:
-    enabled: false
+    enabled: true
     failureThreshold: 3
     initialDelaySeconds: 5
     periodSeconds: 3
