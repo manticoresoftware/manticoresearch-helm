@@ -1,6 +1,6 @@
 ––– block: ./init/init –––
 ––– input –––
-timeout 300 bash -c 'while [[ ! $(kubectl get po 2>&1 | grep "Running" | wc -l) -eq 3 ]]; do sleep 1; done' && echo "OK" || echo "Failed waiting until pods was deployed" && kubectl get po && kubectl desc po && kubectl logs my-helm-manticoresearch-worker-0
+timeout 300 bash -c 'while [[ ! $(kubectl get po 2>&1 | grep "Running" | wc -l) -eq 3 ]]; do sleep 1; done' && echo "OK" || echo "Failed waiting until pods was deployed" && kubectl get po && kubectl describe po my-helm-manticoresearch-worker-0 && kubectl logs my-helm-manticoresearch-worker-0
 ––– output –––
 OK
 ––– input –––
