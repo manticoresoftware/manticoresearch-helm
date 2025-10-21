@@ -22,3 +22,6 @@ kubectl get pvc | grep worker | grep Bound | wc -l
 ––– input –––
 kubectl delete --all pvc
 ––– output –––
+persistentvolumeclaim "data-my-helm-manticoresearch-worker-0" deleted
+persistentvolumeclaim "data-my-helm-manticoresearch-worker-1" deleted
+persistentvolumeclaim "data-my-helm-manticoresearch-worker-2" deleted
