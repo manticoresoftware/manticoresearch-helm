@@ -81,28 +81,11 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
-          {{- if .Values.worker.quorumRecovery }}
-          - name: QUORUM_RECOVERY
-            value: "true"
-          - name: QUORUM_RUN_INTERVAL
-            value: {{ .Values.worker.quorumCheckInterval | quote }}
-          {{- end }}
         readinessProbe:
           {{- if .Values.worker.readinessProbe.enabled }}
           {{- include "manticore-helm.render" (dict "value" (omit .Values.worker.readinessProbe "enabled") "context" $) | nindent 8 }}
-          exec:
-            command:
-              - /bin/sh
-              - -c
-              - |
-                STATUS=$(/usr/bin/mysql -e "show status like 'cluster_%_status';" 2>&1)
-                TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
-                echo "Cluster status: $STATUS" >&2
-                if echo "$STATUS" | grep -qE "[[:space:]]primary[[:space:]]"; then
-                  exit 0
-                else
-                  exit 1
-                fi
+          tcpSocket:
+            port: {{ .Values.worker.service.ql.port }}
           {{- end }}
         livenessProbe:
           {{- if .Values.worker.livenessProbe.enabled }}
@@ -113,9 +96,11 @@ spec:
               - -c
               - |
                 NODE_STATE=$(/usr/bin/mysql -e "show status like 'cluster_%_node_state';" 2>&1)
+                STATUS=$(/usr/bin/mysql -e "show status like 'cluster_%_status';" 2>&1)
                 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
                 echo "Node state: $NODE_STATE" >&2
-                if echo "$NODE_STATE" | grep -qE "(synced|donor)"; then
+                echo "Cluster status: $STATUS" >&2
+                if echo "$NODE_STATE" | grep -qE "(synced|donor)" && echo "$STATUS" | grep -qE "[[:space:]]primary[[:space:]]"; then
                   exit 0
                 else
                   exit 1
