@@ -1,27 +1,2 @@
 ––– block: ./init/init –––
-––– input –––
-helm uninstall my-helm
-––– output –––
-release "my-helm" uninstalled
-––– input –––
-kubectl get po | grep Terminating | wc -l
-––– output –––
-3
-––– input –––
-kubectl get svc | wc -l
-––– output –––
-2
-––– input –––
-kubectl get configmaps | wc -l
-––– output –––
-2
-––– input –––
-kubectl get pvc | grep worker | grep Bound | wc -l
-––– output –––
-3
-––– input –––
-kubectl delete --all pvc
-––– output –––
-persistentvolumeclaim "data-my-helm-manticoresearch-worker-0" deleted
-persistentvolumeclaim "data-my-helm-manticoresearch-worker-1" deleted
-persistentvolumeclaim "data-my-helm-manticoresearch-worker-2" deleted
+––– block: ./init/uninstall –––
