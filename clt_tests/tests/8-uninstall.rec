@@ -19,3 +19,6 @@ kubectl get configmaps | wc -l
 kubectl get pvc | grep worker | grep Bound | wc -l
 ––– output –––
 3
+––– input –––
+kubectl delete --all pvc
+––– output –––
