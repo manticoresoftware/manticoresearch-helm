@@ -38,6 +38,21 @@ Counter: cluster_manticore_cluster_indexes_count
 Counter: cluster_manticore_cluster_indexes
   Value:
 --
+Counter: cluster_manticore_cluster_sst_total
+  Value: #!/[a-z0-9-]+/!#
+--
+Counter: cluster_manticore_cluster_sst_stage
+  Value: -
+--
+Counter: cluster_manticore_cluster_sst_stage_total
+  Value: -
+--
+Counter: cluster_manticore_cluster_sst_table
+  Value: -
+--
+Counter: cluster_manticore_cluster_sst_tables
+  Value: -
+--
 Counter: cluster_manticore_cluster_local_state_uuid
   Value: #!/[a-z0-9-]+/!#
 --

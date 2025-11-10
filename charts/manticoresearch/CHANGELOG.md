@@ -1,3 +1,3 @@
-### 13.13.0-20251020
+### 14.1.0
 
-* Feat: improved worker probes
+* Feat: Switched to ManticoreSearch 14.1.0
