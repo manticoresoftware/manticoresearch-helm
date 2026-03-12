@@ -8,12 +8,13 @@ global:
 #     - myRegistryKeySecretName
 #   storageClass: myStorageClass
   manticoresearch: {}
+  clusterDomainSuffix: cluster.local
 
 balancer:
+  enabled: true
   replicaCount: 1
   # priorityClassName: ""
   runInterval: 5
-  extraPackages: true
   image:
     repository: manticoresearch/helm-balancer
 #    tag: 3.6.0.0
@@ -33,7 +34,7 @@ balancer:
       targetPort: 9312
   config:
     path: /mnt/configmap.conf
-    index_ha_strategy: nodeads
+    table_ha_strategy: nodeads
     content: |
       searchd
       {
@@ -45,7 +46,6 @@ balancer:
         pid_file = /var/run/manticore/searchd.pid
         binlog_path = /var/lib/manticore
         shutdown_timeout = 25s
-        auto_optimize = 0
       }
   volumeMounts: []
   resources: {}
@@ -62,6 +62,27 @@ balancer:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  livenessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 5
+    periodSeconds: 3
+    successThreshold: 1
+    timeoutSeconds: 1
+  readinessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 5
+    periodSeconds: 3
+    successThreshold: 1
+    timeoutSeconds: 1
+  startupProbe:
+    enabled: true
+    failureThreshold: 30
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
 
 worker:
   replicaCount: 3
@@ -71,11 +92,6 @@ worker:
 
   ## The `master-slave` mode expects that you write only to node 0, so it's guaranteed to always have the most actual data. Then in case the cluster is fully shut down and then back up all other nodes will connect to the node 0.
   replicationMode: multi-master
-  ## Allows automatic restore of a replication cluster if it is broken due to no quorum. Recommended with the master-slave `replicationMode`. May be dangerous in terms of data loss in the master-master `replicationMode`.
-  quorumRecovery: false
-  ## interval in seconds to run cluster status check
-  extraPackages: true
-  quorumCheckInterval: 15
   autoAddTablesInCluster: true
   logLevel: INFO
   image:
@@ -94,7 +110,7 @@ worker:
       targetPort: 9312
   persistence:
     enabled: true
-    ## redis data Persistent Volume Storage Class
+    ## Worker data Persistent Volume Storage Class
     ## If defined, storageClassName: <storageClass>
     ## If set to "-", storageClassName: "", which disables dynamic provisioning
     ## If undefined (the default) or set to null, no storageClassName spec is
@@ -109,9 +125,6 @@ worker:
     ## https://kubernetes.io/docs/concepts/storage/persistent-volumes/#selector
     matchLabels: {}
     matchExpressions: {}
-#  volume:
-#    size: 1Gi
-#    storageClassName: false
   config:
     path: /mnt/manticore.conf
     content: |
@@ -130,24 +143,50 @@ worker:
         pid_file = /var/run/manticore/searchd.pid
         data_dir = /var/lib/manticore
         shutdown_timeout = 25s
-        auto_optimize = 0
+        server_id = $server_id
       }
   volumeMounts: []
+  stopwords:
+    enabled: false
+    path: /usr/share/manticore/stopwords/stopwords.txt
+    content: |
+      the
+      a
+      an
+      of
+      and
   resources: {}
   # See comment on balancer.resources
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  livenessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 5
+    periodSeconds: 3
+    successThreshold: 1
+    timeoutSeconds: 1
+  readinessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 5
+    periodSeconds: 3
+    successThreshold: 1
+    timeoutSeconds: 1
+  startupProbe:
+    enabled: true
+    failureThreshold: 30
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
 
 exporter:
   enabled: false
-  image:
-    repository: manticoresearch/prometheus-exporter
-    pullPolicy: IfNotPresent
-    tag: 5.0.2.5
   annotations:
     prometheus.io/path: /metrics
-    prometheus.io/port: "8081"
+    prometheus.io/port: "9308"
     prometheus.io/scrape: "true"
   resources: {}
   # See comment on balancer.resources
@@ -163,7 +202,7 @@ serviceMonitor:
   scrapeTimeout: 10s
 
 optimize:
-  enabled: true
+  enabled: false
   interval: "30"
   coefficient: "2"
 

@@ -7,4 +7,7 @@ metadata:
 data:
   manticore.conf:
     {{ toYaml .Values.worker.config.content | indent 4 }}
-
+  {{- if .Values.worker.stopwords.enabled }}
+  stopwords.txt:
+    {{ toYaml .Values.worker.stopwords.content | indent 4 }}
+  {{- end }}

@@ -1,0 +1,23 @@
+––– input –––
+helm uninstall my-helm
+––– output –––
+release "my-helm" uninstalled
+––– input –––
+kubectl get po | grep Terminating | wc -l
+––– output –––
+#!/[0-9]+/!#
+––– input –––
+kubectl get svc | wc -l
+––– output –––
+#!/[0-9]+/!#
+––– input –––
+kubectl get configmaps | wc -l
+––– output –––
+#!/[0-9]+/!#
+––– input –––
+kubectl get pvc | grep worker | grep Bound | wc -l
+––– output –––
+#!/[0-9]+/!#
+––– input –––
+kubectl delete --all pvc > /dev/null 2>&1
+––– output –––

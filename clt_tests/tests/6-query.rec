@@ -1,8 +1,8 @@
 ––– block: ./init/init –––
 ––– input –––
-echo "Wait until new index will replicated to balancer"; sleep 30
+echo "Wait until new table will replicated to balancer"; sleep 30
 ––– output –––
-Wait until new index will replicated to balancer
+Wait until new table will replicated to balancer
 ––– input –––
 export BALANCER_NAME=$(kubectl get pods -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=my-helm,name=my-helm-manticoresearch-balancer" -o jsonpath="{.items[0].metadata.name}") && echo "Ok"
 ––– output –––
@@ -15,7 +15,7 @@ my-helm-manticoresearch-balancer-#!/[0-9a-z]+/!#-#!/[0-9a-z]+/!#
 kubectl exec $BALANCER_NAME -- mysql -h0 -P9306 -e "SHOW TABLES\G"
 ––– output –––
 *************************** 1. row ***************************
-Index: idx
+Table: idx
 Type: distributed
 ––– input –––
 kubectl exec $BALANCER_NAME -- mysql -h0 -P9306 -e "SELECT * FROM idx WHERE match('dog')\G"

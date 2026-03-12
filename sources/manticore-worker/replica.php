@@ -22,10 +22,11 @@ $clusterName = null;
 $balancerUrl = null;
 $instance = null;
 $workerService = null;
-$notAddTablesAutomatically = null;
+$autoAddTablesIntoCluster = null;
 $replicationMode = null;
 $labels = null;
 $logLevel = null;
+$isBalancerEnabled = true;
 include("env_reader.php");
 
 Logger::setHandler(new StreamHandler('php://stdout', $logLevel));
@@ -115,7 +116,7 @@ if ($count <= $min) {
         $manticore->createCluster();
         Logger::info('Cluster created');
     }
-    if ($notAddTablesAutomatically) {
+    if ($autoAddTablesIntoCluster) {
         $manticore->addNotInClusterTablesIntoCluster();
     }
 } elseif ($manticoreJson->getConf() !== [] && $manticoreJson->hasCluster()) {
@@ -141,7 +142,7 @@ if ($count <= $min) {
 
     if ($manticore->checkClusterName()) {
         Logger::info('Cluster exist');
-        if ($notAddTablesAutomatically) {
+        if ($autoAddTablesIntoCluster) {
             $manticore->addNotInClusterTablesIntoCluster();
         }
     } else {
@@ -157,7 +158,9 @@ if ($count <= $min) {
         }
         if (empty($joinHost)) {
             Logger::info("No host to join");
-            notifyBalancers($api, $labels);
+            if ($isBalancerEnabled){
+                notifyBalancers($api, $labels);
+            }
             exit(1);
         }
 
@@ -194,7 +197,9 @@ if ($count <= $min) {
 
     if (empty($joinHost)) {
         Logger::info("No host to join");
-        notifyBalancers($api, $labels);
+        if ($isBalancerEnabled){
+            notifyBalancers($api, $labels);
+        }
         exit(1);
     }
 
@@ -214,5 +219,7 @@ if ($count <= $min) {
     $manticore->joinCluster($joinHost.'.'.$workerService);
 }
 
-notifyBalancers($api, $labels);
+if ($isBalancerEnabled){
+    notifyBalancers($api, $labels);
+}
 ?>

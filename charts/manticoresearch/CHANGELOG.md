@@ -1,4 +1,3 @@
-### 6.3.0
+### 15.1.0
 
-* Update manticore to 6.3.0
-* Remove `log=/dev/stdout` from default configs  
+* Switched to ManticoreSearch 15.1.0
