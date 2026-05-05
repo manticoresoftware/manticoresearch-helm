@@ -14,6 +14,9 @@ spec:
     - port: {{ .Values.worker.service.http.port }}
       targetPort: {{ .Values.worker.service.http.targetPort }}
       name: http
+    - port: {{ .Values.worker.service.binary.port }}
+      targetPort: {{ .Values.worker.service.binary.targetPort }}
+      name: binary
   publishNotReadyAddresses: true
   selector:
     name: {{ include "manticoresearch.fullname" . }}-worker
