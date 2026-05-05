@@ -17,6 +17,9 @@ spec:
   - port: {{ .Values.balancer.service.http.port }}
     targetPort: {{ .Values.balancer.service.http.targetPort }}
     name: http
+  - port: {{ .Values.balancer.service.binary.port }}
+    targetPort: {{ .Values.balancer.service.binary.targetPort }}
+    name: binary
   selector:
     name: {{ include "manticoresearch.fullname" . }}-balancer
 {{- end }}
