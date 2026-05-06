@@ -1,4 +1,5 @@
-### 25.0.0-20260505
+### 25.0.0-20260506
 
 * Switched to ManticoreSearch 25.0.0
 * Exposed binary protocols to worker and balancer services 
+* Add binary port listener to balancer
