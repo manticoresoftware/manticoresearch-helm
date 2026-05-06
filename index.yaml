@@ -12,6 +12,16 @@ entries:
     - https://github.com/manticoresoftware/manticoresearch-helm/releases/download/manticoresearch-25.0.0/manticoresearch-25.0.0.tgz
     version: 25.0.0
   - apiVersion: v2
+    appVersion: 25.0.0-20260506
+    created: "2026-05-06T19:50:48.613075265Z"
+    description: A Helm chart for Kubernetes
+    digest: 4d8fc8a1492280a5853473d4bd67530049a03fd31b2c8238566057266d86ea68
+    name: manticoresearch
+    type: application
+    urls:
+    - https://github.com/manticoresoftware/manticoresearch-helm/releases/download/manticoresearch-25.0.0-20260506/manticoresearch-25.0.0-20260506.tgz
+    version: 25.0.0-20260506
+  - apiVersion: v2
     appVersion: 25.0.0-20260505
     created: "2026-05-05T20:58:51.918975533Z"
     description: A Helm chart for Kubernetes
@@ -451,4 +461,4 @@ entries:
     urls:
     - https://github.com/manticoresoftware/manticoresearch-helm/releases/download/manticoresearch-5.0.02/manticoresearch-5.0.02.tgz
     version: 5.0.02
-generated: "2026-05-05T20:58:51.919333423Z"
+generated: "2026-05-06T19:50:48.613469918Z"
