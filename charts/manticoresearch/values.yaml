@@ -41,6 +41,7 @@ balancer:
         listen = /var/run/mysqld/mysqld.sock:mysql
         listen = 9306:mysql
         listen = 9308:http
+        listen = 9312
         query_log = /dev/stdout
         query_log_format = sphinxql
         pid_file = /var/run/manticore/searchd.pid
