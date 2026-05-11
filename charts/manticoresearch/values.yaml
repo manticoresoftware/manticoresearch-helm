@@ -120,7 +120,7 @@ worker:
     # storageClass: "-"
     accessModes:
       - ReadWriteOnce
-    size: 1Gi
+    size: 10Gi
     ## Persistent Volume selectors
     ## https://kubernetes.io/docs/concepts/storage/persistent-volumes/#selector
     matchLabels: {}
@@ -161,25 +161,25 @@ worker:
   affinity: {}
   livenessProbe:
     enabled: true
-    failureThreshold: 3
-    initialDelaySeconds: 5
-    periodSeconds: 3
+    failureThreshold: 6
+    initialDelaySeconds: 30
+    periodSeconds: 10
     successThreshold: 1
-    timeoutSeconds: 1
+    timeoutSeconds: 5
   readinessProbe:
     enabled: true
     failureThreshold: 3
     initialDelaySeconds: 5
-    periodSeconds: 3
+    periodSeconds: 5
     successThreshold: 1
-    timeoutSeconds: 1
+    timeoutSeconds: 5
   startupProbe:
     enabled: true
-    failureThreshold: 30
+    failureThreshold: 720
     initialDelaySeconds: 5
     periodSeconds: 10
     successThreshold: 1
-    timeoutSeconds: 1
+    timeoutSeconds: 5
 
 exporter:
   enabled: false

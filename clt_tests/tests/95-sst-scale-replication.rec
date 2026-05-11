@@ -1,0 +1,100 @@
+––– block: ./init/init –––
+––– input –––
+worker_pvcs=$(kubectl get pvc -l app.kubernetes.io/component=worker --no-headers 2>/dev/null | wc -l | tr -d " "); helm uninstall my-helm >/dev/null 2>&1 || true; kubectl delete pvc -l app.kubernetes.io/component=worker >/dev/null 2>&1 || true; echo "cleanup requested worker_pvcs=$worker_pvcs"
+––– output –––
+#!/cleanup requested worker_pvcs=[0-9]+/!#
+––– input –––
+timeout 300 bash -c 'while kubectl get pod 2>/dev/null | grep -q "^my-helm-"; do kubectl get pod | grep "^my-helm-" || true; sleep 2; done; while kubectl get pvc 2>/dev/null | grep -q "my-helm-manticoresearch-worker"; do kubectl get pvc | grep "my-helm-manticoresearch-worker" || true; sleep 2; done; echo "cleanup complete"'
+––– output –––
+cleanup complete
+––– input –––
+helm install my-helm --set balancer.enabled=false --set worker.replicaCount=1 --set worker.persistence.size=20Gi ./charts/manticoresearch 2>/dev/null
+––– output –––
+NAME: my-helm
+LAST DEPLOYED: #!/[a-zA-Z]{3}\s+[a-zA-Z]{3}\s+[0-9]+\s+[0-9]+:[0-9]+:[0-9]+\s+[0-9]+/!#
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+1) Wait until all pods are moved to running state:
+kubectl --namespace default get po
+2) Forward worker port to your local machine:
+kubectl --namespace default port-forward service/my-helm-manticoresearch-worker-svc 7306:9306
+3) Connect to the worker:
+mysql -h0 -P7306
+4) Create your first table:
+CREATE TABLE idx(title text);
+5) Add table to cluster:
+ALTER CLUSTER manticore_cluster ADD idx;
+6) Add some data to your table:
+INSERT INTO manticore_cluster:idx (title) VALUES ('dog is brown'), ('mouse is small');
+7) Forward worker port to your local machine:
+kubectl --namespace default port-forward service/my-helm-manticoresearch-balancer-svc 6306:9306
+8) Search through the balancer:
+mysql -h0 -P6306 -e "SELECT * FROM idx WHERE match('dog')"
+9) Scale the cluster:
+kubectl scale statefulsets manticore-manticoresearch-worker -n default --replicas=5
+––– input –––
+timeout 420 bash -c 'until kubectl get pod my-helm-manticoresearch-worker-0 2>/dev/null | grep -q "1/1[[:space:]]*Running"; do kubectl get pod my-helm-manticoresearch-worker-0 2>/dev/null || true; sleep 2; done; kubectl get pod my-helm-manticoresearch-worker-0'
+––– output –––
+NAME                             READY   STATUS    RESTARTS   AGE
+#!/my-helm-manticoresearch-worker-0\s+1\/1\s+Running\s+0\s+[0-9]+[smh]/!#
+––– input –––
+timeout "${MANTICORE_LOAD_TIMEOUT:-3600}" bash -c 'kubectl exec my-helm-manticoresearch-worker-0 -- manticore-load --batch-size=1000 --threads=4 --total="${MANTICORE_LOAD_TOTAL:-10000000}" --init="CREATE TABLE test(id bigint, name text, type int)" --load="INSERT INTO test(id,name,type) VALUES(<increment>, '\''<text/10/100>'\'', <int/1/100>)"; echo "rows_on_worker_0=$(kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -N -e "SELECT COUNT(*) FROM test")"'
+––– output –––
+#!/(.|\n)*rows_on_worker_0=[0-9]+/!#
+––– input –––
+kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "ALTER CLUSTER manticore_cluster ADD test"; kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -N -e "show status like 'cluster_%_indexes';"
+––– output –––
+cluster_manticore_cluster_indexes	test
+––– input –––
+timeout 300 bash -c 'until kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -N -e "show status like '\''cluster_%_node_state'\'';" 2>/dev/null | grep -q synced; do kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -N -e "show status like '\''cluster_%_node_state'\'';" 2>/dev/null || true; sleep 2; done; kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -N -e "show status like '\''cluster_%_node_state'\'';"'
+––– output –––
+cluster_manticore_cluster_node_state	synced
+––– input –––
+kubectl scale statefulsets my-helm-manticoresearch-worker --replicas=2; kubectl get statefulset my-helm-manticoresearch-worker
+––– output –––
+statefulset.apps/my-helm-manticoresearch-worker scaled
+NAME                             READY   AGE
+#!/my-helm-manticoresearch-worker\s+[0-9]+\/2\s+[0-9]+[smh]/!#
+––– input –––
+timeout "${MANTICORE_SST_TIMEOUT:-7200}" bash -c 'until kubectl get pod my-helm-manticoresearch-worker-1 2>/dev/null | grep -q "1/1[[:space:]]*Running"; do kubectl get pod my-helm-manticoresearch-worker-1 2>/dev/null || true; kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -N -e "show status like '\''cluster_%_sst%'\'';" 2>/dev/null || true; sleep 5; done; kubectl get pod my-helm-manticoresearch-worker-1'
+––– output –––
+#!/(.|\n)*my-helm-manticoresearch-worker-1\s+1\/1\s+Running\s+0\s+[0-9]+[smh]/!#
+––– input –––
+kubectl get pod my-helm-manticoresearch-worker-1 -o jsonpath='{.status.containerStatuses[0].restartCount}'; echo
+––– output –––
+0
+––– input –––
+for pod in my-helm-manticoresearch-worker-0 my-helm-manticoresearch-worker-1; do echo "$pod"; kubectl exec "$pod" -- mysql -h0 -P9306 -N -e "show status like 'cluster_%_node_state'; show status like 'cluster_%_status'; show status like 'cluster_%_size';"; done
+––– output –––
+my-helm-manticoresearch-worker-0
+cluster_manticore_cluster_node_state	synced
+cluster_manticore_cluster_status	primary
+cluster_manticore_cluster_flow_control_status	OFF
+cluster_manticore_cluster_ist_receive_status	
+cluster_manticore_cluster_size	2
+cluster_manticore_cluster_cert_index_size	0
+#!/cluster_manticore_cluster_gcache_pool_size\s+[0-9]+/!#
+my-helm-manticoresearch-worker-1
+cluster_manticore_cluster_node_state	synced
+cluster_manticore_cluster_status	primary
+cluster_manticore_cluster_flow_control_status	OFF
+cluster_manticore_cluster_ist_receive_status	
+cluster_manticore_cluster_size	2
+cluster_manticore_cluster_cert_index_size	0
+#!/cluster_manticore_cluster_gcache_pool_size\s+[0-9]+/!#
+––– input –––
+kubectl exec my-helm-manticoresearch-worker-1 -- mysql -h0 -P9306 -N -e "show tables;"
+––– output –––
+test	rt
+––– input –––
+expected="${MANTICORE_LOAD_TOTAL:-10000000}"; count0=$(kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -N -e "SELECT COUNT(*) FROM test" | tr -dc "0-9"); count1=$(kubectl exec my-helm-manticoresearch-worker-1 -- mysql -h0 -P9306 -N -e "SELECT COUNT(*) FROM test" | tr -dc "0-9"); echo "expected=$expected worker_0=$count0 worker_1=$count1"; test "$count0" = "$expected" && test "$count1" = "$expected"
+––– output –––
+#!/expected=[0-9]+ worker_0=[0-9]+ worker_1=[0-9]+/!#
+––– input –––
+worker_pvcs=$(kubectl get pvc -l app.kubernetes.io/component=worker --no-headers 2>/dev/null | wc -l | tr -d " "); helm uninstall my-helm; kubectl delete pvc -l app.kubernetes.io/component=worker >/dev/null 2>&1; echo "worker_pvcs_deleted=$worker_pvcs"
+––– output –––
+release "my-helm" uninstalled
+#!/worker_pvcs_deleted=[0-9]+/!#
