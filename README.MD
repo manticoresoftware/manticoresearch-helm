@@ -1,6 +1,6 @@
 # Manticore Search Helm Chart
 
-**Version:** 25.0.0-20260506
+**Version:** 25.0.0-20260511
 
 The Manticore Search Helm Chart is designed to deploy and manage Manticore Search in Kubernetes. It ensures high availability with out-of-the-box replication and improves read throughput through automatic load balancing.
 
@@ -304,6 +304,70 @@ For example, if the chart uses Manticore Search 9.2.14, and we improve the chart
 ```
 
 ---
+
+## Wordforms
+
+Wordforms can be provided from Kubernetes ConfigMaps or from any extra volume mounted into worker pods.
+
+Create a ConfigMap from local wordforms files:
+
+```bash
+kubectl create configmap product-wordforms \
+  --from-file=products.txt=./wordforms/products.txt
+```
+
+Mount it into workers:
+
+```yaml
+worker:
+  wordforms:
+    enabled: true
+    mountPath: /usr/share/manticore/wordforms
+    configMaps:
+      - name: product-wordforms
+        items:
+          - key: products.txt
+            path: products/products.txt
+```
+
+Use the mounted file in table settings:
+
+```sql
+CREATE TABLE products(title text) wordforms='/usr/share/manticore/wordforms/products/products.txt';
+```
+
+For multiple tables, create separate ConfigMaps or use separate keys/paths:
+
+```yaml
+worker:
+  wordforms:
+    enabled: true
+    configMaps:
+      - name: product-wordforms
+      - name: article-wordforms
+        items:
+          - key: en.txt
+            path: articles/en.txt
+```
+
+For large wordforms, use a PVC or another Kubernetes volume:
+
+```yaml
+worker:
+  wordforms:
+    enabled: true
+    extraVolumes:
+      - name: wordforms-pvc
+        persistentVolumeClaim:
+          claimName: manticore-wordforms
+    extraVolumeMounts:
+      - name: wordforms-pvc
+        mountPath: /usr/share/manticore/wordforms-large
+        readOnly: true
+```
+
+---
+
 ## Variables
 
 | Variable | Description                                                                                                               | Default                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
@@ -318,6 +382,11 @@ For example, if the chart uses Manticore Search 9.2.14, and we improve the chart
 | worker.persistence.size | Worker max storage size (mounted volume)                                                                                  | 1Gi                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | worker.persistence.storageClass | Worker storage class                                                                                                      | -                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | worker.config.content | Worker config (only section `searchd`). <br>**Important**: you must always pass `$hostname` to the config for proper functioning | searchd<br>      {<br>        listen = /var/run/mysqld/mysqld.sock:mysql<br>        listen = 9306:mysql<br>        listen = 9308:http<br>        listen = 9301:mysql_vip<br>        listen = $hostname:9312<br>        listen = $hostname:9315-9415:replication<br>        node_address = $hostname<br>        binlog_path = /var/lib/manticore<br>        log = /dev/stdout<br>        query_log = /dev/stdout<br>        query_log_format = sphinxql<br>        pid_file = /var/run/manticore/searchd.pid<br>        data_dir = /var/lib/manticore<br>        shutdown_timeout = 25s<br>        auto_optimize = 0<br>      } |
+| worker.wordforms.enabled | Mount wordforms into worker pods                                                                                         | false                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| worker.wordforms.mountPath | Mount path for ConfigMap-backed wordforms                                                                               | /usr/share/manticore/wordforms                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| worker.wordforms.configMaps | User-created ConfigMaps to project under `worker.wordforms.mountPath`                                                  | []                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| worker.wordforms.extraVolumes | Extra worker volumes for large wordforms                                                                               | []                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| worker.wordforms.extraVolumeMounts | Extra worker volume mounts for large wordforms                                                                    | []                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | exporter.enabled | Enable Prometheus exporter                                                                                             | false                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 
 ### Additional Variables
@@ -381,4 +450,3 @@ To uninstall the Helm chart:
 helm uninstall manticore -n manticore
 ```
 Delete PVCs manually or delete the entire namespace to remove persistent data.
-

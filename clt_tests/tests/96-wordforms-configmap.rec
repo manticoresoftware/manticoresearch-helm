@@ -1,0 +1,32 @@
+––– block: ./init/init –––
+––– input –––
+helm uninstall my-helm >/dev/null 2>&1 || true; kubectl delete pvc -l app.kubernetes.io/component=worker >/dev/null 2>&1 || true; kubectl delete configmap product-wordforms >/dev/null 2>&1 || true; echo "wordforms cleanup complete"
+––– output –––
+wordforms cleanup complete
+––– input –––
+printf 'walks > walk\nwalking > walk\n' > /tmp/products-wordforms.txt; kubectl create configmap product-wordforms --from-file=products.txt=/tmp/products-wordforms.txt
+––– output –––
+configmap/product-wordforms created
+––– input –––
+helm install my-helm --set balancer.enabled=false --set worker.replicaCount=1 --set worker.wordforms.enabled=true --set worker.wordforms.configMaps[0].name=product-wordforms --set worker.wordforms.configMaps[0].items[0].key=products.txt --set worker.wordforms.configMaps[0].items[0].path=products/products.txt ./charts/manticoresearch >/tmp/helm-install-wordforms.log 2>&1 && echo "release=my-helm status=deployed wordforms_configmap=product-wordforms"
+––– output –––
+release=my-helm status=deployed wordforms_configmap=product-wordforms
+––– input –––
+if timeout 420 bash -c 'until kubectl get pod my-helm-manticoresearch-worker-0 2>/dev/null | grep -q "1/1[[:space:]]*Running"; do sleep 2; done'; then kubectl get pod my-helm-manticoresearch-worker-0; else echo "worker_0_wait_failed"; kubectl get pod my-helm-manticoresearch-worker-0 2>/dev/null || true; kubectl describe pod my-helm-manticoresearch-worker-0 2>/dev/null || true; false; fi
+––– output –––
+#!/NAME\s+READY\s+STATUS\s+RESTARTS\s+AGE/!#
+#!/my-helm-manticoresearch-worker-0\s+1\/1\s+Running\s+0\s+[0-9]+[smh]/!#
+––– input –––
+kubectl exec my-helm-manticoresearch-worker-0 -- cat /usr/share/manticore/wordforms/products/products.txt
+––– output –––
+walks > walk
+walking > walk
+––– input –––
+kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "CREATE TABLE wf_products(title text) wordforms='/usr/share/manticore/wordforms/products/products.txt'; INSERT INTO wf_products(title) VALUES ('walk shoes');"; count=$(kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "SELECT COUNT(*) FROM wf_products WHERE MATCH('walks')" | tr -dc "0-9"); echo "wordforms_match_count=$count"; test "$count" = "1"
+––– output –––
+wordforms_match_count=1
+––– input –––
+helm uninstall my-helm; kubectl delete pvc -l app.kubernetes.io/component=worker >/dev/null 2>&1; kubectl delete configmap product-wordforms >/dev/null 2>&1; echo "wordforms cleanup deleted"
+––– output –––
+release "my-helm" uninstalled
+wordforms cleanup deleted

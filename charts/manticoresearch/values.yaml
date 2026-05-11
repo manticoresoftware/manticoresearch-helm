@@ -154,6 +154,33 @@ worker:
       an
       of
       and
+  wordforms:
+    enabled: false
+    mountPath: /usr/share/manticore/wordforms
+    ## Mount user-created ConfigMaps under worker.wordforms.mountPath.
+    ## Create them with kubectl, for example:
+    ## kubectl create configmap product-wordforms --from-file=products.txt=./wordforms/products.txt
+    ##
+    ## Example:
+    ## configMaps:
+    ##   - name: product-wordforms
+    ##     items:
+    ##       - key: products.txt
+    ##         path: products/products.txt
+    configMaps: []
+    ## For wordforms that are too large for ConfigMaps, mount any Kubernetes volume here.
+    ## Example:
+    ## extraVolumes:
+    ##   - name: wordforms-pvc
+    ##     persistentVolumeClaim:
+    ##       claimName: manticore-wordforms
+    extraVolumes: []
+    ## Example:
+    ## extraVolumeMounts:
+    ##   - name: wordforms-pvc
+    ##     mountPath: /usr/share/manticore/wordforms-large
+    ##     readOnly: true
+    extraVolumeMounts: []
   resources: {}
   # See comment on balancer.resources
   nodeSelector: {}

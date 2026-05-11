@@ -1,8 +1,8 @@
 ––– block: ./init/init –––
 ––– input –––
-echo "Wait until new table will replicated to balancer"; sleep 30
+if timeout 300 bash -c 'while true; do missing=""; for pod in $(kubectl get pods -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=my-helm,app.kubernetes.io/component=worker" -o jsonpath="{range .items[*]}{.metadata.name}{\"\n\"}{end}"); do kubectl exec "$pod" -- mysql -h0 -P9306 -e "SHOW TABLES" 2>/dev/null | grep -q "idx" || missing="$missing $pod"; done; if [ -z "$missing" ]; then exit 0; fi; echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) missing idx on:$missing" >> /tmp/wait-idx-workers.log; sleep 5; done'; then echo "idx replicated to all workers"; else echo "idx replication wait failed"; cat /tmp/wait-idx-workers.log 2>/dev/null || true; for pod in $(kubectl get pods -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=my-helm,app.kubernetes.io/component=worker" -o jsonpath="{range .items[*]}{.metadata.name}{\"\n\"}{end}"); do echo "$pod"; kubectl exec "$pod" -- mysql -h0 -P9306 -e "SHOW TABLES" 2>/dev/null || true; done; false; fi
 ––– output –––
-Wait until new table will replicated to balancer
+idx replicated to all workers
 ––– input –––
 export BALANCER_NAME=$(kubectl get pods -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=my-helm,name=my-helm-manticoresearch-balancer" -o jsonpath="{.items[0].metadata.name}") && echo "Ok"
 ––– output –––
@@ -16,7 +16,7 @@ kubectl exec $BALANCER_NAME -- mysql -h0 -P9306 -e "SHOW TABLES\G"
 ––– output –––
 *************************** 1. row ***************************
 Table: idx
-Type: distributed
+#!/\s*Type: distributed/!#
 ––– input –––
 kubectl exec $BALANCER_NAME -- mysql -h0 -P9306 -e "SELECT * FROM idx WHERE match('dog')\G"
 ––– output –––
