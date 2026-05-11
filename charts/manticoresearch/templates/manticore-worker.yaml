@@ -84,8 +84,17 @@ spec:
         readinessProbe:
           {{- if .Values.worker.readinessProbe.enabled }}
           {{- include "manticore-helm.render" (dict "value" (omit .Values.worker.readinessProbe "enabled") "context" $) | nindent 8 }}
-          tcpSocket:
-            port: {{ .Values.worker.service.ql.port }}
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - |
+                NODE_STATE=$(/usr/bin/mysql -e "show status like 'cluster_%_node_state';" 2>&1)
+                STATUS=$(/usr/bin/mysql -e "show status like 'cluster_%_status';" 2>&1)
+                if echo "$NODE_STATE" | grep -qE "[[:space:]]synced[[:space:]]" && echo "$STATUS" | grep -qE "[[:space:]]primary[[:space:]]"; then
+                  exit 0
+                fi
+                exit 1
           {{- end }}
         livenessProbe:
           {{- if .Values.worker.livenessProbe.enabled }}
@@ -94,17 +103,7 @@ spec:
             command:
               - /bin/sh
               - -c
-              - |
-                NODE_STATE=$(/usr/bin/mysql -e "show status like 'cluster_%_node_state';" 2>&1)
-                STATUS=$(/usr/bin/mysql -e "show status like 'cluster_%_status';" 2>&1)
-                TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
-                echo "Node state: $NODE_STATE" >&2
-                echo "Cluster status: $STATUS" >&2
-                if echo "$NODE_STATE" | grep -qE "(synced|donor)" && echo "$STATUS" | grep -qE "[[:space:]]primary[[:space:]]"; then
-                  exit 0
-                else
-                  exit 1
-                fi
+              - /usr/bin/mysql -e "select 1" >/dev/null 2>&1
           {{- end }}
         {{- if semverCompare ">=1.20-0" $.Capabilities.KubeVersion.GitVersion }}
         startupProbe:
@@ -117,14 +116,12 @@ spec:
               - |
                 NODE_STATE=$(/usr/bin/mysql -e "show status like 'cluster_%_node_state';" 2>&1)
                 STATUS=$(/usr/bin/mysql -e "show status like 'cluster_%_status';" 2>&1)
-                TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
                 echo "Node state: $NODE_STATE" >&2
                 echo "Cluster status: $STATUS" >&2
-                if echo "$NODE_STATE" | grep -qE "(synced|joining)" && echo "$STATUS" | grep -qE "[[:space:]]primary[[:space:]]"; then
+                if echo "$NODE_STATE" | grep -qE "[[:space:]]synced[[:space:]]" && echo "$STATUS" | grep -qE "[[:space:]]primary[[:space:]]"; then
                   exit 0
-                else
-                  exit 1
                 fi
+                exit 1
           {{- end }}
         {{- end }}
         volumeMounts:
@@ -138,12 +135,43 @@ spec:
             mountPath: {{ .Values.worker.stopwords.path }}
             subPath: stopwords.txt
           {{- end }}
+          {{- if and .Values.worker.wordforms.enabled .Values.worker.wordforms.configMaps }}
+          - name: wordforms-configmaps
+            mountPath: {{ .Values.worker.wordforms.mountPath }}
+            readOnly: true
+          {{- end }}
+          {{- if .Values.worker.wordforms.enabled }}
+          {{- with .Values.worker.wordforms.extraVolumeMounts }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+          {{- end }}
         resources:
           {{- toYaml .Values.worker.resources | nindent 10 }}
       volumes:
         - name: config-volume
           configMap:
             name: {{ include "manticoresearch.fullname" . }}-worker-config
+        {{- if and .Values.worker.wordforms.enabled .Values.worker.wordforms.configMaps }}
+        - name: wordforms-configmaps
+          projected:
+            sources:
+              {{- range .Values.worker.wordforms.configMaps }}
+              - configMap:
+                  name: {{ .name | quote }}
+                  {{- with .items }}
+                  items:
+                    {{- range . }}
+                    - key: {{ .key | quote }}
+                      path: {{ .path | quote }}
+                    {{- end }}
+                  {{- end }}
+              {{- end }}
+        {{- end }}
+        {{- if .Values.worker.wordforms.enabled }}
+        {{- with .Values.worker.wordforms.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- end }}
       {{- with .Values.worker.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

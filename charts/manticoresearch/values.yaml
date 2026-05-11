@@ -120,7 +120,7 @@ worker:
     # storageClass: "-"
     accessModes:
       - ReadWriteOnce
-    size: 1Gi
+    size: 10Gi
     ## Persistent Volume selectors
     ## https://kubernetes.io/docs/concepts/storage/persistent-volumes/#selector
     matchLabels: {}
@@ -154,6 +154,33 @@ worker:
       an
       of
       and
+  wordforms:
+    enabled: false
+    mountPath: /usr/share/manticore/wordforms
+    ## Mount user-created ConfigMaps under worker.wordforms.mountPath.
+    ## Create them with kubectl, for example:
+    ## kubectl create configmap product-wordforms --from-file=products.txt=./wordforms/products.txt
+    ##
+    ## Example:
+    ## configMaps:
+    ##   - name: product-wordforms
+    ##     items:
+    ##       - key: products.txt
+    ##         path: products/products.txt
+    configMaps: []
+    ## For wordforms that are too large for ConfigMaps, mount any Kubernetes volume here.
+    ## Example:
+    ## extraVolumes:
+    ##   - name: wordforms-pvc
+    ##     persistentVolumeClaim:
+    ##       claimName: manticore-wordforms
+    extraVolumes: []
+    ## Example:
+    ## extraVolumeMounts:
+    ##   - name: wordforms-pvc
+    ##     mountPath: /usr/share/manticore/wordforms-large
+    ##     readOnly: true
+    extraVolumeMounts: []
   resources: {}
   # See comment on balancer.resources
   nodeSelector: {}
@@ -161,25 +188,25 @@ worker:
   affinity: {}
   livenessProbe:
     enabled: true
-    failureThreshold: 3
-    initialDelaySeconds: 5
-    periodSeconds: 3
+    failureThreshold: 6
+    initialDelaySeconds: 30
+    periodSeconds: 10
     successThreshold: 1
-    timeoutSeconds: 1
+    timeoutSeconds: 5
   readinessProbe:
     enabled: true
     failureThreshold: 3
     initialDelaySeconds: 5
-    periodSeconds: 3
+    periodSeconds: 5
     successThreshold: 1
-    timeoutSeconds: 1
+    timeoutSeconds: 5
   startupProbe:
     enabled: true
-    failureThreshold: 30
+    failureThreshold: 720
     initialDelaySeconds: 5
     periodSeconds: 10
     successThreshold: 1
-    timeoutSeconds: 1
+    timeoutSeconds: 5
 
 exporter:
   enabled: false
