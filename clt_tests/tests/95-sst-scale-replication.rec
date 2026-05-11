@@ -41,9 +41,10 @@ timeout 420 bash -c 'until kubectl get pod my-helm-manticoresearch-worker-0 2>/d
 NAME                             READY   STATUS    RESTARTS   AGE
 #!/my-helm-manticoresearch-worker-0\s+1\/1\s+Running\s+0\s+[0-9]+[smh]/!#
 ––– input –––
-timeout "${MANTICORE_LOAD_TIMEOUT:-3600}" bash -c 'kubectl exec my-helm-manticoresearch-worker-0 -- manticore-load --batch-size=1000 --threads=4 --total="${MANTICORE_LOAD_TOTAL:-10000000}" --init="CREATE TABLE test(id bigint, name text, type int)" --load="INSERT INTO test(id,name,type) VALUES(<increment>, '\''<text/10/100>'\'', <int/1/100>)"; echo "rows_on_worker_0=$(kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -N -e "SELECT COUNT(*) FROM test")"'
+timeout "${MANTICORE_LOAD_TIMEOUT:-3600}" bash -c 'total="${MANTICORE_LOAD_TOTAL:-10000000}"; if kubectl exec my-helm-manticoresearch-worker-0 -- manticore-load --batch-size=1000 --threads=4 --total="$total" --init="CREATE TABLE test(id bigint, name text, type int)" --load="INSERT INTO test(id,name,type) VALUES(<increment>, '\''<text/10/100>'\'', <int/1/100>)" >/tmp/manticore-load.log 2>&1; then echo "manticore_load_total=$total"; echo "rows_on_worker_0=$(kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -N -e "SELECT COUNT(*) FROM test")"; else tail -n 80 /tmp/manticore-load.log; exit 1; fi' || { echo "manticore-load failed"; tail -n 80 /tmp/manticore-load.log 2>/dev/null; exit 1; }
 ––– output –––
-#!/(.|\n)*rows_on_worker_0=[0-9]+/!#
+#!/manticore_load_total=[0-9]+/!#
+#!/rows_on_worker_0=[0-9]+/!#
 ––– input –––
 kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "ALTER CLUSTER manticore_cluster ADD test"; kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -N -e "show status like 'cluster_%_indexes';"
 ––– output –––
@@ -59,9 +60,16 @@ statefulset.apps/my-helm-manticoresearch-worker scaled
 NAME                             READY   AGE
 #!/my-helm-manticoresearch-worker\s+[0-9]+\/2\s+[0-9]+[smh]/!#
 ––– input –––
-timeout "${MANTICORE_SST_TIMEOUT:-7200}" bash -c 'until kubectl get pod my-helm-manticoresearch-worker-1 2>/dev/null | grep -q "1/1[[:space:]]*Running"; do kubectl get pod my-helm-manticoresearch-worker-1 2>/dev/null || true; kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -N -e "show status like '\''cluster_%_sst%'\'';" 2>/dev/null || true; sleep 5; done; kubectl get pod my-helm-manticoresearch-worker-1'
+timeout "${MANTICORE_SST_TIMEOUT:-7200}" bash -c 'rm -f /tmp/manticore-sst.log; until kubectl get pod my-helm-manticoresearch-worker-1 2>/dev/null | grep -q "1/1[[:space:]]*Running"; do { date -u "+%Y-%m-%dT%H:%M:%SZ"; kubectl get pod my-helm-manticoresearch-worker-1 2>/dev/null || true; kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -N -e "show status like '\''cluster_%_sst%'\'';" 2>/dev/null || true; } >> /tmp/manticore-sst.log; sleep 5; done; echo "sst completed"; kubectl get pod my-helm-manticoresearch-worker-1; kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -N -e "show status like '\''cluster_%_sst%'\'';"' || { echo "SST wait failed"; tail -n 80 /tmp/manticore-sst.log 2>/dev/null; exit 1; }
 ––– output –––
-#!/(.|\n)*my-helm-manticoresearch-worker-1\s+1\/1\s+Running\s+0\s+[0-9]+[smh]/!#
+sst completed
+NAME                             READY   STATUS    RESTARTS   AGE
+#!/my-helm-manticoresearch-worker-1\s+1\/1\s+Running\s+0\s+[0-9]+[smh]/!#
+cluster_manticore_cluster_sst_total	-
+cluster_manticore_cluster_sst_stage	-
+cluster_manticore_cluster_sst_stage_total	-
+cluster_manticore_cluster_sst_table	-
+cluster_manticore_cluster_sst_tables	-
 ––– input –––
 kubectl get pod my-helm-manticoresearch-worker-1 -o jsonpath='{.status.containerStatuses[0].restartCount}'; echo
 ––– output –––
