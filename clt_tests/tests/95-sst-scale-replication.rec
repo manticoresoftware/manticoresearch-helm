@@ -60,6 +60,29 @@ expected="${MANTICORE_LOAD_TOTAL:-10000000}"; count0=$(kubectl exec my-helm-mant
 ––– output –––
 #!/expected=[0-9]+ worker_0=[0-9]+ worker_1=[0-9]+/!#
 ––– input –––
+uuid_before=$(kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "show status like 'cluster_%_state_uuid';" | awk -F'\\|' '$2 ~ /cluster_.*_state_uuid/ && $2 !~ /local/ {gsub(/^[ \t]+|[ \t]+$/, "", $3); print $3; exit}'); seqno_before=$(kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "show status like 'cluster_%_state_seqno';" | awk -F'\\|' '$2 ~ /cluster_.*_state_seqno/ {gsub(/^[ \t]+|[ \t]+$/, "", $3); print $3; exit}'); echo "$uuid_before" >/tmp/manticore-cluster-uuid-before; echo "$seqno_before" >/tmp/manticore-cluster-seqno-before; echo "cluster_uuid_before=$uuid_before"; echo "cluster_seqno_before=$seqno_before"; test -n "$uuid_before" && test -n "$seqno_before"
+––– output –––
+#!/cluster_uuid_before=[0-9a-f-]+/!#
+#!/cluster_seqno_before=[0-9]+/!#
+––– input –––
+kubectl scale statefulsets my-helm-manticoresearch-worker --replicas=0; timeout 420 bash -c 'rm -f /tmp/manticore-scale-down.log; until ! kubectl get pod my-helm-manticoresearch-worker-0 >/dev/null 2>&1 && ! kubectl get pod my-helm-manticoresearch-worker-1 >/dev/null 2>&1; do kubectl get pod 2>/dev/null | grep "my-helm-manticoresearch-worker" >> /tmp/manticore-scale-down.log || true; sleep 2; done; echo "workers_scaled_down=0"'
+––– output –––
+statefulset.apps/my-helm-manticoresearch-worker scaled
+workers_scaled_down=0
+––– input –––
+kubectl scale statefulsets my-helm-manticoresearch-worker --replicas=2; timeout "${MANTICORE_RESTART_TIMEOUT:-7200}" bash -c 'rm -f /tmp/manticore-scale-up.log; until kubectl get pod my-helm-manticoresearch-worker-0 2>/dev/null | grep -q "1/1[[:space:]]*Running" && kubectl get pod my-helm-manticoresearch-worker-1 2>/dev/null | grep -q "1/1[[:space:]]*Running"; do kubectl get pod 2>/dev/null | grep "my-helm-manticoresearch-worker" >> /tmp/manticore-scale-up.log || true; sleep 5; done; echo "workers_scaled_up=2"; kubectl get pod my-helm-manticoresearch-worker-0 my-helm-manticoresearch-worker-1'
+––– output –––
+statefulset.apps/my-helm-manticoresearch-worker scaled
+workers_scaled_up=2
+#!/NAME\s+READY\s+STATUS\s+RESTARTS\s+AGE/!#
+#!/my-helm-manticoresearch-worker-0\s+1\/1\s+Running\s+[0-9]+\s+[0-9]+[smh]/!#
+#!/my-helm-manticoresearch-worker-1\s+1\/1\s+Running\s+[0-9]+\s+[0-9]+[smh]/!#
+––– input –––
+uuid_before=$(cat /tmp/manticore-cluster-uuid-before); seqno_before=$(cat /tmp/manticore-cluster-seqno-before); timeout 300 bash -c 'for pod in my-helm-manticoresearch-worker-0 my-helm-manticoresearch-worker-1; do until kubectl exec "$pod" -- mysql -h0 -P9306 -e "show status like '\''cluster_%_node_state'\''; show status like '\''cluster_%_status'\''; show status like '\''cluster_%_size'\'';" 2>/dev/null | grep -q "cluster_manticore_cluster_size[[:space:]]*2"; do sleep 2; done; done'; for pod in my-helm-manticoresearch-worker-0 my-helm-manticoresearch-worker-1; do status=$(kubectl exec "$pod" -- mysql -h0 -P9306 -e "show status like 'cluster_%_state_uuid'; show status like 'cluster_%_state_seqno';"); uuid=$(echo "$status" | awk -F'\\|' '$2 ~ /cluster_.*_state_uuid/ && $2 !~ /local/ {gsub(/^[ \t]+|[ \t]+$/, "", $3); print $3; exit}'); seqno=$(echo "$status" | awk -F'\\|' '$2 ~ /cluster_.*_state_seqno/ {gsub(/^[ \t]+|[ \t]+$/, "", $3); print $3; exit}'); echo "$pod cluster_uuid_after=$uuid cluster_seqno_after=$seqno"; test "$uuid" = "$uuid_before" && test "$seqno" = "$seqno_before"; done
+––– output –––
+#!/my-helm-manticoresearch-worker-0 cluster_uuid_after=[0-9a-f-]+ cluster_seqno_after=[0-9]+/!#
+#!/my-helm-manticoresearch-worker-1 cluster_uuid_after=[0-9a-f-]+ cluster_seqno_after=[0-9]+/!#
+––– input –––
 worker_pvcs=$(kubectl get pvc -l app.kubernetes.io/component=worker --no-headers 2>/dev/null | wc -l | tr -d " "); helm uninstall my-helm; kubectl delete pvc -l app.kubernetes.io/component=worker >/dev/null 2>&1; echo "worker_pvcs_deleted=$worker_pvcs"
 ––– output –––
 release "my-helm" uninstalled
