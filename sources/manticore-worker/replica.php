@@ -95,6 +95,9 @@ if (getenv("POD_START_VIA_PROBE") === false) {
 
 if ($count <= $min) {
     Logger::info("One pod");
+    if ($manticoreJson->hasCluster()) {
+        $manticoreJson->filterClusterNodesByAvailability($qlPort, $clusterName, 5);
+    }
     $manticoreJson->startManticore();
     $manticore = new ManticoreConnector('localhost', $qlPort, $clusterName, -1);
 
@@ -122,7 +125,7 @@ if ($count <= $min) {
 } elseif ($manticoreJson->getConf() !== [] && $manticoreJson->hasCluster()) {
     Logger::info("Non empty conf");
 
-    $manticoreJson->checkNodesAvailability($resources, $qlPort, $clusterName, 5);
+    $manticoreJson->filterClusterNodesByAvailability($qlPort, $clusterName, 5);
     $manticoreJson->startManticore();
 
     $manticore = new ManticoreConnector('localhost', $qlPort, null, -1);
