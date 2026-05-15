@@ -7,40 +7,34 @@ This directory contains CLT recordings for the Helm chart. The tests run command
 Start or refresh the local k3s container and test-kit image:
 
 ```bash
-cd clt_tests
-./clt-init.sh
-cd ..
+clt_tests/run-local.sh --init
 ```
 
-`clt-init.sh` creates:
+`run-local.sh --init` creates:
 
-- `clt_tests/k3s.yaml`: kubeconfig that uses the host-published k3s API, usually `127.0.0.1:6443`.
-- `clt_tests/k3s_copy.yaml`: kubeconfig with the Docker bridge IP. This is useful from containers that can reach the Docker bridge directly.
+- `clt_tests/k3s.yaml`: kubeconfig that uses the k3s container IP, so Dockerized CLT commands can reach the local cluster.
 - `manticoresearch/helm-test-kit:0.0.1`: Docker image used by CLT.
 
-From the host, prefer `clt_tests/k3s.yaml`:
-
-```bash
-kubectl --kubeconfig clt_tests/k3s.yaml get nodes
-```
+`clt_tests/k3s.yaml` is written for Docker containers, because CLT executes test commands inside Docker. The init path avoids GNU-specific shell tools and checks cluster readiness from Docker with the same test-kit image used by CLT.
 
 ## Running tests locally
 
 Use the local runner from the repository root:
 
 ```bash
+clt_tests/run-local.sh --init
 clt_tests/run-local.sh --list
 clt_tests/run-local.sh --test 3-sst-scale-replication --debug
 clt_tests/run-local.sh --thread 1
 clt_tests/run-local.sh --all
 ```
 
-The runner expects `../clt/clt` and `clt_tests/k3s.yaml` by default. Override them with `--clt /path/to/clt` and `--kubeconfig /path/to/kubeconfig` if needed.
+The runner expects `../clt/clt` and `clt_tests/k3s.yaml` by default. Override them with `--clt /path/to/clt` and `--kubeconfig /path/to/kubeconfig` if needed. `--init` can be used alone or together with a run command.
 
 To build the local Helm images and import them into the k3s container before running tests:
 
 ```bash
-clt_tests/run-local.sh --build-images --test 1-default-flow --debug
+clt_tests/run-local.sh --init --build-images --test 1-default-flow --debug
 ```
 
 You can also build/import images without running CLT:
@@ -49,7 +43,7 @@ You can also build/import images without running CLT:
 clt_tests/build-images-local.sh
 ```
 
-Both commands use `manticoresearch/helm-worker:0.0.0-unstable` and `manticoresearch/helm-balancer:0.0.0-unstable` by default, matching the test values files. Use `--image-tag TAG` with `run-local.sh` or `--tag TAG` with `build-images-local.sh` to override the tag.
+Both commands use `manticoresearch/helm-worker:0.0.0-unstable` and `manticoresearch/helm-balancer:0.0.0-unstable`, matching the test values files.
 
 The init block in each test exports:
 

@@ -4,7 +4,7 @@
 kubectl get nodes 2>/dev/null
 ––– output –––
 #!/NAME\s+STATUS\s+ROLES\s+AGE\s+VERSION/!#
-#!/[0-9a-z]{12}\s+Ready\s+control-plane(,master)?\s+[0-9]+[s|m]\s+v[0-9\.]+\+k3s[1-2]/!#
+#!/[0-9a-z]{12}\s+Ready\s+control-plane(,master)?\s+[0-9]+[smh]([0-9]+[sm])?\s+v[0-9\.]+\+k3s[1-2]/!#
 ––– input –––
 printf 'balancer:\n  image:\n    tag: 0.0.0-unstable\nworker:\n  image:\n    tag: 0.0.0-unstable\n' >/tmp/clt-values.yaml; cat /tmp/clt-values.yaml
 ––– output –––
