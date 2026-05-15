@@ -1,0 +1,67 @@
+––– block: ./init/init –––
+––– block: ./init/cleanup-release –––
+––– input –––
+kubectl get nodes 2>/dev/null
+––– output –––
+#!/NAME\s+STATUS\s+ROLES\s+AGE\s+VERSION/!#
+#!/[0-9a-z]{12}\s+Ready\s+control-plane(,master)?\s+[0-9]+[s|m]\s+v[0-9\.]+\+k3s[1-2]/!#
+––– input –––
+printf 'balancer:\n  image:\n    tag: 0.0.0-unstable\nworker:\n  image:\n    tag: 0.0.0-unstable\n' >/tmp/clt-values.yaml; cat /tmp/clt-values.yaml
+––– output –––
+balancer:
+  image:
+    tag: 0.0.0-unstable
+worker:
+  image:
+    tag: 0.0.0-unstable
+––– block: ./init/install –––
+––– input –––
+timeout 180 bash -c 'while [[ ! $(kubectl get po 2>&1 | grep "Running" | wc -l) -eq 4 ]]; do sleep 1; done' && echo "OK" || echo "Failed waiting until pods was deployed"
+––– output –––
+OK
+––– input –––
+for pod in my-helm-manticoresearch-worker-0 my-helm-manticoresearch-worker-1; do out=$(kubectl exec "$pod" -- mysql -h0 -P9306 -e "show status like 'cluster_%_node_state'; show status like 'cluster_%_status';" 2>/dev/null); state=$(echo "$out" | grep "cluster_manticore_cluster_node_state" | grep -o "synced"); status=$(echo "$out" | grep "cluster_manticore_cluster_status" | grep -o "primary"); echo "$pod state=$state status=$status"; done
+––– output –––
+my-helm-manticoresearch-worker-0 state=synced status=primary
+my-helm-manticoresearch-worker-1 state=synced status=primary
+––– input –––
+kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "CREATE TABLE idx(title text)"; echo $?
+––– output –––
+0
+––– input –––
+kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "ALTER CLUSTER manticore_cluster ADD idx"; echo $?
+––– output –––
+0
+––– input –––
+kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "INSERT INTO manticore_cluster:idx (title) VALUES ('dog is brown'), ('mouse is small');"; echo $?
+––– output –––
+0
+––– input –––
+if timeout 300 bash -c 'while true; do missing=""; for pod in $(kubectl get pods -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=my-helm,app.kubernetes.io/component=worker" -o jsonpath="{range .items[*]}{.metadata.name}{\"\n\"}{end}"); do kubectl exec "$pod" -- mysql -h0 -P9306 -e "SHOW TABLES" 2>/dev/null | grep -q "idx" || missing="$missing $pod"; done; if [ -z "$missing" ]; then exit 0; fi; sleep 5; done'; then echo "idx replicated to all workers"; else echo "idx replication wait failed"; false; fi
+––– output –––
+idx replicated to all workers
+––– input –––
+export BALANCER_NAME=$(kubectl get pods -l "app.kubernetes.io/name=manticoresearch,app.kubernetes.io/instance=my-helm,name=my-helm-manticoresearch-balancer" -o jsonpath="{.items[0].metadata.name}") && echo "Ok"
+––– output –––
+Ok
+––– input –––
+echo $BALANCER_NAME
+––– output –––
+my-helm-manticoresearch-balancer-#!/[0-9a-z]+/!#-#!/[0-9a-z]+/!#
+––– input –––
+kubectl exec $BALANCER_NAME -- mysql -h0 -P9306 -e "SHOW TABLES\G"
+––– output –––
+*************************** 1. row ***************************
+Table: idx
+#!/\s*Type: distributed/!#
+––– input –––
+kubectl exec $BALANCER_NAME -- mysql -h0 -P9306 -e "SELECT * FROM idx WHERE match('dog')\G"
+––– output –––
+*************************** 1. row ***************************
+id: #!/[0-9]+/!#
+title: dog is brown
+––– input –––
+kubectl get deployment my-helm-manticoresearch-balancer -o=jsonpath='{$.spec.template.spec.containers[:1].image}'; echo
+––– output –––
+manticoresearch/helm-balancer:0.0.0-unstable
+––– block: ./init/cleanup-release –––

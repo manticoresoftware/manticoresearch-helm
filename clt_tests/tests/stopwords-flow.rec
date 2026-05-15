@@ -1,4 +1,16 @@
 ––– block: ./init/init –––
+––– block: ./init/cleanup-release –––
+––– input –––
+printf 'balancer:\n  enabled: false\nworker:\n  stopwords:\n    enabled: true\n  image:\n    tag: 0.0.0-unstable\n' >/tmp/clt-values.yaml; cat /tmp/clt-values.yaml
+––– output –––
+balancer:
+  enabled: false
+worker:
+  stopwords:
+    enabled: true
+  image:
+    tag: 0.0.0-unstable
+––– block: ./init/install –––
 ––– input –––
 timeout 300 bash -c 'while [[ ! $(kubectl get po 2>&1 | grep "Running" | wc -l) -eq 3 ]]; do sleep 1; done' && echo "OK" || echo "Failed waiting until pods was deployed"
 ––– output –––
@@ -17,3 +29,4 @@ a
 an
 of
 and
+––– block: ./init/cleanup-release –––

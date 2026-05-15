@@ -8,9 +8,17 @@ timeout 300 bash -c 'while kubectl get pod 2>/dev/null | grep -q "^my-helm-"; do
 ––– output –––
 cleanup complete
 ––– input –––
-helm install my-helm --set balancer.enabled=false --set worker.replicaCount=1 --set worker.persistence.size=10Gi ./charts/manticoresearch >/tmp/helm-install.log 2>&1 && echo "release=my-helm status=deployed replicas=1 pvc_size=10Gi balancer=false"
+printf 'balancer:\n  enabled: false\nworker:\n  replicaCount: 1\n  persistence:\n    size: 10Gi\n  image:\n    tag: 0.0.0-unstable\n' >/tmp/clt-values.yaml; cat /tmp/clt-values.yaml
 ––– output –––
-release=my-helm status=deployed replicas=1 pvc_size=10Gi balancer=false
+balancer:
+  enabled: false
+worker:
+  replicaCount: 1
+  persistence:
+    size: 10Gi
+  image:
+    tag: 0.0.0-unstable
+––– block: ./init/install –––
 ––– input –––
 if timeout 420 bash -c 'until kubectl get pod my-helm-manticoresearch-worker-0 2>/dev/null | grep -q "1/1[[:space:]]*Running"; do sleep 2; done'; then kubectl get pod my-helm-manticoresearch-worker-0; else echo "worker_0_wait_failed"; kubectl get pod my-helm-manticoresearch-worker-0 2>/dev/null || true; kubectl describe pod my-helm-manticoresearch-worker-0 2>/dev/null || true; false; fi
 ––– output –––

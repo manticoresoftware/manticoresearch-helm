@@ -1,4 +1,14 @@
 ––– block: ./init/init –––
+––– block: ./init/cleanup-release –––
+––– input –––
+printf 'balancer:\n  enabled: false\nworker:\n  image:\n    tag: 0.0.0-unstable\n' >/tmp/clt-values.yaml; cat /tmp/clt-values.yaml
+––– output –––
+balancer:
+  enabled: false
+worker:
+  image:
+    tag: 0.0.0-unstable
+––– block: ./init/install –––
 ––– input –––
 timeout 420 bash -c 'while [[ ! $(kubectl get po 2>&1 | grep "Running" | wc -l) -eq 3 ]]; do sleep 1; done' && echo "OK" || echo "Failed waiting until pods was deployed"
 ––– output –––
@@ -9,3 +19,4 @@ kubectl get po | grep worker | cut -d " " -f1
 my-helm-manticoresearch-worker-0
 my-helm-manticoresearch-worker-1
 my-helm-manticoresearch-worker-2
+––– block: ./init/cleanup-release –––
