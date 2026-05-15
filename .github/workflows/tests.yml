@@ -126,20 +126,24 @@ jobs:
               for path in sorted(root.glob("*.rec"))
           ]
 
+          total_jobs = 3
           if not tests:
-              matrix = {"test": []}
+              matrix = {"chunk": []}
           else:
-              matrix = {
-                  "test": [
+              size = (len(tests) + total_jobs - 1) // total_jobs
+              chunks = []
+              for i in range(0, len(tests), size):
+                  group = tests[i : i + size]
+                  chunks.append(
                       {
-                          "id": index,
-                          "test_prefix": test,
+                          "id": len(chunks),
+                          "tests": group,
+                          "test_prefix": "\n".join(group),
                       }
-                      for index, test in enumerate(tests)
-                  ]
-              }
+                  )
+              matrix = {"chunk": chunks}
 
-          print(f"Found {len(tests)} .rec tests")
+          print(f"Found {len(tests)} .rec tests across {len(matrix['chunk'])} jobs")
           output_path = os.environ["GITHUB_OUTPUT"]
           with open(output_path, "a", encoding="utf-8") as fh:
               fh.write(f"matrix={json.dumps(matrix)}\n")
@@ -148,7 +152,7 @@ jobs:
   tests:
     needs: [discover]
     concurrency:
-      group: "tests-${{ github.event.number }}-${{ matrix.test.id }}"
+      group: "tests-${{ github.event.number }}-${{ matrix.chunk.id }}"
       cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -179,5 +183,5 @@ jobs:
       - uses: manticoresoftware/clt@0.7.8
         with:
           image: manticoresearch/helm-test-kit:0.0.1
-          test_prefix: ${{ matrix.test.test_prefix }}
+          test_prefix: ${{ matrix.chunk.test_prefix }}
           run_args: -e TELEMETRY=0 --net=host -v ${{ steps.k3s.outputs.kubeconfig }}:${{ steps.k3s.outputs.kubeconfig }} -v $(pwd)/charts/:/.clt/charts/
