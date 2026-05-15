@@ -7,37 +7,65 @@ This directory contains CLT recordings for the Helm chart. The tests run command
 Start or refresh the local k3s container and test-kit image:
 
 ```bash
-cd clt_tests
-./clt-init.sh
-cd ..
+clt_tests/run-local.sh --init
 ```
 
-`clt-init.sh` creates:
+`run-local.sh --init` creates:
 
-- `clt_tests/k3s.yaml`: kubeconfig that uses the host-published k3s API, usually `127.0.0.1:6443`.
-- `clt_tests/k3s_copy.yaml`: kubeconfig with the Docker bridge IP. This is useful from containers that can reach the Docker bridge directly.
+- `clt_tests/k3s.yaml`: kubeconfig that uses the k3s container IP, so Dockerized CLT commands can reach the local cluster.
 - `manticoresearch/helm-test-kit:0.0.1`: Docker image used by CLT.
 
-From the host, prefer `clt_tests/k3s.yaml`:
+`clt_tests/k3s.yaml` is written for Docker containers, because CLT executes test commands inside Docker. The init path avoids GNU-specific shell tools and checks cluster readiness from Docker with the same test-kit image used by CLT.
+
+## Running tests locally
+
+Use the local runner from the repository root:
 
 ```bash
-kubectl --kubeconfig clt_tests/k3s.yaml get nodes
+clt_tests/run-local.sh --init
+clt_tests/run-local.sh --list
+clt_tests/run-local.sh --test 3-sst-scale-replication --debug
+clt_tests/run-local.sh --thread 1
+clt_tests/run-local.sh --all
 ```
 
-## Running one test locally
+The runner expects `../clt/clt` and `clt_tests/k3s.yaml` by default. Override them with `--clt /path/to/clt` and `--kubeconfig /path/to/kubeconfig` if needed. `--init` can be used alone or together with a run command.
 
-Example for the scaling/SST test:
+To build the local Helm images and import them into the k3s container before running tests:
 
 ```bash
-CLT_RUN_ARGS='-e TELEMETRY=0 --net=host -v '"$(pwd)"'/clt_tests/k3s.yaml:/tmp/output/kubeconfig-latest.yaml -v '"$(pwd)"'/charts/:/.clt/charts/' \
-  ../clt/clt test -d -t clt_tests/tests/95-sst-scale-replication.rec manticoresearch/helm-test-kit:0.0.1
+clt_tests/run-local.sh --init --build-images --test 1-default-flow --debug
 ```
+
+You can also build/import images without running CLT:
+
+```bash
+clt_tests/build-images-local.sh
+```
+
+Both commands use `manticoresearch/helm-worker:0.0.0-unstable` and `manticoresearch/helm-balancer:0.0.0-unstable`, matching the test values files.
 
 The init block in each test exports:
 
 ```bash
 KUBECONFIG=/tmp/output/kubeconfig-latest.yaml
 ```
+
+## CI scenarios
+
+CI runs standalone scenario recordings in parallel. Do not add CI-only dependencies between separate `.rec` files. Put shared setup in `clt_tests/tests/init/*.recb` helpers and include those helpers from each standalone scenario.
+
+Use `clt_tests/tests/init/install.recb` for Helm installs. Each scenario can write `/tmp/clt-values.yaml` before including it to control chart values while keeping the install step shared.
+
+Scenario filenames must start with `1-`, `2-`, or `3-`. CI uses that prefix to choose which of the three CLT threads runs the test.
+
+Current standalone scenarios:
+
+- `clt_tests/tests/1-default-flow.rec`
+- `clt_tests/tests/1-no-balancer-flow.rec`
+- `clt_tests/tests/2-stopwords-flow.rec`
+- `clt_tests/tests/2-wordforms-configmap.rec`
+- `clt_tests/tests/3-sst-scale-replication.rec`
 
 ## Image tags
 

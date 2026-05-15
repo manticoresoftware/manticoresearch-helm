@@ -1,0 +1,4 @@
+––– input –––
+values_arg=""; test -f /tmp/clt-values.yaml && values_arg="-f /tmp/clt-values.yaml"; helm install my-helm $values_arg ./charts/manticoresearch >/tmp/helm-install.log 2>&1 && echo "release=my-helm status=deployed"
+––– output –––
+release=my-helm status=deployed

@@ -1,0 +1,32 @@
+––– block: ./init/init –––
+––– block: ./init/cleanup-release –––
+––– input –––
+printf 'balancer:\n  enabled: false\nworker:\n  stopwords:\n    enabled: true\n  image:\n    tag: 0.0.0-unstable\n' >/tmp/clt-values.yaml; cat /tmp/clt-values.yaml
+––– output –––
+balancer:
+  enabled: false
+worker:
+  stopwords:
+    enabled: true
+  image:
+    tag: 0.0.0-unstable
+––– block: ./init/install –––
+––– input –––
+if timeout 300 bash -c 'while [[ ! $(kubectl get po 2>&1 | grep "Running" | wc -l) -eq 3 ]]; do sleep 1; done'; then echo "OK"; else echo "Failed waiting until pods was deployed"; kubectl get po -o wide || true; for pod in $(kubectl get po --no-headers 2>/dev/null | awk '$3 != "Running" {print $1}'); do kubectl describe pod "$pod" || true; done; false; fi
+––– output –––
+OK
+––– input –––
+kubectl get po | grep worker | cut -d " " -f1
+––– output –––
+my-helm-manticoresearch-worker-0
+my-helm-manticoresearch-worker-1
+my-helm-manticoresearch-worker-2
+––– input –––
+kubectl exec my-helm-manticoresearch-worker-0 -- cat /usr/share/manticore/stopwords/stopwords.txt
+––– output –––
+the
+a
+an
+of
+and
+––– block: ./init/cleanup-release –––
