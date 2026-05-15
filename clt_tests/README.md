@@ -24,14 +24,32 @@ From the host, prefer `clt_tests/k3s.yaml`:
 kubectl --kubeconfig clt_tests/k3s.yaml get nodes
 ```
 
-## Running one test locally
+## Running tests locally
 
-Example for the scaling/SST test:
+Use the local runner from the repository root:
 
 ```bash
-CLT_RUN_ARGS='-e TELEMETRY=0 --net=host -v '"$(pwd)"'/clt_tests/k3s.yaml:/tmp/output/kubeconfig-latest.yaml -v '"$(pwd)"'/charts/:/.clt/charts/' \
-  ../clt/clt test -d -t clt_tests/tests/3-sst-scale-replication.rec manticoresearch/helm-test-kit:0.0.1
+clt_tests/run-local.sh --list
+clt_tests/run-local.sh --test 3-sst-scale-replication --debug
+clt_tests/run-local.sh --thread 1
+clt_tests/run-local.sh --all
 ```
+
+The runner expects `../clt/clt` and `clt_tests/k3s.yaml` by default. Override them with `--clt /path/to/clt` and `--kubeconfig /path/to/kubeconfig` if needed.
+
+To build the local Helm images and import them into the k3s container before running tests:
+
+```bash
+clt_tests/run-local.sh --build-images --test 1-default-flow --debug
+```
+
+You can also build/import images without running CLT:
+
+```bash
+clt_tests/build-images-local.sh
+```
+
+Both commands use `manticoresearch/helm-worker:0.0.0-unstable` and `manticoresearch/helm-balancer:0.0.0-unstable` by default, matching the test values files. Use `--image-tag TAG` with `run-local.sh` or `--tag TAG` with `build-images-local.sh` to override the tag.
 
 The init block in each test exports:
 

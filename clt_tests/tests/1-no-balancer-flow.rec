@@ -10,7 +10,7 @@ worker:
     tag: 0.0.0-unstable
 ––– block: ./init/install –––
 ––– input –––
-timeout 420 bash -c 'while [[ ! $(kubectl get po 2>&1 | grep "Running" | wc -l) -eq 3 ]]; do sleep 1; done' && echo "OK" || echo "Failed waiting until pods was deployed"
+if timeout 420 bash -c 'while [[ ! $(kubectl get po 2>&1 | grep "Running" | wc -l) -eq 3 ]]; do sleep 1; done'; then echo "OK"; else echo "Failed waiting until pods was deployed"; kubectl get po -o wide || true; for pod in $(kubectl get po --no-headers 2>/dev/null | awk '$3 != "Running" {print $1}'); do kubectl describe pod "$pod" || true; done; false; fi
 ––– output –––
 OK
 ––– input –––

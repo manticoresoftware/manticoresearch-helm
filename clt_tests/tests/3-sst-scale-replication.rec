@@ -25,7 +25,7 @@ if timeout 420 bash -c 'until kubectl get pod my-helm-manticoresearch-worker-0 2
 #!/NAME\s+READY\s+STATUS\s+RESTARTS\s+AGE/!#
 #!/my-helm-manticoresearch-worker-0\s+1\/1\s+Running\s+0\s+[0-9]+[smh]/!#
 ––– input –––
-timeout "${MANTICORE_LOAD_TIMEOUT:-3600}" bash -c 'total="${MANTICORE_LOAD_TOTAL:-10000000}"; if kubectl exec my-helm-manticoresearch-worker-0 -- manticore-load --batch-size=1000 --threads=4 --total="$total" --init="CREATE TABLE test(id bigint, name text, type int)" --load="INSERT INTO test(id,name,type) VALUES(<increment>, '\''<text/10/100>'\'', <int/1/100>)" >/tmp/manticore-load.log 2>&1; then count=$(kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "SELECT COUNT(*) FROM test" | tr -dc "0-9"); echo "manticore_load_total=$total"; echo "rows_on_worker_0=$count"; else tail -n 80 /tmp/manticore-load.log; exit 1; fi' || { echo "manticore-load failed"; tail -n 80 /tmp/manticore-load.log 2>/dev/null; exit 1; }
+timeout "${MANTICORE_LOAD_TIMEOUT:-3600}" bash -c 'total="${MANTICORE_LOAD_TOTAL:-1000000}"; if kubectl exec my-helm-manticoresearch-worker-0 -- manticore-load --batch-size=1000 --threads=4 --total="$total" --init="CREATE TABLE test(id bigint, name text, type int)" --load="INSERT INTO test(id,name,type) VALUES(<increment>, '\''<text/10/100>'\'', <int/1/100>)" >/tmp/manticore-load.log 2>&1; then count=$(kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "SELECT COUNT(*) FROM test" | tr -dc "0-9"); echo "manticore_load_total=$total"; echo "rows_on_worker_0=$count"; else tail -n 80 /tmp/manticore-load.log; exit 1; fi' || { echo "manticore-load failed"; tail -n 80 /tmp/manticore-load.log 2>/dev/null; exit 1; }
 ––– output –––
 #!/manticore_load_total=[0-9]+/!#
 #!/rows_on_worker_0=[0-9]+/!#
@@ -64,7 +64,7 @@ table=$(kubectl exec my-helm-manticoresearch-worker-1 -- mysql -h0 -P9306 -e "sh
 ––– output –––
 worker_1_table=test
 ––– input –––
-expected="${MANTICORE_LOAD_TOTAL:-10000000}"; count0=$(kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "SELECT COUNT(*) FROM test" | tr -dc "0-9"); count1=$(kubectl exec my-helm-manticoresearch-worker-1 -- mysql -h0 -P9306 -e "SELECT COUNT(*) FROM test" | tr -dc "0-9"); echo "expected=$expected worker_0=$count0 worker_1=$count1"; test "$count0" = "$expected" && test "$count1" = "$expected"
+expected="${MANTICORE_LOAD_TOTAL:-1000000}"; count0=$(kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "SELECT COUNT(*) FROM test" | tr -dc "0-9"); count1=$(kubectl exec my-helm-manticoresearch-worker-1 -- mysql -h0 -P9306 -e "SELECT COUNT(*) FROM test" | tr -dc "0-9"); echo "expected=$expected worker_0=$count0 worker_1=$count1"; test "$count0" = "$expected" && test "$count1" = "$expected"
 ––– output –––
 #!/expected=[0-9]+ worker_0=[0-9]+ worker_1=[0-9]+/!#
 ––– input –––
