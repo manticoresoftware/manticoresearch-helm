@@ -126,26 +126,20 @@ jobs:
               for path in sorted(root.glob("*.rec"))
           ]
 
-          total_jobs = 3
           if not tests:
-              matrix = {"chunk": []}
+              matrix = {"test": []}
           else:
-              chunks = [[] for _ in range(min(total_jobs, len(tests)))]
-              for index, test in enumerate(tests):
-                  chunks[index % len(chunks)].append(test)
-
-              matrix_chunks = []
-              for chunk_id, group in enumerate(chunks):
-                  matrix_chunks.append(
+              matrix = {
+                  "test": [
                       {
-                          "id": chunk_id,
-                          "tests": group,
-                          "test_prefix": "\n".join(group),
+                          "id": index,
+                          "test_prefix": test,
                       }
-                  )
-              matrix = {"chunk": matrix_chunks}
+                      for index, test in enumerate(tests)
+                  ]
+              }
 
-          print(f"Found {len(tests)} .rec tests across {len(matrix['chunk'])} jobs")
+          print(f"Found {len(tests)} .rec tests")
           output_path = os.environ["GITHUB_OUTPUT"]
           with open(output_path, "a", encoding="utf-8") as fh:
               fh.write(f"matrix={json.dumps(matrix)}\n")
@@ -154,12 +148,13 @@ jobs:
   tests:
     needs: [discover]
     concurrency:
-      group: "tests-${{ github.event.number }}-${{ matrix.chunk.id }}"
+      group: "tests-${{ github.event.number }}-${{ matrix.test.id }}"
       cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
       fail-fast: false
+      max-parallel: 3
       matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
     steps:
       - uses: debianmaster/actions-k3s@master
@@ -184,5 +179,5 @@ jobs:
       - uses: manticoresoftware/clt@0.7.8
         with:
           image: manticoresearch/helm-test-kit:0.0.1
-          test_prefix: ${{ matrix.chunk.test_prefix }}
+          test_prefix: ${{ matrix.test.test_prefix }}
           run_args: -e TELEMETRY=0 --net=host -v ${{ steps.k3s.outputs.kubeconfig }}:${{ steps.k3s.outputs.kubeconfig }} -v $(pwd)/charts/:/.clt/charts/

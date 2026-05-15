@@ -58,7 +58,7 @@ Table: idx
 kubectl exec $BALANCER_NAME -- mysql -h0 -P9306 -e "SELECT * FROM idx WHERE match('dog')\G"
 ––– output –––
 *************************** 1. row ***************************
-id: #!/[0-9]+/!#
+   id: #!/[0-9]+/!#
 title: dog is brown
 ––– input –––
 kubectl get deployment my-helm-manticoresearch-balancer -o=jsonpath='{$.spec.template.spec.containers[:1].image}'; echo
