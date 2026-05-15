@@ -30,7 +30,7 @@ Example for the scaling/SST test:
 
 ```bash
 CLT_RUN_ARGS='-e TELEMETRY=0 --net=host -v '"$(pwd)"'/clt_tests/k3s.yaml:/tmp/output/kubeconfig-latest.yaml -v '"$(pwd)"'/charts/:/.clt/charts/' \
-  ../clt/clt test -d -t clt_tests/tests/sst-scale-replication.rec manticoresearch/helm-test-kit:0.0.1
+  ../clt/clt test -d -t clt_tests/tests/3-sst-scale-replication.rec manticoresearch/helm-test-kit:0.0.1
 ```
 
 The init block in each test exports:
@@ -45,13 +45,15 @@ CI runs standalone scenario recordings in parallel. Do not add CI-only dependenc
 
 Use `clt_tests/tests/init/install.recb` for Helm installs. Each scenario can write `/tmp/clt-values.yaml` before including it to control chart values while keeping the install step shared.
 
+Scenario filenames must start with `1-`, `2-`, or `3-`. CI uses that prefix to choose which of the three CLT threads runs the test.
+
 Current standalone scenarios:
 
-- `clt_tests/tests/default-flow.rec`
-- `clt_tests/tests/no-balancer-flow.rec`
-- `clt_tests/tests/stopwords-flow.rec`
-- `clt_tests/tests/sst-scale-replication.rec`
-- `clt_tests/tests/wordforms-configmap.rec`
+- `clt_tests/tests/1-default-flow.rec`
+- `clt_tests/tests/1-no-balancer-flow.rec`
+- `clt_tests/tests/2-stopwords-flow.rec`
+- `clt_tests/tests/2-wordforms-configmap.rec`
+- `clt_tests/tests/3-sst-scale-replication.rec`
 
 ## Image tags
 
