@@ -1,4 +1,4 @@
-### 25.0.0-20260511
+### 25.0.0-20260514
 
 * Switched to ManticoreSearch 25.0.0
 * Exposed binary protocols to worker and balancer services 
