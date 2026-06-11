@@ -1,0 +1,32 @@
+––– block: ./init/init –––
+––– block: ./init/cleanup-release –––
+––– input –––
+if helm template bad ./charts/manticoresearch --set-string 'worker.searchd.extraArgs[0]=; echo unsafe' >/tmp/searchd-extra-args-invalid.yaml 2>/tmp/searchd-extra-args-invalid.err; then cat /tmp/searchd-extra-args-invalid.yaml; false; else grep -q 'Invalid worker.searchd.extraArgs value' /tmp/searchd-extra-args-invalid.err && echo "invalid extra arg rejected"; fi
+––– output –––
+invalid extra arg rejected
+––– input –––
+printf 'balancer:\n  enabled: false\nworker:\n  replicaCount: 1\n  searchd:\n    extraArgs:\n      - --logdebug\n  image:\n    tag: 0.0.0-unstable\n' >/tmp/clt-values.yaml; cat /tmp/clt-values.yaml
+––– output –––
+balancer:
+  enabled: false
+worker:
+  replicaCount: 1
+  searchd:
+    extraArgs:
+      - --logdebug
+  image:
+    tag: 0.0.0-unstable
+––– block: ./init/install –––
+––– input –––
+if timeout 300 bash -c 'while [[ ! $(kubectl get po 2>&1 | grep "Running" | wc -l) -eq 1 ]]; do sleep 1; done'; then echo "OK"; else echo "Failed waiting until worker pod was deployed"; kubectl get po -o wide || true; for pod in $(kubectl get po --no-headers 2>/dev/null | awk '$3 != "Running" {print $1}'); do kubectl describe pod "$pod" || true; done; false; fi
+––– output –––
+OK
+––– input –––
+kubectl exec my-helm-manticoresearch-worker-0 -- sh -c "ps -eo args | grep 'searchd .*--logdebug' | grep -v grep >/dev/null" && echo "searchd got --logdebug"
+––– output –––
+searchd got --logdebug
+––– input –––
+kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "SELECT 1" >/dev/null && if timeout 120 bash -c 'until kubectl logs my-helm-manticoresearch-worker-0 2>/dev/null | grep -qi debug; do sleep 2; done'; then echo "debug logs found"; else echo "debug logs were not found"; kubectl logs my-helm-manticoresearch-worker-0 || true; false; fi
+––– output –––
+debug logs found
+––– block: ./init/cleanup-release –––

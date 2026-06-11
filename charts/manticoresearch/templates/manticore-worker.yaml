@@ -73,6 +73,16 @@ spec:
             value: {{ .Values.worker.replicationMode }}
           - name: LOG_LEVEL
             value: {{ .Values.worker.logLevel }}
+          {{- if not (kindIs "slice" .Values.worker.searchd.extraArgs) }}
+            {{- fail "worker.searchd.extraArgs must be a list of searchd flags" }}
+          {{- end }}
+          {{- range .Values.worker.searchd.extraArgs }}
+            {{- if not (regexMatch "^--[A-Za-z0-9][A-Za-z0-9_-]*(=([A-Za-z0-9._~:/,+-]+))?$" .) }}
+              {{- fail (printf "Invalid worker.searchd.extraArgs value %q: only long-form searchd flags like --flag or --flag=value are allowed" .) }}
+            {{- end }}
+          {{- end }}
+          - name: SEARCHD_EXTRA_ARGS
+            value: {{ join " " .Values.worker.searchd.extraArgs | quote }}
           - name: INSTANCE_LABEL
             value: {{ .Release.Name }}
           - name: WORKER_SERVICE
