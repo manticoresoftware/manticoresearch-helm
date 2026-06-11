@@ -19,6 +19,7 @@ $instance        = null;
 $configMapPath   = null;
 $workerService   = null;
 $tableHAStrategy = null;
+$agentConnection = null;
 
 $variables = [
 	'workerPort'      => [ 'env' => 'WORKER_PORT', 'type' => 'int' ],
@@ -28,6 +29,7 @@ $variables = [
 	'configMapPath'   => [ 'env' => 'CONFIGMAP_PATH', 'type' => 'string' ],
 	'workerService'   => [ 'env' => 'WORKER_SERVICE', 'type' => 'string' ],
 	'tableHAStrategy' => [ 'env' => 'TABLE_HA_STRATEGY', 'type' => 'string' ],
+	'agentConnection' => [ 'env' => 'AGENT_CONNECTION', 'type' => 'string' ],
 ];
 
 foreach ( $variables as $variable => $desc ) {
@@ -47,6 +49,12 @@ foreach ( $variables as $variable => $desc ) {
 
 if (!in_array($tableHAStrategy, ['random', 'nodeads','noerrors','roundrobin'])){
 	Logger::info( "TABLE_HA_STRATEGY can be only {random|nodeads|noerrors|roundrobin}\n" );
+	exit( 1 );
+}
+
+$agentConnection = strtolower(trim($agentConnection));
+if (!in_array($agentConnection, ['', 'pconn'], true)){
+	Logger::info( "AGENT_CONNECTION can be empty or pconn\n" );
 	exit( 1 );
 }
 
@@ -82,11 +90,11 @@ $podsIps   = $resources->getPodIpAllConditions();
 
 if ( $tables !== [] ) {
 	$previousHash = $cache->get( Cache::TABLE_HASH );
-	$hash         = sha1( implode( '.', $tables ) . implode( $podsIps ) );
+	$hash         = sha1( implode( '.', $tables ) . implode( $podsIps ) . $agentConnection );
 
 	if ( $previousHash !== $hash ) {
 		Logger::info( "Starting config recompiling" );
-		saveConfig( $tables, $podsIps, $balancerPort, $configMapPath, $tableHAStrategy );
+		saveConfig( $tables, $podsIps, $balancerPort, $configMapPath, $tableHAStrategy, $agentConnection );
 		$cache->store( Cache::TABLE_HASH, $hash );
 	}
 } else {
@@ -95,7 +103,23 @@ if ( $tables !== [] ) {
 }
 
 
-function saveConfig( $tables, $nodes, $port, $configMapPath, $tableHAStrategy ) {
+function buildAgentValue( $table, $nodes, $agentConnection ) {
+	$agent = implode( "|", $nodes );
+	$options = [];
+
+	if ( $agentConnection === 'pconn' ) {
+		$options[] = 'conn=pconn';
+	}
+
+	if ( $options !== [] ) {
+		$agent .= ":" . $table . "[" . implode( ",", $options ) . "]";
+	}
+
+	return $agent;
+}
+
+
+function saveConfig( $tables, $nodes, $port, $configMapPath, $tableHAStrategy, $agentConnection ) {
 	$searchdConfig = file_get_contents( $configMapPath );
 	$prependConfig = '';
 	foreach ( $tables as $table ) {
@@ -103,7 +127,7 @@ function saveConfig( $tables, $nodes, $port, $configMapPath, $tableHAStrategy ) 
 		                  "{\n" .
 		                  "\ttype = distributed\n" .
 		                  "\tha_strategy = " . $tableHAStrategy . "\n" .
-		                  "\tagent = " . implode( "|", $nodes ) . "\n" .
+		                  "\tagent = " . buildAgentValue( $table, $nodes, $agentConnection ) . "\n" .
 		                  "}\n\n";
 	}
 

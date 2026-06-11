@@ -35,6 +35,10 @@ balancer:
   config:
     path: /mnt/configmap.conf
     table_ha_strategy: nodeads
+    agent:
+      # Set to pconn to generate persistent remote agents.
+      # Requires persistent_connections_limit > 0 in balancer.config.content.
+      conn: ""
     content: |
       searchd
       {
