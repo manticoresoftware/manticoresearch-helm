@@ -94,6 +94,11 @@ worker:
   replicationMode: multi-master
   autoAddTablesInCluster: true
   logLevel: INFO
+  searchd:
+    ## Extra command-line arguments appended to the worker searchd process.
+    ## Only long-form flags are allowed: --flag or --flag=value.
+    ## Example: ["--force-preread"]
+    extraArgs: []
   image:
     repository: manticoresearch/helm-worker
 #    tag: 3.6.0.0

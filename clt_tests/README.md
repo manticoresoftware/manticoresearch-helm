@@ -63,6 +63,7 @@ Current standalone scenarios:
 
 - `clt_tests/tests/1-default-flow.rec`
 - `clt_tests/tests/1-no-balancer-flow.rec`
+- `clt_tests/tests/2-searchd-extra-args.rec`
 - `clt_tests/tests/2-stopwords-flow.rec`
 - `clt_tests/tests/2-wordforms-configmap.rec`
 - `clt_tests/tests/3-sst-scale-replication.rec`
