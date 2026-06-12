@@ -188,6 +188,30 @@ The balancer in Manticore Search is an optional component for managing high avai
 #### Configuration Options:
 - **Custom Behavior:** You can customize the balancer’s behavior using its HA strategy (`table_ha_strategy`).
 - **Enhanced Performance:** Scaling the number of balancer replicas improves the cluster’s ability to handle read requests.
+- **Persistent Remote Agents:** Set `balancer.config.agent.conn` to `pconn` to generate remote agents with `[conn=pconn]`. To make persistent connections effective, also set `persistent_connections_limit` to a value greater than `0` in `balancer.config.content`.
+
+Example:
+
+```yaml
+balancer:
+  config:
+    agent:
+      conn: pconn
+    content: |
+      searchd
+      {
+        listen = /var/run/mysqld/mysqld.sock:mysql
+        listen = 9306:mysql
+        listen = 9308:http
+        listen = 9312
+        persistent_connections_limit = 128
+        query_log = /dev/stdout
+        query_log_format = sphinxql
+        pid_file = /var/run/manticore/searchd.pid
+        binlog_path = /var/lib/manticore
+        shutdown_timeout = 25s
+      }
+```
 
 
   For more details, refer to the [Load Balancing documentation](https://manual.manticoresearch.com/dev/Creating_a_cluster/Remote_nodes/Load_balancing#Load-balancing).
@@ -375,6 +399,7 @@ worker:
 | balancer.enabled | Enable/disable the load balancer | true |
 | balancer.replicaCount | Default balancers count (number of replicas)                                                                              | 1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | balancer.runInterval | How often to check for schema changes on workers, seconds                                                                 | 5                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| balancer.config.agent.conn | Remote agent connection mode. Set to `pconn` to generate agents with `[conn=pconn]`. Requires `persistent_connections_limit > 0` in `balancer.config.content` to enable persistent connections. | "" |
 | balancer.config.content | Balancer config (only section `searchd`)                                                                                  | searchd<br>      {<br>       listen = /var/run/mysqld/mysqld.sock:mysql<br>        listen = 9306:mysql<br>        listen = 9308:http<br>        log = /dev/stdout<br>        query_log = /dev/stdout<br>        query_log_format = sphinxql<br>        pid_file = /var/run/manticore/searchd.pid<br>        binlog_path = /var/lib/manticore/data<br>      }                                                                                                                                                                                                                        |
 | worker.replicaCount | Default workers count (number of replicas)                                                                                | 3                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | worker.replicationMode | Workers replication mode                                                                                                  | master-slave                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |

@@ -63,6 +63,12 @@ spec:
             value: {{ .Values.balancer.config.path | quote }}
           - name: TABLE_HA_STRATEGY
             value: {{ .Values.balancer.config.table_ha_strategy | quote }}
+          {{- $agentConn := lower (toString (default "" .Values.balancer.config.agent.conn)) }}
+          {{- if not (or (eq $agentConn "") (eq $agentConn "pconn")) }}
+            {{- fail "balancer.config.agent.conn must be empty or pconn" }}
+          {{- end }}
+          - name: AGENT_CONNECTION
+            value: {{ $agentConn | quote }}
           - name: BALANCER_PORT
             value: {{ .Values.balancer.service.ql.port | quote }}
           - name: WORKER_PORT
