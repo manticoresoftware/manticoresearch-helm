@@ -1,0 +1,53 @@
+––– block: ./init/init –––
+––– block: ./init/cleanup-release –––
+––– input –––
+if helm template bad ./charts/manticoresearch --set worker.podLabels=not-a-map >/tmp/pod-labels-invalid.yaml 2>/tmp/pod-labels-invalid.err; then cat /tmp/pod-labels-invalid.yaml; false; else grep -q 'worker.podLabels must be a map' /tmp/pod-labels-invalid.err && echo "invalid worker podLabels rejected"; fi
+––– output –––
+invalid worker podLabels rejected
+––– input –––
+if helm template bad ./charts/manticoresearch --set worker.podLabels.bad.nested=value >/tmp/pod-labels-nested.yaml 2>/tmp/pod-labels-nested.err; then cat /tmp/pod-labels-nested.yaml; false; else grep -q 'pod label "bad" must have a scalar value' /tmp/pod-labels-nested.err && echo "nested pod label rejected"; fi
+––– output –––
+nested pod label rejected
+––– input –––
+printf 'podLabels:\n  traffic-phase: cutover\nworker:\n  replicaCount: 1\n  podLabels:\n    appgroup: manticore-indexes\n    app.kubernetes.io/name: should-not-override\n  image:\n    tag: 0.0.0-unstable\nbalancer:\n  podLabels:\n    appgroup: manticore-balancers\n  image:\n    tag: 0.0.0-unstable\n' >/tmp/clt-values.yaml; cat /tmp/clt-values.yaml
+––– output –––
+podLabels:
+  traffic-phase: cutover
+worker:
+  replicaCount: 1
+  podLabels:
+    appgroup: manticore-indexes
+    app.kubernetes.io/name: should-not-override
+  image:
+    tag: 0.0.0-unstable
+balancer:
+  podLabels:
+    appgroup: manticore-balancers
+  image:
+    tag: 0.0.0-unstable
+––– block: ./init/install –––
+––– input –––
+if timeout 180 bash -c 'while [[ ! $(kubectl get po 2>&1 | grep "Running" | wc -l) -eq 2 ]]; do sleep 1; done'; then echo "OK"; else echo "Failed waiting until labeled pods were deployed"; kubectl get po -o wide || true; for pod in $(kubectl get po --no-headers 2>/dev/null | awk '$3 != "Running" {print $1}'); do kubectl describe pod "$pod" || true; done; false; fi
+––– output –––
+OK
+––– input –––
+worker_count=$(kubectl get pods -l 'appgroup=manticore-indexes,traffic-phase=cutover,app.kubernetes.io/name=manticoresearch,app.kubernetes.io/component=worker' --no-headers | wc -l | tr -d ' '); echo "worker_label_count=$worker_count"
+––– output –––
+worker_label_count=1
+––– input –––
+balancer_count=$(kubectl get pods -l 'appgroup=manticore-balancers,traffic-phase=cutover,app.kubernetes.io/name=manticoresearch,app.kubernetes.io/component=balancer' --no-headers | wc -l | tr -d ' '); echo "balancer_label_count=$balancer_count"
+––– output –––
+balancer_label_count=1
+––– input –––
+protected_count=$(kubectl get pods -l 'app.kubernetes.io/name=should-not-override' -o name | wc -l | tr -d ' '); echo "protected_override_count=$protected_count"
+––– output –––
+protected_override_count=0
+––– input –––
+worker_selector_appgroup=$(kubectl get statefulset my-helm-manticoresearch-worker -o jsonpath='{.spec.selector.matchLabels.appgroup}'); echo "worker_selector_appgroup=${worker_selector_appgroup:-<none>}"
+––– output –––
+worker_selector_appgroup=<none>
+––– input –––
+balancer_selector_appgroup=$(kubectl get deployment my-helm-manticoresearch-balancer -o jsonpath='{.spec.selector.matchLabels.appgroup}'); echo "balancer_selector_appgroup=${balancer_selector_appgroup:-<none>}"
+––– output –––
+balancer_selector_appgroup=<none>
+––– block: ./init/cleanup-release –––

@@ -29,6 +29,9 @@ spec:
         name: "{{ include "manticoresearch.fullname" . }}-worker"
         app.kubernetes.io/component: worker
         {{- include "manticoresearch.selectorLabels" . | nindent 8 }}
+        {{- with include "manticoresearch.workerPodLabels" . }}
+        {{- trimSuffix "\n" . | nindent 8 }}
+        {{- end }}
     spec:
       serviceAccountName: {{ include "manticoresearch.serviceAccountName" . }}
       {{- with .Values.imagePullSecrets }}

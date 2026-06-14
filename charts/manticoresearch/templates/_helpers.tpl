@@ -51,6 +51,58 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+User-provided pod labels.
+These labels are intentionally rendered only on Pod templates, not workload
+selectors, so operators can change traffic-routing labels without hitting
+immutable selector fields or changing chart ownership labels.
+*/}}
+{{- define "manticoresearch.workerPodLabels" -}}
+{{- $labels := dict -}}
+{{- with .Values.podLabels -}}
+{{- if not (kindIs "map" .) -}}
+{{- fail "podLabels must be a map of label keys to label values" -}}
+{{- end -}}
+{{- $labels = mergeOverwrite $labels . -}}
+{{- end -}}
+{{- with .Values.worker.podLabels -}}
+{{- if not (kindIs "map" .) -}}
+{{- fail "worker.podLabels must be a map of label keys to label values" -}}
+{{- end -}}
+{{- $labels = mergeOverwrite $labels . -}}
+{{- end -}}
+{{- $labels = omit $labels "name" "app.kubernetes.io/name" "app.kubernetes.io/instance" "app.kubernetes.io/component" -}}
+{{- range $key, $value := $labels }}
+{{- if or (kindIs "map" $value) (kindIs "slice" $value) -}}
+{{- fail (printf "pod label %q must have a scalar value" $key) -}}
+{{- end -}}
+{{- printf "%s: %s\n" $key ($value | toString | quote) -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "manticoresearch.balancerPodLabels" -}}
+{{- $labels := dict -}}
+{{- with .Values.podLabels -}}
+{{- if not (kindIs "map" .) -}}
+{{- fail "podLabels must be a map of label keys to label values" -}}
+{{- end -}}
+{{- $labels = mergeOverwrite $labels . -}}
+{{- end -}}
+{{- with .Values.balancer.podLabels -}}
+{{- if not (kindIs "map" .) -}}
+{{- fail "balancer.podLabels must be a map of label keys to label values" -}}
+{{- end -}}
+{{- $labels = mergeOverwrite $labels . -}}
+{{- end -}}
+{{- $labels = omit $labels "name" "app.kubernetes.io/name" "app.kubernetes.io/instance" "app.kubernetes.io/component" -}}
+{{- range $key, $value := $labels }}
+{{- if or (kindIs "map" $value) (kindIs "slice" $value) -}}
+{{- fail (printf "pod label %q must have a scalar value" $key) -}}
+{{- end -}}
+{{- printf "%s: %s\n" $key ($value | toString | quote) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "manticoresearch.serviceAccountName" -}}

@@ -13,6 +13,8 @@ global:
 balancer:
   enabled: true
   replicaCount: 1
+  ## Labels to add only to balancer pods. These labels are merged with podLabels.
+  podLabels: {}
   # priorityClassName: ""
   runInterval: 5
   image:
@@ -86,6 +88,11 @@ balancer:
 
 worker:
   replicaCount: 3
+  ## Labels to add only to worker pods. These labels are merged with podLabels.
+  ## Example:
+  ## podLabels:
+  ##   appgroup: manticore-indexes
+  podLabels: {}
   # priorityClassName: ""
   clusterName: manticore
   ## In the `multi-master` mode it doesn't matter to which node you write and from what node you read. This is a simpler and more efficient approach, but in case of an emergency cluster shutdown when all the nodes are down at the same time you have to recover the cluster  manually.
@@ -249,6 +256,10 @@ serviceAccount:
   name: "manticore-sa"
 
 podAnnotations: {}
+
+## Labels to add to all pods created by this chart. Use worker.podLabels or
+## balancer.podLabels for component-specific labels.
+podLabels: {}
 
 podSecurityContext: {}
   # fsGroup: 2000
