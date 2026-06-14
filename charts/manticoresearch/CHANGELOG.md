@@ -1,4 +1,4 @@
-### 25.0.0-20260614
+### 25.0.0-20260615
 
 * Switched to ManticoreSearch 25.0.0
 * Exposed binary protocols to worker and balancer services 
@@ -7,3 +7,4 @@
 * Introduced config maps and additional volumes to better support wordforms
 * Added searchd start flags support
 * Added configurable pod labels for traffic-routing integrations
+* Support persistent balancer agent
