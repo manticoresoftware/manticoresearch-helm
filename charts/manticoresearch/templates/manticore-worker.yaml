@@ -1,3 +1,4 @@
+{{- include "manticoresearch.validateMlock" . -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -46,7 +47,7 @@ spec:
       containers:
       - name: worker
         securityContext:
-          {{- toYaml .Values.securityContext | nindent 12 }}
+          {{- include "manticoresearch.workerSecurityContext" . | nindent 12 }}
         image: {{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag | default .Chart.AppVersion }}
         imagePullPolicy: {{ .Values.worker.image.pullPolicy }}
         lifecycle:
