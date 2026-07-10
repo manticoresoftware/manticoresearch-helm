@@ -1,3 +1,3 @@
-### 27.1.5
+### 28.4.4
 
-* Switched to ManticoreSearch 27.1.5
+* Switched to ManticoreSearch 28.4.4
