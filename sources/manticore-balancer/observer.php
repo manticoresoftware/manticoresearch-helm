@@ -74,23 +74,28 @@ $locker->checkLock();
 $resources = new Resources( new ApiClient(), $labels, new NotificationStub() );
 
 if ( $resources->getActivePodsCount() === 0 ) {
-	Logger::info( "No workers found" );
+	Logger::info( "No ready workers found" );
 	$locker->unlock();
 }
 $oldestWorker = $resources->getOldestActivePodName();
 
 if ( empty( $oldestWorker ) ) {
-	throw new RuntimeException( "Can't find oldest worker" );
+	throw new RuntimeException( "Can't find oldest ready worker" );
 }
 
 $manticore = new ManticoreConnector( $oldestWorker . '.' . $workerService, $workerPort, null, - 1 );
 $tables    = $manticore->getTables( false );
-$podsIps   = $resources->getPodIpAllConditions();
+$podsIps   = $resources->getPodsIp();
+
+// Kubernetes API item order is not stable, so normalize before hashing and rendering.
+sort( $tables );
+ksort( $podsIps, SORT_NATURAL );
+$podsIps = array_values( $podsIps );
 
 
 if ( $tables !== [] ) {
 	$previousHash = $cache->get( Cache::TABLE_HASH );
-	$hash         = sha1( implode( '.', $tables ) . implode( $podsIps ) . $agentConnection );
+	$hash         = sha1( implode( '.', $tables ) . implode( '.', $podsIps ) . $agentConnection );
 
 	if ( $previousHash !== $hash ) {
 		Logger::info( "Starting config recompiling" );
