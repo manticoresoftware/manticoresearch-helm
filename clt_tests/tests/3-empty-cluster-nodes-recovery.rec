@@ -1,0 +1,36 @@
+––– block: ./init/init –––
+––– block: ./init/cleanup-release –––
+––– input –––
+printf 'balancer:\n  enabled: false\nworker:\n  replicaCount: 2\n  persistence:\n    size: 1Gi\n  image:\n    tag: 0.0.0-unstable\n' >/tmp/clt-values.yaml; cat /tmp/clt-values.yaml
+––– output –––
+balancer:
+  enabled: false
+worker:
+  replicaCount: 2
+  persistence:
+    size: 1Gi
+  image:
+    tag: 0.0.0-unstable
+––– block: ./init/install –––
+––– input –––
+if timeout 420 bash -c 'until kubectl get pod my-helm-manticoresearch-worker-0 2>/dev/null | grep -q "1/1[[:space:]]*Running" && kubectl get pod my-helm-manticoresearch-worker-1 2>/dev/null | grep -q "1/1[[:space:]]*Running"; do sleep 2; done'; then echo "workers_ready=2"; else kubectl get pods -o wide; false; fi
+––– output –––
+workers_ready=2
+––– input –––
+kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "CREATE TABLE test(title text); ALTER CLUSTER manticore_cluster ADD test; INSERT INTO manticore_cluster:test VALUES(1,'survives restart')" >/dev/null; if timeout 300 bash -c 'until kubectl exec my-helm-manticoresearch-worker-1 -- mysql -h0 -P9306 -e "SELECT title FROM test WHERE id=1" 2>/dev/null | grep -q "survives restart"; do sleep 2; done'; then echo "table_replicated=yes"; else kubectl exec my-helm-manticoresearch-worker-1 -- mysql -h0 -P9306 -e "SHOW TABLES" || true; false; fi
+––– output –––
+table_replicated=yes
+––– input –––
+kubectl exec my-helm-manticoresearch-worker-0 -- supervisorctl stop searchd >/dev/null; if ! timeout 120 bash -c 'until kubectl exec my-helm-manticoresearch-worker-1 -- mysql -h0 -P9306 -e "SHOW STATUS LIKE '\''cluster_%_size'\''" 2>/dev/null | grep '"'"'cluster_manticore_cluster_size'"'"' | grep -q 1; do sleep 2; done'; then kubectl exec my-helm-manticoresearch-worker-1 -- mysql -h0 -P9306 -e "SHOW STATUS LIKE 'cluster_%_size'" || true; false; fi; kubectl exec my-helm-manticoresearch-worker-0 -- php -r '$p="/var/lib/manticore/manticore.json";$j=json_decode(file_get_contents($p),true);$j["clusters"]["manticore_cluster"]["nodes"]="";file_put_contents($p,json_encode($j,JSON_PRETTY_PRINT));'; kubectl exec my-helm-manticoresearch-worker-0 -- rm -f /var/lib/manticore/gvwstate.dat; safe=$(kubectl exec my-helm-manticoresearch-worker-0 -- awk '/safe_to_bootstrap/ {print $2}' /var/lib/manticore/grastate.dat); nodes=$(kubectl exec my-helm-manticoresearch-worker-0 -- php -r '$j=json_decode(file_get_contents("/var/lib/manticore/manticore.json"),true);echo $j["clusters"]["manticore_cluster"]["nodes"]===""?"empty":"set";'); echo "worker_0_safe_to_bootstrap=$safe nodes=$nodes"
+––– output –––
+worker_0_safe_to_bootstrap=0 nodes=empty
+––– input –––
+kubectl delete pod my-helm-manticoresearch-worker-0 --force --grace-period=0 >/dev/null 2>&1; if ! timeout 300 bash -c 'until kubectl get pod my-helm-manticoresearch-worker-0 2>/dev/null | grep -q "1/1[[:space:]]*Running"; do sleep 2; done'; then kubectl get pods -o wide; kubectl logs my-helm-manticoresearch-worker-0 --tail=100 || true; false; fi; for pod in my-helm-manticoresearch-worker-0 my-helm-manticoresearch-worker-1; do out=$(kubectl exec "$pod" -- mysql -h0 -P9306 -e "SHOW STATUS LIKE 'cluster_%_status'; SHOW STATUS LIKE 'cluster_%_node_state'; SHOW STATUS LIKE 'cluster_%_size';"); status=$(echo "$out" | grep 'cluster_manticore_cluster_status' | grep -o primary); state=$(echo "$out" | grep 'cluster_manticore_cluster_node_state' | grep -o synced); size=$(echo "$out" | grep 'cluster_manticore_cluster_size' | grep -o 2 | head -1); echo "$pod status=$status state=$state size=$size"; done
+––– output –––
+my-helm-manticoresearch-worker-0 status=primary state=synced size=2
+my-helm-manticoresearch-worker-1 status=primary state=synced size=2
+––– input –––
+value=$(kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -N -e "SELECT title FROM test WHERE id=1" | grep -o 'survives restart'); echo "worker_0_value=$value"
+––– output –––
+worker_0_value=survives restart
+––– block: ./init/cleanup-release –––
