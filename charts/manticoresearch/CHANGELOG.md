@@ -1,3 +1,3 @@
-### 28.6.6
+### 28.6.7-20260804
 
-* Switched to ManticoreSearch 28.6.6
+* Switched to ManticoreSearch development version dev-28.6.7
