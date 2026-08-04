@@ -46,6 +46,26 @@ git checkout <release-tag>
 ```
 or download an archive from [GitHub releases](https://github.com/manticoresoftware/manticoresearch-helm/releases).
 
+### Manticore Development Image Channel
+
+Maintainers can manually publish worker and balancer images from an exact Manticore development tag. To use this channel without changing the chart version, override both images:
+
+```yaml
+worker:
+  image:
+    tag: dev
+    pullPolicy: Always
+
+balancer:
+  image:
+    tag: dev
+    pullPolicy: Always
+```
+
+The `dev` tags move only when a maintainer runs the manual development-image workflow; stable chart releases do not update them. Publishing new images does not restart existing pods, so perform a controlled rollout and verify `searchd --version` in every worker and enabled balancer pod.
+
+To return to stable, explicitly set both tags to a stable Manticore version containing the fix and restore `pullPolicy: IfNotPresent`. Do not use `--reuse-values` for that switch because it retains `tag: dev`. Switching to an older daemon remains an unsupported application downgrade.
+
 ---
 
 ## Quick Start Guide
