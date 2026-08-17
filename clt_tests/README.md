@@ -34,7 +34,7 @@ The runner expects `../clt/clt` and `clt_tests/k3s.yaml` by default. Override th
 To build the local Helm images and import them into the k3s container before running tests:
 
 ```bash
-clt_tests/run-local.sh --init --build-images --test 1-default-flow --debug
+clt_tests/run-local.sh --init --build-images --test 2-default-flow --debug
 ```
 
 You can also build/import images without running CLT:
@@ -59,16 +59,11 @@ Use `clt_tests/tests/init/install.recb` for Helm installs. Each scenario can wri
 
 Scenario filenames must start with `1-`, `2-`, or `3-`. CI uses that prefix to choose which of the three CLT threads runs the test.
 
-Current standalone scenarios:
+Current standalone scenarios, grouped by CI thread prefix:
 
-- `clt_tests/tests/1-default-flow.rec`
-- `clt_tests/tests/1-no-balancer-flow.rec`
-- `clt_tests/tests/2-pod-labels.rec`
-- `clt_tests/tests/2-searchd-extra-args.rec`
-- `clt_tests/tests/2-worker-mlock-ipc-lock.rec`
-- `clt_tests/tests/2-stopwords-flow.rec`
-- `clt_tests/tests/2-wordforms-configmap.rec`
-- `clt_tests/tests/3-sst-scale-replication.rec`
+- Thread 1: `1-cross-release-seed-restore-mre.rec`, `1-no-balancer-flow.rec`, `1-pod-labels.rec`, `1-wordforms-configmap.rec`
+- Thread 2: `2-balancer-agent-pconn.rec`, `2-default-flow.rec`, `2-searchd-extra-args.rec`, `2-worker-mlock-ipc-lock.rec`
+- Thread 3: `3-empty-cluster-nodes-recovery.rec`, `3-sst-scale-replication.rec`, `3-stopwords-flow.rec`
 
 ## Image tags
 

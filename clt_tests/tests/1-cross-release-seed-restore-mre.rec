@@ -1,3 +1,5 @@
+––– comment –––
+Verify that a worker-data backup can be restored into a different Helm release or namespace even when its persisted cluster state still contains the source workers' DNS names.
 ––– block: ./init/init –––
 ––– input –––
 for release in seed-old seed-new; do helm uninstall "$release" >/dev/null 2>&1 || true; done; kubectl delete pod seed-copy-0 seed-inspect-0 --wait=false >/dev/null 2>&1 || true; kubectl delete pvc -l mre=manticore-seed-restore --wait=false >/dev/null 2>&1 || true; kubectl delete pvc -l app.kubernetes.io/component=worker --wait=false >/dev/null 2>&1 || true; echo "cleanup complete"
