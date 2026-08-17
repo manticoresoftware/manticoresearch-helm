@@ -110,6 +110,16 @@ worker:
     ## Only long-form flags are allowed: --flag or --flag=value.
     ## Example: ["--force-preread"]
     extraArgs: []
+  mlock:
+    ## Add CAP_IPC_LOCK to the worker container when Manticore config uses
+    ## access_* = mlock. Kubernetes pod memory limits do not increase the
+    ## process locked-memory limit by themselves, so mlock() may otherwise fail
+    ## with "Cannot allocate memory" even when plenty of RAM is available.
+    enabled: false
+    ## Fail helm rendering when worker.config.content contains access_* = mlock
+    ## but neither worker.mlock.enabled nor securityContext.capabilities.add
+    ## includes IPC_LOCK.
+    validate: true
   image:
     repository: manticoresearch/helm-worker
 #    tag: 3.6.0.0
@@ -270,6 +280,8 @@ podSecurityContext: {}
 
 securityContext: {}
   # capabilities:
+  #   add:
+  #   - IPC_LOCK # Required when worker.config.content uses access_* = mlock.
   #   drop:
   #   - ALL
   # readOnlyRootFilesystem: true
