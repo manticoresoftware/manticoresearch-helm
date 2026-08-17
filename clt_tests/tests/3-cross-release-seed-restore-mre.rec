@@ -123,32 +123,19 @@ helm install seed-new -f /tmp/seed-new-values.yaml ./charts/manticoresearch >/tm
 ––– output –––
 release=seed-new status=deployed
 ––– input –––
-timeout 420 bash -c 'until kubectl get pod seed-new-manticoresearch-worker-0 2>/dev/null | grep -q "1/1[[:space:]]*Running"; do sleep 2; done'; out=$(kubectl exec seed-new-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "show status like 'cluster_%_node_state'; show status like 'cluster_%_status'; show status like 'cluster_%_size'; SELECT COUNT(*) FROM idx;" 2>/dev/null || true); echo "--- seed worker0 status ---"; echo "$out"; kubectl logs seed-new-manticoresearch-worker-0 --tail=300 | grep -E "Filter cluster nodes|Node at seed-old|Save manticore.json|Cluster exist|Cluster created|safe to bootstrap|No persistent state" || true
+timeout 420 bash -c 'until kubectl get pod seed-new-manticoresearch-worker-0 2>/dev/null | grep -q "1/1[[:space:]]*Running"; do sleep 2; done'; out=$(kubectl exec seed-new-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "show status like 'cluster_%_node_state'; show status like 'cluster_%_status'; show status like 'cluster_%_size'; SELECT COUNT(*) FROM idx;" 2>/dev/null); state=$(echo "$out" | grep "cluster_manticore_cluster_node_state" | grep -o "synced"); status=$(echo "$out" | grep "cluster_manticore_cluster_status" | grep -o "primary"); size=$(echo "$out" | grep "cluster_manticore_cluster_size" | grep -o "1" | head -n1); rows=$(echo "$out" | tr -dc "0-9" | tail -c 1); echo "seed_worker_0 state=$state status=$status size=$size rows=$rows"; test "$state" = "synced" && test "$status" = "primary" && test "$size" = "1" && test "$rows" = "1"
 ––– output –––
---- seed worker0 status ---
-#!/.*cluster_manticore_cluster_node_state.*synced.*/!#
-#!/.*cluster_manticore_cluster_status.*primary.*/!#
-#!/.*cluster_manticore_cluster_size.*1.*/!#
-#!/.*COUNT\(\*\).*|.*1.*/!#
-#!/.*(Filter cluster nodes|Node at seed-old|Save manticore.json|Cluster exist|Cluster created).*/!#
+seed_worker_0 state=synced status=primary size=1 rows=1
 ––– input –––
-kubectl scale statefulset seed-new-manticoresearch-worker --replicas=2; timeout 420 bash -c 'until kubectl get pod seed-new-manticoresearch-worker-1 2>/dev/null | grep -q "Running"; do sleep 2; done'; sleep 90; ready=$(kubectl get pod seed-new-manticoresearch-worker-0 seed-new-manticoresearch-worker-1 2>/dev/null | awk '$2 == "1/1" {count++} END {print count+0}'); echo "new_workers_ready=$ready"; kubectl get pod seed-new-manticoresearch-worker-0 seed-new-manticoresearch-worker-1 --no-headers 2>/dev/null | awk '{print $1" ready="$2" status="$3" restarts="$4}'
+kubectl scale statefulset seed-new-manticoresearch-worker --replicas=2; if timeout 420 bash -c 'until kubectl get pod seed-new-manticoresearch-worker-0 seed-new-manticoresearch-worker-1 2>/dev/null | grep -q "seed-new-manticoresearch-worker-0[[:space:]]*1/1[[:space:]]*Running" && kubectl get pod seed-new-manticoresearch-worker-0 seed-new-manticoresearch-worker-1 2>/dev/null | grep -q "seed-new-manticoresearch-worker-1[[:space:]]*1/1[[:space:]]*Running"; do sleep 2; done'; then echo "new_workers_ready=2"; else echo "new_workers_wait_failed"; kubectl get pod -o wide; false; fi
 ––– output –––
 statefulset.apps/seed-new-manticoresearch-worker scaled
-#!/new_workers_ready=[0-2]/!#
-#!/seed-new-manticoresearch-worker-0 ready=1/1 status=Running restarts=[0-9]+/!#
-#!/seed-new-manticoresearch-worker-1 ready=[0-1]/1 status=Running restarts=[0-9]+/!#
+new_workers_ready=2
 ––– input –––
-for pod in seed-new-manticoresearch-worker-0 seed-new-manticoresearch-worker-1; do echo "--- $pod status ---"; kubectl exec "$pod" -- mysql -h0 -P9306 -e "show status like 'cluster_%_node_state'; show status like 'cluster_%_status'; show status like 'cluster_%_size'; show status like 'cluster_%_nodes_view';" 2>/dev/null || true; echo "--- $pod logs ---"; kubectl logs "$pod" --tail=500 2>/dev/null | grep -E "Empty conf|Non empty conf|Join to|JOIN CLUSTER|Wait until join host|Cluster exist|Filter cluster nodes|Node at seed-old|Save manticore.json|safe to bootstrap|No persistent state|FATAL" || true; done
+for pod in seed-new-manticoresearch-worker-0 seed-new-manticoresearch-worker-1; do out=$(kubectl exec "$pod" -- mysql -h0 -P9306 -e "show status like 'cluster_%_node_state'; show status like 'cluster_%_status'; show status like 'cluster_%_size'; show status like 'cluster_%_nodes_view';" 2>/dev/null); state=$(echo "$out" | grep "cluster_manticore_cluster_node_state" | grep -o "synced"); status=$(echo "$out" | grep "cluster_manticore_cluster_status" | grep -o "primary"); size=$(echo "$out" | grep "cluster_manticore_cluster_size" | grep -o "2" | head -n1); nodes=$(echo "$out" | grep -o 'seed-new-manticoresearch-worker-[01]' | sort -u | wc -l | tr -d ' '); echo "$pod state=$state status=$status size=$size nodes=$nodes"; test "$state" = "synced" && test "$status" = "primary" && test "$size" = "2" && test "$nodes" = "2"; done
 ––– output –––
---- seed-new-manticoresearch-worker-0 status ---
-#!/.*cluster_manticore_cluster_node_state.*/!#
---- seed-new-manticoresearch-worker-0 logs ---
-#!/.*(Filter cluster nodes|Cluster exist|Save manticore.json).*/!#
---- seed-new-manticoresearch-worker-1 status ---
-#!/.*cluster_manticore_cluster_node_state.*|.*/!#
---- seed-new-manticoresearch-worker-1 logs ---
-#!/.*(Empty conf|Join to|safe to bootstrap|FATAL|Cluster exist|Non empty conf).*/!#
+seed-new-manticoresearch-worker-0 state=synced status=primary size=2 nodes=2
+seed-new-manticoresearch-worker-1 state=synced status=primary size=2 nodes=2
 ––– input –––
 for release in seed-new seed-old; do helm uninstall "$release" >/dev/null 2>&1 || true; done; kubectl delete pod seed-copy-0 seed-inspect-0 --wait=false >/dev/null 2>&1 || true; kubectl delete pvc -l mre=manticore-seed-restore --wait=false >/dev/null 2>&1 || true; kubectl delete pvc -l app.kubernetes.io/component=worker --wait=false >/dev/null 2>&1 || true; echo "cleanup complete"
 ––– output –––
