@@ -1,0 +1,144 @@
+––– comment –––
+Verify that a worker-data backup can be restored into a different Helm release or namespace even when its persisted cluster state still contains the source workers' DNS names.
+––– block: ./init/init –––
+––– input –––
+for release in seed-old seed-new; do helm uninstall "$release" >/dev/null 2>&1 || true; done; kubectl delete pod seed-copy-0 seed-inspect-0 --wait=false >/dev/null 2>&1 || true; kubectl delete pvc -l mre=manticore-seed-restore --wait=false >/dev/null 2>&1 || true; kubectl delete pvc -l app.kubernetes.io/component=worker --wait=false >/dev/null 2>&1 || true; echo "cleanup complete"
+––– output –––
+cleanup complete
+––– input –––
+printf 'balancer:\n  enabled: false\nworker:\n  replicaCount: 2\n  persistence:\n    size: 10Gi\n  image:\n    tag: 0.0.0-unstable\n' >/tmp/seed-old-values.yaml; printf 'balancer:\n  enabled: false\nworker:\n  replicaCount: 1\n  persistence:\n    size: 10Gi\n  image:\n    tag: 0.0.0-unstable\n' >/tmp/seed-new-values.yaml; echo "values_written=old2_new1"
+––– output –––
+values_written=old2_new1
+––– input –––
+helm install seed-old -f /tmp/seed-old-values.yaml ./charts/manticoresearch >/tmp/seed-old-install.log 2>&1 && echo "release=seed-old status=deployed"
+––– output –––
+release=seed-old status=deployed
+––– input –––
+if timeout 420 bash -c 'until kubectl get pod seed-old-manticoresearch-worker-0 seed-old-manticoresearch-worker-1 2>/dev/null | grep -q "seed-old-manticoresearch-worker-0[[:space:]]*1/1[[:space:]]*Running" && kubectl get pod seed-old-manticoresearch-worker-0 seed-old-manticoresearch-worker-1 2>/dev/null | grep -q "seed-old-manticoresearch-worker-1[[:space:]]*1/1[[:space:]]*Running"; do sleep 2; done'; then echo "old_workers_ready=2"; else echo "old_workers_wait_failed"; kubectl get pod -o wide; false; fi
+––– output –––
+old_workers_ready=2
+––– input –––
+kubectl exec seed-old-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "CREATE TABLE idx(title text)"; kubectl exec seed-old-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "ALTER CLUSTER manticore_cluster ADD idx"; kubectl exec seed-old-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "INSERT INTO manticore_cluster:idx (title) VALUES ('seed restore mre')"; echo "old_cluster_seeded=$?"
+––– output –––
+old_cluster_seeded=0
+––– input –––
+timeout 300 bash -c 'for pod in seed-old-manticoresearch-worker-0 seed-old-manticoresearch-worker-1; do until kubectl exec "$pod" -- mysql -h0 -P9306 -e "SHOW TABLES; SELECT COUNT(*) FROM idx; show status like '\''cluster_%_node_state'\'';" 2>/dev/null | grep -q synced; do sleep 2; done; done'; for pod in seed-old-manticoresearch-worker-0 seed-old-manticoresearch-worker-1; do out=$(kubectl exec "$pod" -- mysql -h0 -P9306 -e "show status like 'cluster_%_node_state'; show status like 'cluster_%_status'; show status like 'cluster_%_size'; SELECT COUNT(*) FROM idx;" 2>/dev/null); state=$(echo "$out" | grep "cluster_manticore_cluster_node_state" | grep -o "synced"); status=$(echo "$out" | grep "cluster_manticore_cluster_status" | grep -o "primary"); size=$(echo "$out" | grep "cluster_manticore_cluster_size" | grep -o "2" | head -n1); count=$(echo "$out" | tr -dc "0-9" | tail -c 1); echo "$pod state=$state status=$status size=$size rows=$count"; done
+––– output –––
+seed-old-manticoresearch-worker-0 state=synced status=primary size=2 rows=1
+seed-old-manticoresearch-worker-1 state=synced status=primary size=2 rows=1
+––– input –––
+for pod in seed-old-manticoresearch-worker-0 seed-old-manticoresearch-worker-1; do echo "--- $pod grastate ---"; kubectl exec "$pod" -- sh -lc "grep -E 'seqno|safe_to_bootstrap' /var/lib/manticore/manticore/replication/manticore_cluster/grastate.dat 2>/dev/null || true"; done
+––– output –––
+--- seed-old-manticoresearch-worker-0 grastate ---
+--- seed-old-manticoresearch-worker-1 grastate ---
+––– input –––
+kubectl scale statefulset seed-old-manticoresearch-worker --replicas=0; timeout 420 bash -c 'until ! kubectl get pod seed-old-manticoresearch-worker-0 >/dev/null 2>&1 && ! kubectl get pod seed-old-manticoresearch-worker-1 >/dev/null 2>&1; do sleep 2; done'; echo "old_workers_scaled_down=0"
+––– output –––
+statefulset.apps/seed-old-manticoresearch-worker scaled
+old_workers_scaled_down=0
+––– input –––
+helm uninstall seed-old >/dev/null 2>&1; echo "old_release_uninstalled_pvcs_retained=$(kubectl get pvc data-seed-old-manticoresearch-worker-0 data-seed-old-manticoresearch-worker-1 --no-headers 2>/dev/null | wc -l | tr -d ' ')"
+––– output –––
+old_release_uninstalled_pvcs_retained=2
+––– input –––
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data-seed-new-manticoresearch-worker-0
+  labels:
+    mre: manticore-seed-restore
+    app.kubernetes.io/component: worker
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+EOF
+echo "new_seed_pvc_created=1"
+––– output –––
+persistentvolumeclaim/data-seed-new-manticoresearch-worker-0 created
+new_seed_pvc_created=1
+––– input –––
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Pod
+metadata:
+  name: seed-copy-0
+  labels:
+    mre: manticore-seed-restore
+spec:
+  restartPolicy: Never
+  containers:
+    - name: copy
+      image: busybox:1.36
+      command: ["sh", "-c", "cp -a /old/. /new/ && echo copied-0"]
+      volumeMounts:
+        - name: old-data
+          mountPath: /old
+          readOnly: true
+        - name: new-data
+          mountPath: /new
+  volumes:
+    - name: old-data
+      persistentVolumeClaim:
+        claimName: data-seed-old-manticoresearch-worker-0
+    - name: new-data
+      persistentVolumeClaim:
+        claimName: data-seed-new-manticoresearch-worker-0
+EOF
+timeout 300 bash -c 'until kubectl get pod seed-copy-0 2>/dev/null | grep -q "seed-copy-0[[:space:]]*0/1[[:space:]]*Completed"; do sleep 2; done'; echo "snapshot_data_copied=worker0_only"
+––– output –––
+pod/seed-copy-0 created
+snapshot_data_copied=worker0_only
+––– input –––
+cat <<EOF | kubectl apply -f - >/dev/null
+apiVersion: v1
+kind: Pod
+metadata:
+  name: seed-inspect-0
+  labels:
+    mre: manticore-seed-restore
+spec:
+  restartPolicy: Never
+  containers:
+    - name: inspect
+      image: busybox:1.36
+      command: ["sh", "-c", "echo nodes:; grep -o 'seed-old-manticoresearch-worker-[01][^,:\" ]*' /data/manticore.json | sort -u; echo grastate:; grep -E 'seqno|safe_to_bootstrap' /data/manticore/replication/manticore_cluster/grastate.dat 2>/dev/null || true"]
+      volumeMounts:
+        - name: data
+          mountPath: /data
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: data-seed-new-manticoresearch-worker-0
+EOF
+timeout 120 bash -c 'until kubectl get pod seed-inspect-0 2>/dev/null | grep -q "seed-inspect-0[[:space:]]*0/1[[:space:]]*Completed"; do sleep 2; done'; kubectl logs seed-inspect-0
+––– output –––
+nodes:
+#!/seed-old-manticoresearch-worker-[01].*/!#
+#!/seed-old-manticoresearch-worker-[01].*/!#
+grastate:
+––– input –––
+helm install seed-new -f /tmp/seed-new-values.yaml ./charts/manticoresearch >/tmp/seed-new-install.log 2>&1 && echo "release=seed-new status=deployed" || { cat /tmp/seed-new-install.log; exit 1; }
+––– output –––
+release=seed-new status=deployed
+––– input –––
+timeout 420 bash -c 'until kubectl get pod seed-new-manticoresearch-worker-0 2>/dev/null | grep -q "1/1[[:space:]]*Running"; do sleep 2; done'; out=$(kubectl exec seed-new-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "show status like 'cluster_%_node_state'; show status like 'cluster_%_status'; show status like 'cluster_%_size'; SELECT COUNT(*) FROM idx;" 2>/dev/null); state=$(echo "$out" | grep "cluster_manticore_cluster_node_state" | grep -o "synced"); status=$(echo "$out" | grep "cluster_manticore_cluster_status" | grep -o "primary"); size=$(echo "$out" | grep "cluster_manticore_cluster_size" | grep -o "1" | head -n1); rows=$(echo "$out" | tr -dc "0-9" | tail -c 1); echo "seed_worker_0 state=$state status=$status size=$size rows=$rows"; test "$state" = "synced" && test "$status" = "primary" && test "$size" = "1" && test "$rows" = "1"
+––– output –––
+seed_worker_0 state=synced status=primary size=1 rows=1
+––– input –––
+kubectl scale statefulset seed-new-manticoresearch-worker --replicas=2; if timeout 420 bash -c 'until kubectl get pod seed-new-manticoresearch-worker-0 seed-new-manticoresearch-worker-1 2>/dev/null | grep -q "seed-new-manticoresearch-worker-0[[:space:]]*1/1[[:space:]]*Running" && kubectl get pod seed-new-manticoresearch-worker-0 seed-new-manticoresearch-worker-1 2>/dev/null | grep -q "seed-new-manticoresearch-worker-1[[:space:]]*1/1[[:space:]]*Running"; do sleep 2; done'; then echo "new_workers_ready=2"; else echo "new_workers_wait_failed"; kubectl get pod -o wide; false; fi
+––– output –––
+statefulset.apps/seed-new-manticoresearch-worker scaled
+new_workers_ready=2
+––– input –––
+for pod in seed-new-manticoresearch-worker-0 seed-new-manticoresearch-worker-1; do out=$(kubectl exec "$pod" -- mysql -h0 -P9306 -e "show status like 'cluster_%_node_state'; show status like 'cluster_%_status'; show status like 'cluster_%_size'; show status like 'cluster_%_nodes_view';" 2>/dev/null); state=$(echo "$out" | grep "cluster_manticore_cluster_node_state" | grep -o "synced"); status=$(echo "$out" | grep "cluster_manticore_cluster_status" | grep -o "primary"); size=$(echo "$out" | grep "cluster_manticore_cluster_size" | grep -o "2" | head -n1); nodes=$(echo "$out" | grep -o 'seed-new-manticoresearch-worker-[01]' | sort -u | wc -l | tr -d ' '); echo "$pod state=$state status=$status size=$size nodes=$nodes"; test "$state" = "synced" && test "$status" = "primary" && test "$size" = "2" && test "$nodes" = "2"; done
+––– output –––
+seed-new-manticoresearch-worker-0 state=synced status=primary size=2 nodes=2
+seed-new-manticoresearch-worker-1 state=synced status=primary size=2 nodes=2
+––– input –––
+for release in seed-new seed-old; do helm uninstall "$release" >/dev/null 2>&1 || true; done; kubectl delete pod seed-copy-0 seed-inspect-0 --wait=false >/dev/null 2>&1 || true; kubectl delete pvc -l mre=manticore-seed-restore --wait=false >/dev/null 2>&1 || true; kubectl delete pvc -l app.kubernetes.io/component=worker --wait=false >/dev/null 2>&1 || true; echo "cleanup complete"
+––– output –––
+cleanup complete

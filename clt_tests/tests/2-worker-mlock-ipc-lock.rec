@@ -1,0 +1,12 @@
+––– input –––
+printf 'balancer:\n  enabled: false\nworker:\n  config:\n    content: |\n      searchd\n      {\n        listen = 9306:mysql41\n      }\n      table t\n      {\n        type = rt\n        path = /var/lib/manticore/t\n        rt_field = title\n        access_plain_attrs = mlock\n      }\n' >/tmp/mlock-missing-cap.yaml; if helm template bad ./charts/manticoresearch -f /tmp/mlock-missing-cap.yaml >/tmp/mlock-missing-cap.out 2>/tmp/mlock-missing-cap.err; then cat /tmp/mlock-missing-cap.out; false; else grep -Fq 'worker.config.content uses access_* = mlock' /tmp/mlock-missing-cap.err && echo "mlock without IPC_LOCK rejected"; fi
+––– output –––
+mlock without IPC_LOCK rejected
+––– input –––
+printf 'balancer:\n  enabled: false\nsecurityContext:\n  capabilities:\n    drop:\n      - ALL\nworker:\n  mlock:\n    enabled: true\n  config:\n    content: |\n      searchd\n      {\n        listen = 9306:mysql41\n      }\n      table t\n      {\n        type = rt\n        path = /var/lib/manticore/t\n        rt_field = title\n        access_plain_attrs = mlock\n      }\n' >/tmp/mlock-enabled.yaml; helm template ok ./charts/manticoresearch -f /tmp/mlock-enabled.yaml >/tmp/mlock-enabled.out; ipc_count=$(grep -c '^[[:space:]]*- IPC_LOCK$' /tmp/mlock-enabled.out); drop_count=$(grep -c '^[[:space:]]*- ALL$' /tmp/mlock-enabled.out); if [ "$ipc_count" = 1 ] && [ "$drop_count" = 1 ]; then echo "worker mlock adds IPC_LOCK and preserves drops"; else echo "ipc_count=$ipc_count drop_count=$drop_count"; false; fi
+––– output –––
+worker mlock adds IPC_LOCK and preserves drops
+––– input –––
+printf 'balancer:\n  enabled: false\nworker:\n  mlock:\n    validate: false\n  config:\n    content: |\n      searchd\n      {\n        listen = 9306:mysql41\n      }\n      table t\n      {\n        type = rt\n        path = /var/lib/manticore/t\n        rt_field = title\n        access_plain_attrs = mlock\n      }\n' >/tmp/mlock-validate-disabled.yaml; helm template ok ./charts/manticoresearch -f /tmp/mlock-validate-disabled.yaml >/tmp/mlock-validate-disabled.out && echo "mlock validation can be disabled"
+––– output –––
+mlock validation can be disabled

@@ -103,6 +103,54 @@ immutable selector fields or changing chart ownership labels.
 {{- end -}}
 
 {{/*
+Validate Manticore mlock configuration. access_* = mlock requires the worker
+container to be allowed to lock memory, otherwise searchd logs mlock() failed:
+Cannot allocate memory regardless of the pod memory limit.
+*/}}
+{{- define "manticoresearch.validateMlock" -}}
+{{- $mlock := default dict .Values.worker.mlock -}}
+{{- $usesMlock := regexMatch "(?im)^\\s*access_(plain_attrs|blob_attrs|doclists|hitlists|dict)\\s*=\\s*mlock\\b" (default "" .Values.worker.config.content) -}}
+{{- $validate := true -}}
+{{- if hasKey $mlock "validate" -}}
+  {{- $validate = $mlock.validate -}}
+{{- end -}}
+{{- if and $usesMlock $validate -}}
+  {{- $securityContext := default dict .Values.securityContext -}}
+  {{- $capabilities := default dict $securityContext.capabilities -}}
+  {{- $add := list -}}
+  {{- with $capabilities.add -}}
+    {{- $add = . -}}
+  {{- end -}}
+  {{- $hasIpcLock := or (has "IPC_LOCK" $add) (has "ALL" $add) (eq true $securityContext.privileged) -}}
+  {{- if and (not $mlock.enabled) (not $hasIpcLock) -}}
+    {{- fail "worker.config.content uses access_* = mlock, but the worker container does not add CAP_IPC_LOCK. Set worker.mlock.enabled=true or add IPC_LOCK to securityContext.capabilities.add; otherwise mlock() can fail with 'Cannot allocate memory' even when the pod has enough RAM." -}}
+  {{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Render the worker container security context. worker.mlock.enabled adds only
+IPC_LOCK and preserves any user-provided securityContext fields.
+*/}}
+{{- define "manticoresearch.workerSecurityContext" -}}
+{{- $mlock := default dict .Values.worker.mlock -}}
+{{- $securityContext := deepCopy (default dict .Values.securityContext) -}}
+{{- if $mlock.enabled -}}
+  {{- $capabilities := deepCopy (default dict $securityContext.capabilities) -}}
+  {{- $add := list -}}
+  {{- with $capabilities.add -}}
+    {{- $add = . -}}
+  {{- end -}}
+  {{- if not (has "IPC_LOCK" $add) -}}
+    {{- $add = append $add "IPC_LOCK" -}}
+  {{- end -}}
+  {{- $_ := set $capabilities "add" $add -}}
+  {{- $_ := set $securityContext "capabilities" $capabilities -}}
+{{- end -}}
+{{- toYaml $securityContext -}}
+{{- end -}}
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "manticoresearch.serviceAccountName" -}}
