@@ -8,7 +8,7 @@ printf 'walks > walk\nwalking > walk\n' > /tmp/products-wordforms.txt; kubectl c
 ––– output –––
 configmap/product-wordforms created
 ––– input –––
-printf 'balancer:\n  enabled: false\nworker:\n  replicaCount: 1\n  wordforms:\n    enabled: true\n    configMaps:\n      - name: product-wordforms\n        items:\n          - key: products.txt\n            path: products/products.txt\n  image:\n    tag: 0.0.0-unstable\n' >/tmp/clt-values.yaml; cat /tmp/clt-values.yaml
+printf 'balancer:\n  enabled: false\nworker:\n  replicaCount: 1\n  wordforms:\n    enabled: true\n    configMaps:\n      - name: product-wordforms\n        items:\n          - key: products.txt\n            path: products/products.txt\n  image:\n    tag: ci-local\n' >/tmp/clt-values.yaml; cat /tmp/clt-values.yaml
 ––– output –––
 balancer:
   enabled: false
@@ -22,7 +22,7 @@ worker:
           - key: products.txt
             path: products/products.txt
   image:
-    tag: 0.0.0-unstable
+    tag: ci-local
 ––– block: ./init/install –––
 ––– input –––
 if timeout 420 bash -c 'until kubectl get pod my-helm-manticoresearch-worker-0 2>/dev/null | grep -q "1/1[[:space:]]*Running"; do sleep 2; done'; then kubectl get pod my-helm-manticoresearch-worker-0; else echo "worker_0_wait_failed"; kubectl get pod my-helm-manticoresearch-worker-0 2>/dev/null || true; kubectl describe pod my-helm-manticoresearch-worker-0 2>/dev/null || true; false; fi

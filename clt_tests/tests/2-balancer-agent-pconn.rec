@@ -1,7 +1,7 @@
 ––– block: ./init/init –––
 ––– block: ./init/cleanup-release –––
 ––– input –––
-printf 'balancer:\n  config:\n    agent:\n      conn: pconn\n    content: |\n      searchd\n      {\n        listen = /var/run/mysqld/mysqld.sock:mysql\n        listen = 9306:mysql\n        listen = 9308:http\n        listen = 9312\n        persistent_connections_limit = 128\n        query_log = /dev/stdout\n        query_log_format = sphinxql\n        pid_file = /var/run/manticore/searchd.pid\n        binlog_path = /var/lib/manticore\n        shutdown_timeout = 25s\n      }\n  image:\n    tag: 0.0.0-unstable\nworker:\n  image:\n    tag: 0.0.0-unstable\n' >/tmp/clt-values.yaml; cat /tmp/clt-values.yaml
+printf 'balancer:\n  config:\n    agent:\n      conn: pconn\n    content: |\n      searchd\n      {\n        listen = /var/run/mysqld/mysqld.sock:mysql\n        listen = 9306:mysql\n        listen = 9308:http\n        listen = 9312\n        persistent_connections_limit = 128\n        query_log = /dev/stdout\n        query_log_format = sphinxql\n        pid_file = /var/run/manticore/searchd.pid\n        binlog_path = /var/lib/manticore\n        shutdown_timeout = 25s\n      }\n  image:\n    tag: ci-local\nworker:\n  image:\n    tag: ci-local\n' >/tmp/clt-values.yaml; cat /tmp/clt-values.yaml
 ––– output –––
 balancer:
   config:
@@ -22,10 +22,10 @@ balancer:
         shutdown_timeout = 25s
       }
   image:
-    tag: 0.0.0-unstable
+    tag: ci-local
 worker:
   image:
-    tag: 0.0.0-unstable
+    tag: ci-local
 ––– block: ./init/install –––
 ––– input –––
 if timeout 180 bash -c 'while [[ ! $(kubectl get po 2>&1 | grep "Running" | wc -l) -eq 4 ]]; do sleep 1; done'; then echo "OK"; else echo "Failed waiting until pods was deployed"; kubectl get po -o wide || true; for pod in $(kubectl get po --no-headers 2>/dev/null | awk '$3 != "Running" {print $1}'); do kubectl describe pod "$pod" || true; done; false; fi

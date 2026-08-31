@@ -5,7 +5,7 @@ if helm template bad ./charts/manticoresearch --set-string 'worker.searchd.extra
 ––– output –––
 invalid extra arg rejected
 ––– input –––
-printf 'balancer:\n  enabled: false\nworker:\n  replicaCount: 1\n  searchd:\n    extraArgs:\n      - --logdebug\n  image:\n    tag: 0.0.0-unstable\n' >/tmp/clt-values.yaml; cat /tmp/clt-values.yaml
+printf 'balancer:\n  enabled: false\nworker:\n  replicaCount: 1\n  searchd:\n    extraArgs:\n      - --logdebug\n  image:\n    tag: ci-local\n' >/tmp/clt-values.yaml; cat /tmp/clt-values.yaml
 ––– output –––
 balancer:
   enabled: false
@@ -15,7 +15,7 @@ worker:
     extraArgs:
       - --logdebug
   image:
-    tag: 0.0.0-unstable
+    tag: ci-local
 ––– block: ./init/install –––
 ––– input –––
 if kubectl wait --for=condition=Ready pod/my-helm-manticoresearch-worker-0 --timeout=300s >/dev/null; then echo "OK"; else echo "Failed waiting until worker pod was ready"; kubectl get po -o wide || true; kubectl describe pod my-helm-manticoresearch-worker-0 || true; kubectl logs my-helm-manticoresearch-worker-0 --all-containers=true --tail=200 || true; false; fi

@@ -43,7 +43,7 @@ You can also build/import images without running CLT:
 clt_tests/build-images-local.sh
 ```
 
-Both commands use `manticoresearch/helm-worker:0.0.0-unstable` and `manticoresearch/helm-balancer:0.0.0-unstable`, matching the test values files.
+Both commands use the local-only `ci-local` tag. `run-local.sh` writes a temporary Helm values file and mounts it into CLT, so the installed chart uses the images imported into the local k3s container rather than pulling an image from a registry.
 
 The init block in each test exports:
 
@@ -66,26 +66,20 @@ Current standalone scenarios:
 - `clt_tests/tests/2-pod-labels.rec`
 - `clt_tests/tests/2-searchd-extra-args.rec`
 - `clt_tests/tests/2-stopwords-flow.rec`
+- `clt_tests/tests/2-worker-volume-attributes-class.rec`
 - `clt_tests/tests/2-wordforms-configmap.rec`
 - `clt_tests/tests/3-sst-scale-replication.rec`
 
-## Image tags
+## Image handoff
 
-During local development the chart `appVersion` can point to an unpublished release tag, for example `25.0.0-YYYYMMDD`. For this workflow we use the latest CI images tagged `0.0.0-unstable` instead of the chart `appVersion` tag. At the time this guide was added, these images were built from commit `0a7e75999379f0403bd8e01669b906a5cb212089`.
+Every pull-request run builds the worker and balancer images with the immutable tag `ci-<head SHA>`. The build job uploads them as one short-lived workflow artifact. Each Kubernetes test runner downloads the artifact, imports both images into its own k3s containerd image store, and supplies an overriding values file with `image.pullPolicy: Never`.
 
-- `manticoresearch/helm-worker:0.0.0-unstable`
-- `manticoresearch/helm-balancer:0.0.0-unstable`
+This means CLT always tests the images built from the exact PR revision. It does not log into Docker Hub, push images, or rely on a mutable CI tag, so the same workflow is safe for pull requests from forks.
 
-For tests with the balancer disabled, set at least:
-
-```bash
---set worker.image.tag=0.0.0-unstable
-```
-
-For tests with the balancer enabled, set both:
+For local testing, the default tag is `ci-local`. Pass a different tag with `--image-tag` when needed; with `--build-images`, the script builds and imports that exact tag before replaying CLT:
 
 ```bash
---set worker.image.tag=0.0.0-unstable --set balancer.image.tag=0.0.0-unstable
+clt_tests/run-local.sh --build-images --image-tag ci-my-change --test 1-default-flow --debug
 ```
 
 ## Cleanup

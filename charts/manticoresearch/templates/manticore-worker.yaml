@@ -215,6 +215,9 @@ spec:
           requests:
             storage: {{ .Values.worker.persistence.size | quote }}
         {{ include "manticoresearch.worker.storageClass" . }}
+        {{- with .Values.worker.persistence.volumeAttributesClassName }}
+        volumeAttributesClassName: {{ . | quote }}
+        {{- end }}
         selector:
         {{- if .Values.worker.persistence.matchLabels }}
           matchLabels:

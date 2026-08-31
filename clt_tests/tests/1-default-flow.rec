@@ -6,14 +6,14 @@ kubectl get nodes 2>/dev/null
 #!/NAME\s+STATUS\s+ROLES\s+AGE\s+VERSION/!#
 #!/[0-9a-z]{12}\s+Ready\s+control-plane(,master)?\s+[0-9]+[smh]([0-9]+[sm])?\s+v[0-9\.]+\+k3s[1-2]/!#
 ––– input –––
-printf 'balancer:\n  image:\n    tag: 0.0.0-unstable\nworker:\n  image:\n    tag: 0.0.0-unstable\n' >/tmp/clt-values.yaml; cat /tmp/clt-values.yaml
+printf 'balancer:\n  image:\n    tag: ci-local\nworker:\n  image:\n    tag: ci-local\n' >/tmp/clt-values.yaml; cat /tmp/clt-values.yaml
 ––– output –––
 balancer:
   image:
-    tag: 0.0.0-unstable
+    tag: ci-local
 worker:
   image:
-    tag: 0.0.0-unstable
+    tag: ci-local
 ––– block: ./init/install –––
 ––– input –––
 if timeout 180 bash -c 'while [[ ! $(kubectl get po 2>&1 | grep "Running" | wc -l) -eq 4 ]]; do sleep 1; done'; then echo "OK"; else echo "Failed waiting until pods was deployed"; kubectl get po -o wide || true; for pod in $(kubectl get po --no-headers 2>/dev/null | awk '$3 != "Running" {print $1}'); do kubectl describe pod "$pod" || true; done; false; fi
@@ -63,5 +63,5 @@ title: dog is brown
 ––– input –––
 kubectl get deployment my-helm-manticoresearch-balancer -o=jsonpath='{$.spec.template.spec.containers[:1].image}'; echo
 ––– output –––
-manticoresearch/helm-balancer:0.0.0-unstable
+manticoresearch/helm-balancer:ci-#!/(local|[0-9a-f]{40})/!#
 ––– block: ./init/cleanup-release –––
