@@ -165,10 +165,10 @@ jobs:
             '    repository: manticoresearch/helm-balancer' \
             "    tag: ${IMAGE_TAG}" \
             '    pullPolicy: Never' \
-            > clt_tests/ci-images.yaml
+            > /tmp/clt-ci-images.yaml
 
       - uses: manticoresoftware/clt@0.7.8
         with:
           image: manticoresearch/helm-test-kit:0.0.1
           test_prefix: ${{ matrix.chunk.test_prefix }}
-          run_args: -e TELEMETRY=0 --net=host -v ${{ steps.k3s.outputs.kubeconfig }}:${{ steps.k3s.outputs.kubeconfig }} -v $(pwd)/charts/:/.clt/charts/ -v $(pwd)/clt_tests/ci-images.yaml:/tmp/clt-ci-images.yaml:ro
+          run_args: -e TELEMETRY=0 --net=host -v ${{ steps.k3s.outputs.kubeconfig }}:${{ steps.k3s.outputs.kubeconfig }} -v $(pwd)/charts/:/.clt/charts/ -v /tmp/clt-ci-images.yaml:/tmp/clt-ci-images.yaml:ro
