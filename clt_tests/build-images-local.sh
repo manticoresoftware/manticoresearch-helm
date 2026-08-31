@@ -10,14 +10,14 @@ Builds the Helm worker and balancer images with the local CI tag and imports
 them into the local k3s container created by clt_tests/run-local.sh --init.
 
 Options:
-  --tag             Image tag. Default: 0.0.0-unstable
+  --tag             Image tag. Default: ci-local
   --k3s-container   k3s container name. Default: k3s
   --no-import       Build Docker images but do not import them into k3s.
 USAGE
 }
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-tag="0.0.0-unstable"
+tag="ci-local"
 k3s_container="k3s"
 do_import=1
 

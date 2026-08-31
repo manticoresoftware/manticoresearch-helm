@@ -144,6 +144,9 @@ worker:
     ##   GKE, AWS & OpenStack)
     ##
     # storageClass: "-"
+    ## Optional VolumeAttributesClass to apply to the PVC.
+    ## Leave empty to omit the field entirely.
+    # volumeAttributesClassName: ""
     accessModes:
       - ReadWriteOnce
     size: 10Gi

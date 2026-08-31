@@ -9,7 +9,7 @@ if helm template bad ./charts/manticoresearch --set worker.podLabels.bad.nested=
 ––– output –––
 nested pod label rejected
 ––– input –––
-printf 'podLabels:\n  traffic-phase: cutover\nworker:\n  replicaCount: 1\n  podLabels:\n    appgroup: manticore-indexes\n    app.kubernetes.io/name: should-not-override\n  image:\n    tag: 0.0.0-unstable\nbalancer:\n  podLabels:\n    appgroup: manticore-balancers\n  image:\n    tag: 0.0.0-unstable\n' >/tmp/clt-values.yaml; cat /tmp/clt-values.yaml
+printf 'podLabels:\n  traffic-phase: cutover\nworker:\n  replicaCount: 1\n  podLabels:\n    appgroup: manticore-indexes\n    app.kubernetes.io/name: should-not-override\n  image:\n    tag: ci-local\nbalancer:\n  podLabels:\n    appgroup: manticore-balancers\n  image:\n    tag: ci-local\n' >/tmp/clt-values.yaml; cat /tmp/clt-values.yaml
 ––– output –––
 podLabels:
   traffic-phase: cutover
@@ -19,12 +19,12 @@ worker:
     appgroup: manticore-indexes
     app.kubernetes.io/name: should-not-override
   image:
-    tag: 0.0.0-unstable
+    tag: ci-local
 balancer:
   podLabels:
     appgroup: manticore-balancers
   image:
-    tag: 0.0.0-unstable
+    tag: ci-local
 ––– block: ./init/install –––
 ––– input –––
 if timeout 180 bash -c 'while [[ ! $(kubectl get po 2>&1 | grep "Running" | wc -l) -eq 2 ]]; do sleep 1; done'; then echo "OK"; else echo "Failed waiting until labeled pods were deployed"; kubectl get po -o wide || true; for pod in $(kubectl get po --no-headers 2>/dev/null | awk '$3 != "Running" {print $1}'); do kubectl describe pod "$pod" || true; done; false; fi

@@ -17,6 +17,7 @@ Options:
   --kubeconfig   Kubeconfig to mount. Default: clt_tests/k3s.yaml
   --clt          Path to CLT binary. Default: ../clt/clt
   --image        Test-kit image. Default: manticoresearch/helm-test-kit:0.0.1
+  --image-tag    Worker/balancer image tag. Default: ci-local
   --build-images Build and import local worker/balancer images before running.
   --k3s-container k3s container name for image import. Default: k3s
 USAGE
@@ -27,6 +28,7 @@ tests_dir="$repo_root/clt_tests/tests"
 kubeconfig="$repo_root/clt_tests/k3s.yaml"
 clt_bin="$repo_root/../clt/clt"
 image="manticoresearch/helm-test-kit:0.0.1"
+image_tag="ci-local"
 k3s_container="k3s"
 mode=""
 selector=""
@@ -163,6 +165,11 @@ while [[ $# -gt 0 ]]; do
       image="$2"
       shift 2
       ;;
+    --image-tag)
+      require_value "$1" "${2:-}"
+      image_tag="$2"
+      shift 2
+      ;;
     --build-images)
       build_images=1
       shift
@@ -223,7 +230,7 @@ if [[ ! -f "$kubeconfig" ]]; then
 fi
 
 if [[ "$build_images" -eq 1 ]]; then
-  "$repo_root/clt_tests/build-images-local.sh" --k3s-container "$k3s_container"
+  "$repo_root/clt_tests/build-images-local.sh" --tag "$image_tag" --k3s-container "$k3s_container"
 fi
 
 selected=()
@@ -265,7 +272,22 @@ if [[ "$debug" -eq 1 ]]; then
   clt_args+=(-d)
 fi
 
-run_args="-e TELEMETRY=0 --net=host -v ${kubeconfig}:/tmp/output/kubeconfig-latest.yaml -v ${repo_root}/charts/:/.clt/charts/"
+ci_images_file="$(mktemp)"
+trap 'rm -f "$ci_images_file"' EXIT
+printf '%s\n' \
+  'worker:' \
+  '  image:' \
+  '    repository: manticoresearch/helm-worker' \
+  "    tag: ${image_tag}" \
+  '    pullPolicy: Never' \
+  'balancer:' \
+  '  image:' \
+  '    repository: manticoresearch/helm-balancer' \
+  "    tag: ${image_tag}" \
+  '    pullPolicy: Never' \
+  > "$ci_images_file"
+
+run_args="-e TELEMETRY=0 --net=host -v ${kubeconfig}:/tmp/output/kubeconfig-latest.yaml -v ${repo_root}/charts/:/.clt/charts/ -v ${ci_images_file}:/tmp/clt-ci-images.yaml:ro"
 should_exit=0
 
 for test in "${selected[@]}"; do

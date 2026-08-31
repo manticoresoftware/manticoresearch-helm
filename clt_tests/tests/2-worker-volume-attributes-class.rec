@@ -1,0 +1,8 @@
+––– input –––
+helm template default ./charts/manticoresearch >/tmp/volume-attributes-class-default.yaml; if grep -Fq 'volumeAttributesClassName:' /tmp/volume-attributes-class-default.yaml; then cat /tmp/volume-attributes-class-default.yaml; false; else echo "default omits volume attributes class"; fi
+––– output –––
+default omits volume attributes class
+––– input –––
+printf 'worker:\n  persistence:\n    volumeAttributesClassName: fast-ssd\n' >/tmp/volume-attributes-class.yaml; helm template configured ./charts/manticoresearch -f /tmp/volume-attributes-class.yaml >/tmp/volume-attributes-class-configured.yaml; if grep -Fq 'volumeAttributesClassName: "fast-ssd"' /tmp/volume-attributes-class-configured.yaml; then echo "worker PVC gets volume attributes class"; else cat /tmp/volume-attributes-class-configured.yaml; false; fi
+––– output –––
+worker PVC gets volume attributes class
