@@ -207,6 +207,9 @@ spec:
           release: {{ .Release.Name }}
           heritage: {{ .Release.Service }}
           app.kubernetes.io/component: worker
+          {{- with .Values.worker.persistence.extraLabels }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
       spec:
         accessModes:
         {{- range .Values.worker.persistence.accessModes }}
