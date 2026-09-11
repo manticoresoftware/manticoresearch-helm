@@ -147,6 +147,12 @@ worker:
     ## Optional VolumeAttributesClass to apply to the PVC.
     ## Leave empty to omit the field entirely.
     # volumeAttributesClassName: ""
+    ## Extra labels merged onto the PVC's default labels (app, release,
+    ## heritage, app.kubernetes.io/component).
+    ## Example:
+    ## extraLabels:
+    ##   Layer: manticore-realtime
+    extraLabels: {}
     accessModes:
       - ReadWriteOnce
     size: 10Gi
