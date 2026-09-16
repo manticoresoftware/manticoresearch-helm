@@ -2,7 +2,7 @@
 Verify that a worker-data backup can be restored into a different Helm release or namespace even when its persisted cluster state still contains the source workers' DNS names.
 ––– block: ./init/init –––
 ––– input –––
-for release in seed-old seed-new; do helm uninstall "$release" >/dev/null 2>&1 || true; done; kubectl delete pod seed-copy-0 seed-inspect-0 --wait=false >/dev/null 2>&1 || true; kubectl delete pvc -l mre=manticore-seed-restore --wait=false >/dev/null 2>&1 || true; kubectl delete pvc -l app.kubernetes.io/component=worker --wait=false >/dev/null 2>&1 || true; echo "cleanup complete"
+for release in seed-old seed-new; do if helm status "$release" >/dev/null 2>&1; then helm uninstall "$release" --wait --timeout 180s >/dev/null; fi; done; pods="$(kubectl get pod -l mre=manticore-seed-restore -o name)"; if [[ -n "$pods" ]]; then kubectl delete $pods --wait --timeout=180s >/dev/null; fi; claims="$(kubectl get pvc -l mre=manticore-seed-restore -o name)"; if [[ -n "$claims" ]]; then kubectl delete $claims --wait --timeout=180s >/dev/null; fi; claims="$(kubectl get pvc -l app.kubernetes.io/component=worker -o name)"; if [[ -n "$claims" ]]; then kubectl delete $claims --wait --timeout=180s >/dev/null; fi; echo "cleanup complete"
 ––– output –––
 cleanup complete
 ––– input –––
@@ -37,7 +37,7 @@ kubectl scale statefulset seed-old-manticoresearch-worker --replicas=0; timeout 
 statefulset.apps/seed-old-manticoresearch-worker scaled
 old_workers_scaled_down=0
 ––– input –––
-helm uninstall seed-old >/dev/null 2>&1; echo "old_release_uninstalled_pvcs_retained=$(kubectl get pvc data-seed-old-manticoresearch-worker-0 data-seed-old-manticoresearch-worker-1 --no-headers 2>/dev/null | wc -l | tr -d ' ')"
+helm uninstall seed-old --wait --timeout 180s >/dev/null; echo "old_release_uninstalled_pvcs_retained=$(kubectl get pvc data-seed-old-manticoresearch-worker-0 data-seed-old-manticoresearch-worker-1 --no-headers 2>/dev/null | wc -l | tr -d ' ')"
 ––– output –––
 old_release_uninstalled_pvcs_retained=2
 ––– input –––
@@ -139,6 +139,6 @@ for pod in seed-new-manticoresearch-worker-0 seed-new-manticoresearch-worker-1; 
 seed-new-manticoresearch-worker-0 state=synced status=primary size=2 nodes=2
 seed-new-manticoresearch-worker-1 state=synced status=primary size=2 nodes=2
 ––– input –––
-for release in seed-new seed-old; do helm uninstall "$release" >/dev/null 2>&1 || true; done; kubectl delete pod seed-copy-0 seed-inspect-0 --wait=false >/dev/null 2>&1 || true; kubectl delete pvc -l mre=manticore-seed-restore --wait=false >/dev/null 2>&1 || true; kubectl delete pvc -l app.kubernetes.io/component=worker --wait=false >/dev/null 2>&1 || true; echo "cleanup complete"
+for release in seed-new seed-old; do if helm status "$release" >/dev/null 2>&1; then helm uninstall "$release" --wait --timeout 180s >/dev/null; fi; done; pods="$(kubectl get pod -l mre=manticore-seed-restore -o name)"; if [[ -n "$pods" ]]; then kubectl delete $pods --wait --timeout=180s >/dev/null; fi; claims="$(kubectl get pvc -l mre=manticore-seed-restore -o name)"; if [[ -n "$claims" ]]; then kubectl delete $claims --wait --timeout=180s >/dev/null; fi; claims="$(kubectl get pvc -l app.kubernetes.io/component=worker -o name)"; if [[ -n "$claims" ]]; then kubectl delete $claims --wait --timeout=180s >/dev/null; fi; echo "cleanup complete"
 ––– output –––
 cleanup complete

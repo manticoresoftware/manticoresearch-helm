@@ -1,6 +1,6 @@
 ––– block: ./init/init –––
 ––– input –––
-worker_pvcs=$(kubectl get pvc -l app.kubernetes.io/component=worker --no-headers 2>/dev/null | wc -l | tr -d " "); helm uninstall my-helm >/dev/null 2>&1 || true; kubectl delete pvc -l app.kubernetes.io/component=worker >/dev/null 2>&1 || true; echo "cleanup requested worker_pvcs=$worker_pvcs"
+worker_pvcs=$(kubectl get pvc -l app.kubernetes.io/component=worker --no-headers 2>/dev/null | wc -l | tr -d " "); if helm status my-helm >/dev/null 2>&1; then helm uninstall my-helm --wait --timeout 180s >/dev/null; fi; claims="$(kubectl get pvc -l app.kubernetes.io/component=worker -o name)"; if [[ -n "$claims" ]]; then kubectl delete $claims --wait --timeout=180s >/dev/null; fi; echo "cleanup requested worker_pvcs=$worker_pvcs"
 ––– output –––
 #!/cleanup requested worker_pvcs=[0-9]+/!#
 ––– input –––
@@ -91,7 +91,7 @@ uuid_before=$(cat /tmp/manticore-cluster-uuid-before); seqno_before=$(cat /tmp/m
 #!/my-helm-manticoresearch-worker-0 cluster_uuid_after=[0-9a-f-]+ cluster_seqno_after=[0-9]+/!#
 #!/my-helm-manticoresearch-worker-1 cluster_uuid_after=[0-9a-f-]+ cluster_seqno_after=[0-9]+/!#
 ––– input –––
-worker_pvcs=$(kubectl get pvc -l app.kubernetes.io/component=worker --no-headers 2>/dev/null | wc -l | tr -d " "); helm uninstall my-helm; kubectl delete pvc -l app.kubernetes.io/component=worker >/dev/null 2>&1; echo "worker_pvcs_deleted=$worker_pvcs"
+worker_pvcs=$(kubectl get pvc -l app.kubernetes.io/component=worker --no-headers 2>/dev/null | wc -l | tr -d " "); helm uninstall my-helm --wait --timeout 180s; claims="$(kubectl get pvc -l app.kubernetes.io/component=worker -o name)"; if [[ -n "$claims" ]]; then kubectl delete $claims --wait --timeout=180s >/dev/null; fi; echo "worker_pvcs_deleted=$worker_pvcs"
 ––– output –––
 release "my-helm" uninstalled
 #!/worker_pvcs_deleted=[0-9]+/!#

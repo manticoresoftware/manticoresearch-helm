@@ -7,9 +7,8 @@ Usage:
   clt_tests/run-local.sh --init
   clt_tests/run-local.sh --list
   clt_tests/run-local.sh --all
-  clt_tests/run-local.sh --thread 1
-  clt_tests/run-local.sh --test 3-sst-scale-replication
-  clt_tests/run-local.sh --test clt_tests/tests/3-sst-scale-replication.rec
+  clt_tests/run-local.sh --test sst-scale-replication
+  clt_tests/run-local.sh --test clt_tests/tests/sst-scale-replication.rec
 
 Options:
   --init          Recreate local k3s and build the CLT test-kit image.
@@ -134,12 +133,6 @@ while [[ $# -gt 0 ]]; do
       mode="all"
       shift
       ;;
-    --thread)
-      require_value "$1" "${2:-}"
-      mode="thread"
-      selector="$2"
-      shift 2
-      ;;
     --test)
       require_value "$1" "${2:-}"
       mode="test"
@@ -206,13 +199,12 @@ fi
 tests=()
 while IFS= read -r test; do
   tests+=("$test")
-done < <(find "$tests_dir" -maxdepth 1 -type f -name '[1-3]-*.rec' | sort)
+done < <(find "$tests_dir" -maxdepth 1 -type f -name '*.rec' | sort)
 
 if [[ "$mode" == "list" ]]; then
   for test in "${tests[@]}"; do
     rel="${test#$repo_root/}"
-    thread="$(basename "$test" | cut -d- -f1)"
-    printf 'thread %s  %s\n' "$thread" "$rel"
+    printf '%s\n' "$rel"
   done
   exit 0
 fi
@@ -237,17 +229,6 @@ selected=()
 case "$mode" in
   all)
     selected=("${tests[@]}")
-    ;;
-  thread)
-    if [[ ! "$selector" =~ ^[1-3]$ ]]; then
-      echo "--thread expects 1, 2, or 3" >&2
-      exit 2
-    fi
-    for test in "${tests[@]}"; do
-      if [[ "$(basename "$test")" == "$selector"-* ]]; then
-        selected+=("$test")
-      fi
-    done
     ;;
   test)
     name="$selector"
