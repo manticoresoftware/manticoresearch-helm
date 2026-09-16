@@ -1,6 +1,6 @@
 ––– block: ./init/init –––
 ––– input –––
-helm uninstall my-helm >/dev/null 2>&1 || true; kubectl delete pvc -l app.kubernetes.io/component=worker >/dev/null 2>&1 || true; kubectl delete configmap product-wordforms >/dev/null 2>&1 || true; echo "wordforms cleanup complete"
+if helm status my-helm >/dev/null 2>&1; then helm uninstall my-helm --wait --timeout 180s >/dev/null; fi; claims="$(kubectl get pvc -l app.kubernetes.io/component=worker -o name)"; if [[ -n "$claims" ]]; then kubectl delete $claims --wait --timeout=180s >/dev/null; fi; if kubectl get configmap product-wordforms >/dev/null 2>&1; then kubectl delete configmap product-wordforms --wait --timeout=180s >/dev/null; fi; echo "wordforms cleanup complete"
 ––– output –––
 wordforms cleanup complete
 ––– input –––
@@ -39,7 +39,7 @@ kubectl exec my-helm-manticoresearch-worker-0 -- mysql -h0 -P9306 -e "CREATE TAB
 ––– output –––
 wordforms_match_count=1
 ––– input –––
-helm uninstall my-helm; kubectl delete pvc -l app.kubernetes.io/component=worker >/dev/null 2>&1; kubectl delete configmap product-wordforms >/dev/null 2>&1; echo "wordforms cleanup deleted"
+helm uninstall my-helm --wait --timeout 180s; claims="$(kubectl get pvc -l app.kubernetes.io/component=worker -o name)"; if [[ -n "$claims" ]]; then kubectl delete $claims --wait --timeout=180s >/dev/null; fi; kubectl delete configmap product-wordforms --wait --timeout=180s >/dev/null; echo "wordforms cleanup deleted"
 ––– output –––
 release "my-helm" uninstalled
 wordforms cleanup deleted

@@ -24,8 +24,7 @@ Use the local runner from the repository root:
 ```bash
 clt_tests/run-local.sh --init
 clt_tests/run-local.sh --list
-clt_tests/run-local.sh --test 3-sst-scale-replication --debug
-clt_tests/run-local.sh --thread 1
+clt_tests/run-local.sh --test sst-scale-replication --debug
 clt_tests/run-local.sh --all
 ```
 
@@ -34,7 +33,7 @@ The runner expects `../clt/clt` and `clt_tests/k3s.yaml` by default. Override th
 To build the local Helm images and import them into the k3s container before running tests:
 
 ```bash
-clt_tests/run-local.sh --init --build-images --test 2-default-flow --debug
+clt_tests/run-local.sh --init --build-images --test default-flow --debug
 ```
 
 You can also build/import images without running CLT:
@@ -53,17 +52,17 @@ KUBECONFIG=/tmp/output/kubeconfig-latest.yaml
 
 ## CI scenarios
 
-CI runs standalone scenario recordings in parallel. Do not add CI-only dependencies between separate `.rec` files. Put shared setup in `clt_tests/tests/init/*.recb` helpers and include those helpers from each standalone scenario.
+CI runs standalone scenario recordings in three duration-balanced jobs. Do not add CI-only dependencies between separate `.rec` files. Put shared setup in `clt_tests/tests/init/*.recb` helpers and include those helpers from each standalone scenario.
 
 Use `clt_tests/tests/init/install.recb` for Helm installs. Each scenario can write `/tmp/clt-values.yaml` before including it to control chart values while keeping the install step shared.
 
-Scenario filenames must start with `1-`, `2-`, or `3-`. CI uses that prefix to choose which of the three CLT threads runs the test.
+Scenario filenames are descriptive. CI treats every recording as an exact test and uses the shared CLT timing ledger to assign it to the least-loaded of three jobs. The first successful `master` run uses equal default estimates; later successful `master` runs use observed timings. Pull requests restore the baseline for planning but never publish timings.
 
-Current standalone scenarios, grouped by CI thread prefix:
+Current standalone scenarios:
 
-- Thread 1: `1-cross-release-seed-restore-mre.rec`, `1-no-balancer-flow.rec`, `1-pod-labels.rec`, `1-wordforms-configmap.rec`
-- Thread 2: `2-balancer-agent-pconn.rec`, `2-default-flow.rec`, `2-searchd-extra-args.rec`, `2-worker-mlock-ipc-lock.rec`, `2-worker-volume-attributes-class.rec`
-- Thread 3: `3-empty-cluster-nodes-recovery.rec`, `3-sst-scale-replication.rec`, `3-stopwords-flow.rec`
+- `balancer-agent-pconn.rec`, `cross-release-seed-restore-mre.rec`, `default-flow.rec`, `empty-cluster-nodes-recovery.rec`
+- `no-balancer-flow.rec`, `pod-labels.rec`, `searchd-extra-args.rec`, `sst-scale-replication.rec`
+- `stopwords-flow.rec`, `wordforms-configmap.rec`, `worker-mlock-ipc-lock.rec`, `worker-volume-attributes-class.rec`
 
 ## Image handoff
 
@@ -74,14 +73,14 @@ This means CLT always tests the images built from the exact PR revision. It does
 For local testing, the default tag is `ci-local`. Pass a different tag with `--image-tag` when needed; with `--build-images`, the script builds and imports that exact tag before replaying CLT:
 
 ```bash
-clt_tests/run-local.sh --build-images --image-tag ci-my-change --test 1-default-flow --debug
+clt_tests/run-local.sh --build-images --image-tag ci-my-change --test default-flow --debug
 ```
 
 ## Cleanup
 
-Most CLT recordings uninstall the Helm release and delete worker PVCs at the end. If a run is interrupted, clean up manually:
+CLT recordings wait for their Helm release and worker PVCs to disappear before the next scenario can start. If a run is interrupted, clean up manually:
 
 ```bash
-KUBECONFIG=clt_tests/k3s.yaml helm uninstall my-helm || true
-KUBECONFIG=clt_tests/k3s.yaml kubectl delete pvc -l app.kubernetes.io/component=worker || true
+KUBECONFIG=clt_tests/k3s.yaml helm uninstall my-helm --wait --timeout 180s || true
+KUBECONFIG=clt_tests/k3s.yaml kubectl delete pvc -l app.kubernetes.io/component=worker --wait --timeout=180s || true
 ```

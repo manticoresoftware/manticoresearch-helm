@@ -1,5 +1,5 @@
 ––– input –––
-helm uninstall my-helm
+helm uninstall my-helm --wait --timeout 180s
 ––– output –––
 release "my-helm" uninstalled
 ––– input –––

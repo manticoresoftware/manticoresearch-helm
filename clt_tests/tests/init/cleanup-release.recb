@@ -1,4 +1,4 @@
 ––– input –––
-helm uninstall my-helm >/dev/null 2>&1 || true; kubectl delete pvc -l app.kubernetes.io/component=worker >/dev/null 2>&1 || true; echo "cleanup complete"
+if helm status my-helm >/dev/null 2>&1; then helm uninstall my-helm --wait --timeout 180s >/dev/null; fi; claims="$(kubectl get pvc -l app.kubernetes.io/component=worker -o name)"; if [[ -n "$claims" ]]; then kubectl delete $claims --wait --timeout=180s >/dev/null; fi; echo "cleanup complete"
 ––– output –––
 cleanup complete
