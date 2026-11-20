@@ -1,6 +1,6 @@
 # Manticore Search Helm Chart
 
-**Version:** 29.9.0.1
+**Version:** 32.1.3
 
 The Manticore Search Helm Chart is designed to deploy and manage Manticore Search in Kubernetes. It ensures high availability with out-of-the-box replication and improves read throughput through automatic load balancing.
 
@@ -32,6 +32,8 @@ helm repo add manticoresearch https://helm.manticoresearch.com
 # Update values.yaml if needed
 helm install manticore -n manticore --create-namespace manticoresearch/manticoresearch
 ```
+
+> **Upgrading a replication cluster from 29.9.0?** The replication protocol changed in 32.1.3. A standard rolling Helm upgrade is not supported. Plan downtime and follow the [cluster upgrade instructions](https://manual.manticoresearch.com/Changelog#Upgrading-from-29.9.0) before deploying this chart.
 
 ### Installation from GitHub (Development Version)
 ```bash
