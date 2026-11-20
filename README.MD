@@ -33,7 +33,7 @@ helm repo add manticoresearch https://helm.manticoresearch.com
 helm install manticore -n manticore --create-namespace manticoresearch/manticoresearch
 ```
 
-> **Upgrading a replication cluster from 29.9.0?** The replication protocol changed in 32.1.3. A standard rolling Helm upgrade is not supported. Plan downtime and follow the [cluster upgrade instructions](https://manual.manticoresearch.com/Changelog#Upgrading-from-29.9.0) before deploying this chart.
+> **Upgrading a replication cluster from 29.9.0?** The replication protocol has changed since 29.9.0. A standard rolling Helm upgrade is not supported. Plan downtime and follow the [cluster upgrade instructions](https://manual.manticoresearch.com/Changelog#Upgrading-from-29.9.0) before deploying this chart.
 
 ### Installation from GitHub (Development Version)
 ```bash
